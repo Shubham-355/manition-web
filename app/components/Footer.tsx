@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { parseStyle } from "../lib/css";
 import { Hover } from "./Interactive";
 
@@ -27,8 +28,8 @@ export default function Footer() {
         )}
       >
         <div style={parseStyle("flex:1 1 300px; min-width:250px;")}>
-          <a
-            href="Home.dc.html"
+          <Link
+            href="/"
             style={parseStyle(
               "display:flex; align-items:center; gap:10px; text-decoration:none; margin-bottom:16px;",
             )}
@@ -51,7 +52,7 @@ export default function Footer() {
             >
               Manition
             </span>
-          </a>
+          </Link>
           <p
             style={parseStyle(
               "margin:0 0 20px; font-size:13.5px; line-height:1.6; color:#8b8b93; max-width:280px;",
@@ -85,13 +86,13 @@ export default function Footer() {
           )}
         >
           <p style={parseStyle(columnLabel)}>Product</p>
-          <Hover as="a" href="Features.dc.html" style={linkBase} hoverStyle={linkHover}>
+          <Hover as="a" href="/features" style={linkBase} hoverStyle={linkHover}>
             Features
           </Hover>
-          <Hover as="a" href="Gallery.dc.html" style={linkBase} hoverStyle={linkHover}>
+          <Hover as="a" href="/gallery" style={linkBase} hoverStyle={linkHover}>
             Gallery
           </Hover>
-          <Hover as="a" href="Pricing.dc.html" style={linkBase} hoverStyle={linkHover}>
+          <Hover as="a" href="/pricing" style={linkBase} hoverStyle={linkHover}>
             Pricing
           </Hover>
           <Hover
@@ -110,16 +111,16 @@ export default function Footer() {
           )}
         >
           <p style={parseStyle(columnLabel)}>Resources</p>
-          <Hover as="a" href="Docs.dc.html" style={linkBase} hoverStyle={linkHover}>
+          <Hover as="a" href="/docs" style={linkBase} hoverStyle={linkHover}>
             Docs
           </Hover>
-          <Hover as="a" href="Blog.dc.html" style={linkBase} hoverStyle={linkHover}>
+          <Hover as="a" href="/blog" style={linkBase} hoverStyle={linkHover}>
             Blog
           </Hover>
-          <Hover as="a" href="Blog.dc.html" style={linkBase} hoverStyle={linkHover}>
+          <Hover as="a" href="/blog" style={linkBase} hoverStyle={linkHover}>
             Changelog
           </Hover>
-          <Hover as="a" href="Docs.dc.html" style={linkBase} hoverStyle={linkHover}>
+          <Hover as="a" href="/docs" style={linkBase} hoverStyle={linkHover}>
             Manim guide
           </Hover>
         </div>
@@ -130,12 +131,12 @@ export default function Footer() {
           )}
         >
           <p style={parseStyle(columnLabel)}>Company</p>
-          <Hover as="a" href="About.dc.html" style={linkBase} hoverStyle={linkHover}>
+          <Hover as="a" href="/about" style={linkBase} hoverStyle={linkHover}>
             About
           </Hover>
           <Hover
             as="a"
-            href="Home.dc.html#waitlist"
+            href="/#waitlist"
             style={linkBase}
             hoverStyle={linkHover}
           >

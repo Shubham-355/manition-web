@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { parseStyle } from "./lib/css";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
@@ -103,7 +104,7 @@ export default function Home() {
               </Hover>
               <Hover
                 as="a"
-                href="Gallery.dc.html"
+                href="/gallery"
                 style="display:inline-flex; align-items:center; gap:9px; text-decoration:none; background:#fff; color:#16161a; font-size:15px; font-weight:600; padding:14px 20px; border-radius:12px; border:1px solid #e0dcd2; transition:border-color .15s;"
                 hoverStyle={{ borderColor: "#c9c4b8" }}
               >
@@ -245,9 +246,9 @@ export default function Home() {
               The power of Manim, without the Python.
             </h2>
           </div>
-          <a href="Features.dc.html" style={parseStyle("display:inline-flex; align-items:center; gap:7px; text-decoration:none; font-size:14px; font-weight:600; color:#16161a;")}>
+          <Link href="/features" style={parseStyle("display:inline-flex; align-items:center; gap:7px; text-decoration:none; font-size:14px; font-weight:600; color:#16161a;")}>
             Explore all features {arrowSmall}
-          </a>
+          </Link>
         </div>
         <div className="hh-3col" style={parseStyle("display:grid; grid-template-columns:repeat(3,1fr); gap:18px;")}>
           {[
@@ -293,14 +294,14 @@ export default function Home() {
               A gallery of one-sentence scenes.
             </h2>
           </div>
-          <a href="Gallery.dc.html" style={parseStyle("display:inline-flex; align-items:center; gap:7px; text-decoration:none; font-size:14px; font-weight:600; color:#16161a;")}>
+          <Link href="/gallery" style={parseStyle("display:inline-flex; align-items:center; gap:7px; text-decoration:none; font-size:14px; font-weight:600; color:#16161a;")}>
             Browse the gallery {arrowSmall}
-          </a>
+          </Link>
         </div>
         <div className="hh-3col" style={parseStyle("display:grid; grid-template-columns:repeat(3,1fr); gap:18px;")}>
           <Hover
             as="a"
-            href="Gallery.dc.html"
+            href="/gallery"
             style="text-decoration:none; color:inherit; background:#0c0c0f; border:1px solid #1f1f26; border-radius:15px; overflow:hidden; display:block;"
             hoverStyle={{ transform: "translateY(-3px)" }}
           >
@@ -317,7 +318,7 @@ export default function Home() {
           </Hover>
           <Hover
             as="a"
-            href="Gallery.dc.html"
+            href="/gallery"
             style="text-decoration:none; color:inherit; background:#0c0c0f; border:1px solid #1f1f26; border-radius:15px; overflow:hidden; display:block;"
             hoverStyle={{ transform: "translateY(-3px)" }}
           >
@@ -336,7 +337,7 @@ export default function Home() {
           </Hover>
           <Hover
             as="a"
-            href="Gallery.dc.html"
+            href="/gallery"
             style="text-decoration:none; color:inherit; background:#0c0c0f; border:1px solid #1f1f26; border-radius:15px; overflow:hidden; display:block;"
             hoverStyle={{ transform: "translateY(-3px)" }}
           >
@@ -517,7 +518,7 @@ export default function Home() {
             </div>
           </div>
           <p style={parseStyle("text-align:center; margin:26px 0 0;")}>
-            <a href="Pricing.dc.html" style={parseStyle("font-size:14px; font-weight:600; text-decoration:none;")}>See the full pricing page →</a>
+            <Link href="/pricing" style={parseStyle("font-size:14px; font-weight:600; text-decoration:none;")}>See the full pricing page →</Link>
           </p>
         </div>
       </section>

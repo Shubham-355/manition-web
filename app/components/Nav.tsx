@@ -1,14 +1,15 @@
+import Link from "next/link";
 import { parseStyle } from "../lib/css";
 import { Hover } from "./Interactive";
 
 type NavKey = "features" | "gallery" | "pricing" | "blog" | "docs";
 
 const NAV_ITEMS: { key: NavKey; label: string; href: string }[] = [
-  { key: "features", label: "Features", href: "Features.dc.html" },
-  { key: "gallery", label: "Gallery", href: "Gallery.dc.html" },
-  { key: "pricing", label: "Pricing", href: "Pricing.dc.html" },
-  { key: "blog", label: "Blog", href: "Blog.dc.html" },
-  { key: "docs", label: "Docs", href: "Docs.dc.html" },
+  { key: "features", label: "Features", href: "/features" },
+  { key: "gallery", label: "Gallery", href: "/gallery" },
+  { key: "pricing", label: "Pricing", href: "/pricing" },
+  { key: "blog", label: "Blog", href: "/blog" },
+  { key: "docs", label: "Docs", href: "/docs" },
 ];
 
 export default function Nav({
@@ -27,8 +28,8 @@ export default function Nav({
           "width:100%; max-width:1200px; display:flex; align-items:center; gap:18px; padding:0 30px; height:66px;",
         )}
       >
-        <a
-          href="Home.dc.html"
+        <Link
+          href="/"
           style={parseStyle(
             "display:flex; align-items:center; gap:10px; text-decoration:none; margin-right:6px;",
           )}
@@ -51,7 +52,7 @@ export default function Nav({
           >
             Manition
           </span>
-        </a>
+        </Link>
 
         <nav
           style={parseStyle(
@@ -89,7 +90,7 @@ export default function Nav({
         </Hover>
         <Hover
           as="a"
-          href="Home.dc.html#waitlist"
+          href="/#waitlist"
           style="display:inline-flex; align-items:center; gap:7px; text-decoration:none; font-size:13.5px; font-weight:600; color:#f7f6f3; background:#16161a; padding:9px 15px; border-radius:10px; border:1px solid #16161a; white-space:nowrap; transition:transform .15s, background .15s;"
           hoverStyle={{ background: "#000", transform: "translateY(-1px)" }}
         >

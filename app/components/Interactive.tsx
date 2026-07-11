@@ -6,11 +6,13 @@ import {
   type ElementType,
   type ReactNode,
 } from "react";
+import Link from "next/link";
 import { parseStyle } from "../lib/css";
 
 /**
  * A single element that merges a hover style over its base style while the
  * pointer is over it — the runtime equivalent of the design's `style-hover`.
+ * Internal ("/…") hrefs render through next/link for client-side navigation.
  */
 export function Hover({
   as = "div",
@@ -28,7 +30,8 @@ export function Hover({
   children?: ReactNode;
 }) {
   const [hovered, setHovered] = useState(false);
-  const Tag = as;
+  const isInternal = typeof href === "string" && href.startsWith("/");
+  const Tag: ElementType = isInternal ? Link : as;
   const base = parseStyle(style);
   return (
     <Tag
