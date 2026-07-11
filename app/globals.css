@@ -54,6 +54,12 @@ details[open] .faq-chevron { transform: rotate(180deg); }
 }
 @media (max-width:560px){ .fr-grid{ grid-template-columns:1fr !important; } }
 
+/* ===== Pricing (Pricing.dc.html) ===== */
+details[open] .pc-chev { transform:rotate(180deg); }
+@media (max-width:880px){
+  .pc-tiers{ grid-template-columns:1fr !important; max-width:440px; margin-left:auto; margin-right:auto; }
+}
+
 /* ===== IntroDemo timeline ===== */
 @keyframes mn-spin { to { transform: rotate(360deg); } }
 @keyframes mvA { 0% { opacity: 0; transform: translateY(10px) scale(0.985); } 2% { opacity: 1; transform: translateY(0) scale(1); } 19% { opacity: 1; transform: translateY(0) scale(1); } 21% { opacity: 0; transform: translateY(-6px) scale(0.99); } 100% { opacity: 0; transform: translateY(-6px) scale(0.99); } }
