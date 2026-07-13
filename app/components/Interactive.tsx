@@ -149,4 +149,48 @@ export function WaitlistForm() {
   );
 }
 
+/**
+ * Docs search field — the design's `q` / `onQ` state with a submit that
+ * preventDefaults (`noop`).
+ */
+export function DocsSearch() {
+  const [q, setQ] = useState("");
+  const [btnHover, setBtnHover] = useState(false);
+  return (
+    <form
+      onSubmit={(e) => e.preventDefault()}
+      style={parseStyle(
+        "display:flex; align-items:center; gap:10px; max-width:520px; margin:28px auto 0; background:#fff; border:1px solid #e0dcd2; border-radius:13px; padding:6px 6px 6px 16px; box-shadow:0 2px 8px rgba(24,24,27,0.04);",
+      )}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9aa2" strokeWidth="2" strokeLinecap="round">
+        <circle cx="11" cy="11" r="7"></circle>
+        <line x1="21" y1="21" x2="16.2" y2="16.2"></line>
+      </svg>
+      <input
+        type="text"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder={"Search guides… e.g. “transparent export”"}
+        style={parseStyle(
+          "flex:1; border:0; outline:none; background:transparent; font-family:inherit; font-size:14.5px; color:#16161a; padding:9px 0;",
+        )}
+      />
+      <button
+        type="submit"
+        onMouseEnter={() => setBtnHover(true)}
+        onMouseLeave={() => setBtnHover(false)}
+        style={{
+          ...parseStyle(
+            "background:#16161a; color:#f7f6f3; border:0; border-radius:9px; font-family:inherit; font-size:13.5px; font-weight:600; padding:10px 18px; cursor:pointer;",
+          ),
+          ...(btnHover ? { background: "#000" } : {}),
+        }}
+      >
+        Search
+      </button>
+    </form>
+  );
+}
+
 export { arrowIcon };
