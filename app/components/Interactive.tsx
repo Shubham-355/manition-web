@@ -20,6 +20,7 @@ export function Hover({
   hoverStyle,
   href,
   title,
+  className,
   children,
 }: {
   as?: ElementType;
@@ -27,6 +28,7 @@ export function Hover({
   hoverStyle: CSSProperties;
   href?: string;
   title?: string;
+  className?: string;
   children?: ReactNode;
 }) {
   const [hovered, setHovered] = useState(false);
@@ -37,6 +39,7 @@ export function Hover({
     <Tag
       href={href}
       title={title}
+      className={className}
       style={hovered ? { ...base, ...hoverStyle } : base}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
