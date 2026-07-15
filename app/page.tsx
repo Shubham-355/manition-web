@@ -3,6 +3,8 @@ import { parseStyle } from "./lib/css";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import IntroDemo from "./components/IntroDemo";
+import HowItWorks from "./components/HowItWorks";
+import UseCases from "./components/UseCases";
 import { Hover, WaitlistForm } from "./components/Interactive";
 
 const eyebrow =
@@ -153,89 +155,7 @@ export default function Home() {
       </section>
 
       {/* ============ HOW IT WORKS ============ */}
-      <section id="how" style={parseStyle("background:#efece7; border-top:1px solid #e6e2da; border-bottom:1px solid #e6e2da;")}>
-        <div style={parseStyle("max-width:1200px; margin:0 auto; padding:78px 30px;")}>
-          <div style={parseStyle("max-width:640px; margin-bottom:46px;")}>
-            <p style={parseStyle(eyebrow)}>How it works</p>
-            <h2
-              style={parseStyle(
-                "margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:38px; letter-spacing:-0.03em; line-height:1.08; color:#16161a;",
-              )}
-            >
-              From a sentence to a rendered scene, in four steps.
-            </h2>
-          </div>
-          <div className="hh-2col" style={parseStyle("display:grid; grid-template-columns:repeat(4,1fr); gap:18px;")}>
-            {[
-              {
-                icon: (
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 20h9"></path>
-                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                  </svg>
-                ),
-                iconWrap: "background:#f0eef8; color:#5b46d9;",
-                num: "01",
-                title: "Describe",
-                body: "Type what you want to see - “a Fourier series building a square wave.” Plain English is the only syntax.",
-              },
-              {
-                icon: (
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="16 18 22 12 16 6"></polyline>
-                    <polyline points="8 6 2 12 8 18"></polyline>
-                  </svg>
-                ),
-                iconWrap: "background:#eef2fd; color:#3b62e0;",
-                num: "02",
-                title: "Generate",
-                body: "Manition writes real, editable Manim code for the scene, generated straight from your description.",
-              },
-              {
-                icon: (
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2v4"></path>
-                    <path d="M12 18v4"></path>
-                    <path d="m4.9 4.9 2.8 2.8"></path>
-                    <path d="m16.3 16.3 2.8 2.8"></path>
-                    <path d="M2 12h4"></path>
-                    <path d="M18 12h4"></path>
-                  </svg>
-                ),
-                iconWrap: "background:#fbf3e4; color:#c2913a;",
-                num: "03",
-                title: "Render",
-                body: "Cloud GPUs render the scene to crisp 1080p or 4K. No installs, no dependencies, no waiting on your laptop.",
-              },
-              {
-                icon: (
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="5" width="14" height="14" rx="2"></rect>
-                    <polygon points="22 7 16 12 22 17"></polygon>
-                  </svg>
-                ),
-                iconWrap: "background:#e9f5ec; color:#2f7a4a;",
-                num: "04",
-                title: "Watch",
-                body: "Preview instantly, refine in chat, then export the MP4. Every scene stays saved in your library.",
-              },
-            ].map((step) => (
-              <div key={step.num} style={parseStyle("background:#fff; border:1px solid #e6e2da; border-radius:16px; padding:24px;")}>
-                <div
-                  style={parseStyle(
-                    `width:38px; height:38px; border-radius:10px; ${step.iconWrap} display:flex; align-items:center; justify-content:center; margin-bottom:18px;`,
-                  )}
-                >
-                  {step.icon}
-                </div>
-                <p style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9a9aa2; margin:0 0 6px;")}>{step.num}</p>
-                <h3 style={parseStyle("margin:0 0 8px; font-family:'Space Grotesk'; font-weight:600; font-size:18px; letter-spacing:-0.01em;")}>{step.title}</h3>
-                <p style={parseStyle("margin:0; font-size:13.5px; line-height:1.6; color:#6b6b73;")}>{step.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HowItWorks />
 
       {/* ============ FEATURES ============ */}
       <section style={parseStyle("max-width:1200px; margin:0 auto; padding:82px 30px 40px;")}>
@@ -250,38 +170,106 @@ export default function Home() {
             Explore all features {arrowSmall}
           </Link>
         </div>
-        <div className="hh-3col" style={parseStyle("display:grid; grid-template-columns:repeat(3,1fr); gap:18px;")}>
-          {[
-            {
-              title: "Plain-language prompts",
-              body: "Say it the way you'd explain it at a whiteboard. Manition handles the geometry, timing and easing for you.",
-            },
-            {
-              title: "Real, editable code",
-              body: "Every scene is genuine Manim. Peek at the code, tweak a value, or export the script - nothing is locked away.",
-            },
-            {
-              title: "Iterate in chat",
-              body: "“Make it slower,” “add axis labels,” “use blue.” Refine any scene in conversation until it's exactly right.",
-            },
-            {
-              title: "HD & 4K exports",
-              body: "Download broadcast-quality MP4s with transparent backgrounds for slides, videos and lecture decks.",
-            },
-            {
-              title: "A saved library",
-              body: "Every render is kept, searchable and re-runnable. Build a personal collection of reusable explainers.",
-            },
-            {
-              title: "Cloud rendering",
-              body: "GPU rendering runs on our servers, so complex scenes finish fast even on a Chromebook or a phone.",
-            },
-          ].map((f) => (
-            <div key={f.title} style={parseStyle("background:#fff; border:1px solid #e6e2da; border-radius:16px; padding:26px;")}>
-              <h3 style={parseStyle("margin:0 0 9px; font-family:'Space Grotesk'; font-weight:600; font-size:18px;")}>{f.title}</h3>
-              <p style={parseStyle("margin:0; font-size:14px; line-height:1.6; color:#6b6b73;")}>{f.body}</p>
+        <div className="hh-bento" style={parseStyle("display:grid; grid-template-columns:repeat(12,1fr); gap:18px;")}>
+          {/* Plain-language prompts · large cell */}
+          <Hover
+            as="div"
+            style="grid-column:span 7; background:#fff; border:1px solid #e6e2da; border-radius:18px; padding:28px; display:flex; flex-direction:column; gap:24px; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;"
+            hoverStyle={{ transform: "translateY(-4px)", boxShadow: "0 14px 30px -18px rgba(22,22,26,0.28)", borderColor: "#d9d3c8" }}
+          >
+            <div>
+              <h3 style={parseStyle("margin:0 0 8px; font-family:'Space Grotesk'; font-weight:600; font-size:20px; letter-spacing:-0.01em;")}>Plain-language prompts</h3>
+              <p style={parseStyle("margin:0; font-size:14px; line-height:1.6; color:#6b6b73; max-width:440px;")}>Say it the way you&apos;d explain it at a whiteboard. Manition handles the geometry, timing and easing for you.</p>
             </div>
-          ))}
+            <div className="hh-flow" style={parseStyle("margin-top:auto; display:grid; grid-template-columns:1fr auto 1fr; align-items:stretch; gap:12px;")}>
+              <div style={parseStyle("display:flex; flex-direction:column; justify-content:center; gap:8px; background:#faf9f6; border:1px solid #e6e2da; border-radius:12px; padding:14px 16px;")}>
+                <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:#a6a29a;")}>You type</span>
+                <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; color:#2a2a30;")}>a sine wave unrolling from a circle</span>
+              </div>
+              <div className="hh-arrow" style={parseStyle("display:flex; align-items:center; justify-content:center; color:#c9c4b8;")}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+              </div>
+              <div style={parseStyle("position:relative; border-radius:12px; overflow:hidden; background:radial-gradient(circle at 50% 40%,#15151d,#0b0b0e); border:1px solid #1f1f26; display:flex; align-items:center; justify-content:center; min-height:88px;")}>
+                <svg width="116" height="60" viewBox="0 0 130 80" fill="none"><path d="M8 40 Q 30 6 52 40 T 96 40 T 130 40" stroke="#3b62e0" strokeWidth="2.4"></path><circle cx="24" cy="40" r="15" stroke="#33333d" strokeWidth="1.4"></circle></svg>
+                <span style={parseStyle("position:absolute; right:10px; bottom:8px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#8a8a92;")}>0:12 · 1080p</span>
+              </div>
+            </div>
+          </Hover>
+
+          {/* Real, editable code · dark cell */}
+          <Hover
+            as="div"
+            style="grid-column:span 5; background:#0f1117; border:1px solid #1c2030; border-radius:18px; padding:28px; display:flex; flex-direction:column; gap:20px; transition:transform .2s ease, box-shadow .2s ease;"
+            hoverStyle={{ transform: "translateY(-4px)", boxShadow: "0 16px 34px -20px rgba(10,12,20,0.7)" }}
+          >
+            <div>
+              <h3 style={parseStyle("margin:0 0 8px; font-family:'Space Grotesk'; font-weight:600; font-size:20px; letter-spacing:-0.01em; color:#f4f4f5;")}>Real, editable code</h3>
+              <p style={parseStyle("margin:0; font-size:14px; line-height:1.6; color:#9aa0ad;")}>Every scene is genuine Manim. Peek at the code, tweak a value, or export the script - nothing is locked away.</p>
+            </div>
+            <div style={parseStyle("margin-top:auto; background:#0a0c11; border:1px solid #1c2030; border-radius:12px; padding:13px 16px; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.8; color:#cfd3dc; overflow:hidden;")}>
+              <div style={parseStyle("white-space:nowrap;")}><span style={parseStyle("color:#c98fff;")}>class</span> SineToCircle(<span style={parseStyle("color:#6cc7ff;")}>Scene</span>):</div>
+              <div style={parseStyle("white-space:nowrap;")}>&nbsp;&nbsp;<span style={parseStyle("color:#c98fff;")}>def</span> construct(<span style={parseStyle("color:#e88fb0;")}>self</span>):</div>
+              <div style={parseStyle("white-space:nowrap; background:rgba(95,207,134,0.1); border-left:2px solid #5fcf86; margin:0 -16px; padding:0 16px 0 14px;")}>&nbsp;&nbsp;&nbsp;&nbsp;self.play(<span style={parseStyle("color:#ffcf6c;")}>Transform</span>(wave, dot), run_time=<span style={parseStyle("color:#5fcf86;")}>3</span>)</div>
+              <div style={parseStyle("white-space:nowrap;")}>&nbsp;&nbsp;&nbsp;&nbsp;self.wait()</div>
+            </div>
+          </Hover>
+
+          {/* Iterate in chat */}
+          <Hover
+            as="div"
+            style="grid-column:span 4; background:#fff; border:1px solid #e6e2da; border-radius:18px; padding:26px; display:flex; flex-direction:column; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;"
+            hoverStyle={{ transform: "translateY(-4px)", boxShadow: "0 14px 30px -18px rgba(22,22,26,0.28)", borderColor: "#d9d3c8" }}
+          >
+            <div style={parseStyle("display:flex; flex-direction:column; gap:7px; margin-bottom:24px;")}>
+              <div style={parseStyle("align-self:flex-end; background:#16161a; color:#f7f6f3; border-radius:12px 12px 4px 12px; padding:7px 13px; font-size:12.5px;")}>make it slower</div>
+              <div style={parseStyle("align-self:flex-end; background:#16161a; color:#f7f6f3; border-radius:12px 12px 4px 12px; padding:7px 13px; font-size:12.5px;")}>label the axes</div>
+              <div style={parseStyle("align-self:flex-start; display:flex; align-items:center; gap:7px; background:#eef2fd; border:1px solid #d8e0f8; color:#2f4fc0; border-radius:12px 12px 12px 4px; padding:7px 13px; font-size:12px; font-weight:500;")}><span style={parseStyle("width:6px; height:6px; border-radius:50%; background:#3b62e0;")}></span>Re-rendered · 0:14</div>
+            </div>
+            <div style={parseStyle("margin-top:auto;")}>
+              <h3 style={parseStyle("margin:0 0 8px; font-family:'Space Grotesk'; font-weight:600; font-size:18px;")}>Iterate in chat</h3>
+              <p style={parseStyle("margin:0; font-size:14px; line-height:1.6; color:#6b6b73;")}>Refine any scene in conversation until it&apos;s exactly right - no timeline scrubbing, no re-exports.</p>
+            </div>
+          </Hover>
+
+          {/* Cloud-rendered 4K exports · tinted */}
+          <Hover
+            as="div"
+            style="grid-column:span 4; background:#eef2fd; border:1px solid #d8e0f8; border-radius:18px; padding:26px; display:flex; flex-direction:column; transition:transform .2s ease, box-shadow .2s ease;"
+            hoverStyle={{ transform: "translateY(-4px)", boxShadow: "0 14px 30px -18px rgba(47,79,192,0.25)" }}
+          >
+            <div style={parseStyle("margin-bottom:24px;")}>
+              <div style={parseStyle("font-family:'Space Grotesk'; font-weight:700; font-size:56px; line-height:0.95; letter-spacing:-0.04em; color:#2f4fc0;")}>4K</div>
+              <div style={parseStyle("display:flex; flex-wrap:wrap; gap:6px; margin-top:14px;")}>
+                <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; background:#fff; border:1px solid #d8e0f8; color:#3b62e0; border-radius:100px; padding:4px 10px;")}>MP4</span>
+                <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; background:#fff; border:1px solid #d8e0f8; color:#3b62e0; border-radius:100px; padding:4px 10px;")}>Transparent</span>
+                <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; background:#fff; border:1px solid #d8e0f8; color:#3b62e0; border-radius:100px; padding:4px 10px;")}>60 fps</span>
+              </div>
+            </div>
+            <div style={parseStyle("margin-top:auto;")}>
+              <h3 style={parseStyle("margin:0 0 8px; font-family:'Space Grotesk'; font-weight:600; font-size:18px; color:#16161a;")}>Cloud-rendered exports</h3>
+              <p style={parseStyle("margin:0; font-size:14px; line-height:1.6; color:#4b5a85;")}>GPU rendering runs on our servers - download broadcast-quality files, even from a Chromebook.</p>
+            </div>
+          </Hover>
+
+          {/* A saved library */}
+          <Hover
+            as="div"
+            style="grid-column:span 4; background:#fff; border:1px solid #e6e2da; border-radius:18px; padding:26px; display:flex; flex-direction:column; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;"
+            hoverStyle={{ transform: "translateY(-4px)", boxShadow: "0 14px 30px -18px rgba(22,22,26,0.28)", borderColor: "#d9d3c8" }}
+          >
+            <div style={parseStyle("display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:24px;")}>
+              <div style={parseStyle("aspect-ratio:16/11; border-radius:8px; background:#101014; border:1px solid #1f1f26; display:flex; align-items:center; justify-content:center; overflow:hidden;")}><svg width="32" height="16" viewBox="0 0 34 18" fill="none"><path d="M1 9 Q 5.5 1 9.5 9 T 18 9 T 26.5 9 T 34 9" stroke="#3b62e0" strokeWidth="1.6"></path></svg></div>
+              <div style={parseStyle("aspect-ratio:16/11; border-radius:8px; background:#101014; border:1px solid #1f1f26; display:flex; align-items:center; justify-content:center; overflow:hidden;")}><svg width="32" height="18" viewBox="0 0 34 19" fill="none"><path d="M2 17 C 10 17 12 3 17 3 C 22 3 24 17 32 17" stroke="#c2913a" strokeWidth="1.6"></path></svg></div>
+              <div style={parseStyle("aspect-ratio:16/11; border-radius:8px; background:#101014; border:1px solid #1f1f26; display:flex; align-items:center; justify-content:center; overflow:hidden;")}><div style={parseStyle("width:16px; height:16px; border-radius:50%; background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28); display:flex; align-items:center; justify-content:center;")}><svg width="7" height="7" viewBox="0 0 24 24" fill="#fff" style={parseStyle("margin-left:1px;")}><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div></div>
+              <div style={parseStyle("aspect-ratio:16/11; border-radius:8px; background:#101014; border:1px solid #1f1f26; display:flex; align-items:center; justify-content:center; overflow:hidden;")}><svg width="30" height="18" viewBox="0 0 30 18" fill="none"><g stroke="#5fbf7e" strokeWidth="1.4"><line x1="5" y1="15" x2="11" y2="7"></line><line x1="16" y1="15" x2="22" y2="4"></line></g><g fill="#5fbf7e"><path d="M11 7 l-3.4 0.7 2.7 2 0.7-2.7Z"></path><path d="M22 4 l-3.4 0.7 2.7 2 0.7-2.7Z"></path></g></svg></div>
+              <div style={parseStyle("aspect-ratio:16/11; border-radius:8px; background:#101014; border:1px solid #1f1f26; display:flex; align-items:center; justify-content:center; overflow:hidden;")}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="#7f97e8" strokeWidth="1.4"></circle><line x1="10" y1="10" x2="15" y2="6" stroke="#7f97e8" strokeWidth="1.4"></line></svg></div>
+              <div style={parseStyle("aspect-ratio:16/11; border-radius:8px; background:#101014; border:1px solid #1f1f26; display:flex; align-items:center; justify-content:center; overflow:hidden;")}><span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:10px; color:#8a8a92;")}>+128</span></div>
+            </div>
+            <div style={parseStyle("margin-top:auto;")}>
+              <h3 style={parseStyle("margin:0 0 8px; font-family:'Space Grotesk'; font-weight:600; font-size:18px;")}>A saved library</h3>
+              <p style={parseStyle("margin:0; font-size:14px; line-height:1.6; color:#6b6b73;")}>Every render is kept, searchable and re-runnable - a growing collection of reusable explainers.</p>
+            </div>
+          </Hover>
         </div>
       </section>
 
@@ -364,98 +352,48 @@ export default function Home() {
       </section>
 
       {/* ============ USE CASES ============ */}
-      <section style={parseStyle("background:#111114; color:#e8e8ea;")}>
-        <div style={parseStyle("max-width:1200px; margin:0 auto; padding:82px 30px;")}>
-          <div style={parseStyle("max-width:600px; margin-bottom:46px;")}>
-            <p style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#7f97e8; margin:0 0 14px;")}>Who it&apos;s for</p>
-            <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:38px; letter-spacing:-0.03em; line-height:1.08; color:#f7f6f3;")}>
-              One tool, every kind of explainer.
-            </h2>
-          </div>
-          <div className="hh-3col" style={parseStyle("display:grid; grid-template-columns:repeat(3,1fr); gap:18px;")}>
-            {[
-              {
-                icon: (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 10 12 5 2 10l10 5 10-5Z"></path>
-                    <path d="M6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5"></path>
-                  </svg>
-                ),
-                color: "#7f97e8",
-                title: "Educators",
-                body: "Turn the hard-to-picture moment of a lesson into a 15-second animation. Build a reusable bank of visuals for every unit.",
-              },
-              {
-                icon: (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="5" width="14" height="14" rx="2"></rect>
-                    <polygon points="22 7 16 12 22 17"></polygon>
-                  </svg>
-                ),
-                color: "#c2913a",
-                title: "Creators",
-                body: "Ship the polished, broadcast-quality visuals your channel deserves - without learning to code or hiring an animator.",
-              },
-              {
-                icon: (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 20h9"></path>
-                    <path d="M4 20V8a4 4 0 0 1 8 0v12"></path>
-                    <path d="M4 12h8"></path>
-                  </svg>
-                ),
-                color: "#5fbf7e",
-                title: "Students & devs",
-                body: "See the concept move before the exam. Prototype a visualization for a paper, README or talk in a single sentence.",
-              },
-            ].map((u) => (
-              <div key={u.title} style={parseStyle("background:#17171c; border:1px solid #26262c; border-radius:16px; padding:28px;")}>
-                <div
-                  style={parseStyle(
-                    `width:40px; height:40px; border-radius:11px; background:#20202a; display:flex; align-items:center; justify-content:center; margin-bottom:20px; color:${u.color};`,
-                  )}
-                >
-                  {u.icon}
-                </div>
-                <h3 style={parseStyle("margin:0 0 10px; font-family:'Space Grotesk'; font-weight:600; font-size:20px; color:#f7f6f3;")}>{u.title}</h3>
-                <p style={parseStyle("margin:0; font-size:14px; line-height:1.6; color:#a1a1aa;")}>{u.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <UseCases />
 
       {/* ============ TESTIMONIALS ============ */}
       <section style={parseStyle("max-width:1200px; margin:0 auto; padding:82px 30px 50px;")}>
-        <p style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#3b62e0; margin:0 0 14px; text-align:center;")}>
-          Loved by explainers
-        </p>
-        <h2 style={parseStyle("margin:0 0 46px; text-align:center; font-family:'Space Grotesk'; font-weight:700; font-size:38px; letter-spacing:-0.03em; line-height:1.08;")}>
-          People are making things they couldn&apos;t before.
-        </h2>
-        <div className="hh-3col" style={parseStyle("display:grid; grid-template-columns:repeat(3,1fr); gap:18px;")}>
-          {[
-            {
-              quote:
-                "“I described a Riemann sum and had a lecture-ready clip before my coffee was cold. This replaced an afternoon of fiddling with Manim.”",
-              who: "Calculus lecturer",
-            },
-            {
-              quote:
-                "“My channel's visuals used to take days. Now I prototype ten ideas in an hour and only render the ones that land.”",
-              who: "YouTube creator · 240k subs",
-            },
-            {
-              quote:
-                "“I finally understood eigenvectors because I could ask to see one rotate. Being able to change it in chat is the whole thing.”",
-              who: "Undergraduate, physics",
-            },
-          ].map((t) => (
-            <figure key={t.who} style={parseStyle("margin:0; background:#fff; border:1px solid #e6e2da; border-radius:16px; padding:26px;")}>
-              <blockquote style={parseStyle("margin:0 0 20px; font-size:15.5px; line-height:1.6; color:#2a2a30;")}>{t.quote}</blockquote>
-              <figcaption style={parseStyle("font-size:12.5px; color:#8a8a92;")}>{t.who}</figcaption>
+        <div className="hh-quotes" style={parseStyle("display:grid; grid-template-columns:0.8fr 1.2fr; gap:60px; align-items:start;")}>
+          <div>
+            <p style={parseStyle(eyebrow)}>Loved by explainers</p>
+            <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:38px; letter-spacing:-0.03em; line-height:1.08;")}>
+              People are making things they couldn&apos;t before.
+            </h2>
+            <p style={parseStyle("margin:18px 0 0; font-size:15px; line-height:1.6; color:#6b6b73; max-width:340px;")}>
+              Notes from early testers - lecture halls, editing bays and dorm desks.
+            </p>
+          </div>
+          <div>
+            <figure style={parseStyle("margin:0; position:relative; padding:6px 0 32px;")}>
+              <span aria-hidden="true" style={parseStyle("position:absolute; top:-34px; left:-8px; font-family:'Space Grotesk'; font-weight:700; font-size:130px; line-height:1; color:#dfe6fb; user-select:none; pointer-events:none;")}>“</span>
+              <blockquote style={parseStyle("position:relative; margin:0 0 18px; font-family:'Space Grotesk'; font-weight:600; font-size:26px; line-height:1.4; letter-spacing:-0.015em; color:#16161a;")}>
+                I described a Riemann sum and had a lecture-ready clip before my coffee was cold. This replaced an afternoon of fiddling with Manim.
+              </blockquote>
+              <figcaption style={parseStyle("display:flex; align-items:center; gap:10px;")}>
+                <span style={parseStyle("width:30px; height:30px; border-radius:50%; background:#e7ddc9; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#8a6d2f; flex:none;")}>RK</span>
+                <span style={parseStyle("font-size:13px; color:#6b6b73;")}><strong style={parseStyle("color:#16161a; font-weight:600;")}>Calculus lecturer</strong> · state university</span>
+              </figcaption>
             </figure>
-          ))}
+            <div className="hh-2col" style={parseStyle("display:grid; grid-template-columns:1fr 1fr; gap:40px; border-top:1px solid #e6e2da; padding-top:30px;")}>
+              <figure style={parseStyle("margin:0;")}>
+                <blockquote style={parseStyle("margin:0 0 14px; font-size:15px; line-height:1.65; color:#4b4b52;")}>“My channel&apos;s visuals used to take days. Now I prototype ten ideas in an hour and only render the ones that land.”</blockquote>
+                <figcaption style={parseStyle("display:flex; align-items:center; gap:10px;")}>
+                  <span style={parseStyle("width:28px; height:28px; border-radius:50%; background:#d9e2f7; display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:700; color:#3358c0; flex:none;")}>YT</span>
+                  <span style={parseStyle("font-size:12.5px; color:#8a8a92;")}>YouTube creator · 240k subs</span>
+                </figcaption>
+              </figure>
+              <figure style={parseStyle("margin:0;")}>
+                <blockquote style={parseStyle("margin:0 0 14px; font-size:15px; line-height:1.65; color:#4b4b52;")}>“I finally understood eigenvectors because I could ask to see one rotate. Being able to change it in chat is the whole thing.”</blockquote>
+                <figcaption style={parseStyle("display:flex; align-items:center; gap:10px;")}>
+                  <span style={parseStyle("width:28px; height:28px; border-radius:50%; background:#dcefe0; display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:700; color:#2f7a4a; flex:none;")}>PH</span>
+                  <span style={parseStyle("font-size:12.5px; color:#8a8a92;")}>Undergraduate, physics</span>
+                </figcaption>
+              </figure>
+            </div>
+          </div>
         </div>
       </section>
 
