@@ -1,208 +1,356 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { parseStyle } from "../lib/css";
 
-const numStyle =
-  "font-family:'Space Grotesk'; font-weight:700; font-size:92px; line-height:0.8; letter-spacing:-0.04em; color:transparent; -webkit-text-stroke:1.4px #d5cfc2; margin:0 0 -28px -2px; user-select:none;";
-const bodyStyle = "position:relative; width:100%; display:flex; flex-direction:column;";
-const titleRow = "display:flex; align-items:center; gap:8px; margin:16px 0 8px;";
-const stepH3 =
-  "margin:0; font-family:'Space Grotesk'; font-weight:600; font-size:18px; letter-spacing:-0.01em; color:#16161a;";
-const stepP = "margin:0; font-size:13.5px; line-height:1.6; color:#6b6b73;";
-const visShell = "position:relative; width:100%; height:130px; border-radius:14px; overflow:hidden;";
+/**
+ * "Every word is an instruction." - ported from Home.dc.html.
+ *
+ * A single prompt is broken into four clickable fragments. One is active at a
+ * time: its word lights up, an underline bar fills, and a matching code+canvas
+ * panel is shown. The active fragment auto-advances every 4.6s (the bar's
+ * duration); clicking a word jumps to it and restarts the cycle. Honours
+ * prefers-reduced-motion by not auto-cycling (the CSS also freezes the
+ * per-panel animations).
+ */
+
+const FRAGMENTS = [
+  { label: "unit circle", underline: "#c3cef2", bar: "#3b62e0", accent: "#3b62e0" },
+  { label: "generating sin(x)", underline: "#cfc5f0", bar: "#5b46d9", accent: "#5b46d9" },
+  { label: "slowly", underline: "#e6d3a3", bar: "#a8862e", accent: "#a8862e" },
+  { label: "trace the wave", underline: "#bcdcc6", bar: "#2f7a4a", accent: "#2f7a4a" },
+];
+
+const CYCLE_MS = 4600;
+
+// shared panel chrome
+const panelBase =
+  "flex-direction:column; background:#0f1117; border:1px solid #1c2030; border-radius:18px; padding:24px 26px; box-shadow:0 24px 48px -30px rgba(15,17,23,0.6); animation:hh-swap .4s cubic-bezier(.22,1,.36,1);";
+const badgeRow =
+  "display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px;";
+const counter = "font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#5b5b63;";
+const paraStyle = "margin:0 0 14px; font-size:14px; line-height:1.6; color:#9aa0ad;";
+const strong = "color:#e8e8ea; font-weight:600;";
+const codeBox =
+  "background:#0a0c11; border:1px solid #1c2030; border-radius:12px; padding:11px 14px; margin-bottom:14px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; line-height:1.8; color:#cfd3dc; overflow:hidden;";
+const canvasBox =
+  "background:#0a0c11; border:1px solid #1c2030; border-radius:12px; padding:10px 12px;";
+const codeCaret =
+  "display:inline-block; width:6px; height:12px; background:#5b6070; margin-left:6px; animation:hh-caret 1s step-end infinite;";
+
+function badge(color: string, bg: string) {
+  return parseStyle(
+    `font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:${color}; background:${bg}; border-radius:100px; padding:5px 11px;`,
+  );
+}
 
 export default function HowItWorks() {
-  const stepsRef = useRef<HTMLDivElement>(null);
+  const [frag, setFrag] = useState(0);
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reduce = useRef(false);
+
+  const startCycle = () => {
+    if (timer.current) clearInterval(timer.current);
+    if (reduce.current) return;
+    timer.current = setInterval(() => setFrag((f) => (f + 1) % 4), CYCLE_MS);
+  };
 
   useEffect(() => {
-    const root = stepsRef.current;
-    if (!root) return;
-    const steps = Array.from(root.querySelectorAll<HTMLElement>(".hh-step"));
-    const bodies = steps.map((s) => s.querySelector<HTMLElement>(".hh-body"));
-    const thresholds = [0.02, 0.34, 0.64, 0.9];
-    const active = [false, false, false, false];
-    const setPlaying = (step: HTMLElement, playing: boolean) => {
-      step.querySelectorAll<HTMLElement>("*").forEach((el) => {
-        const n = getComputedStyle(el).animationName;
-        if (n && n !== "none") el.style.animationPlayState = playing ? "running" : "paused";
-      });
-    };
-    const reduce =
-      window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      steps.forEach((s) => {
-        s.style.opacity = "1";
-      });
-      return;
-    }
-    steps.forEach((s, i) => {
-      s.style.opacity = "0";
-      s.style.transition = "opacity .5s ease";
-      const b = bodies[i];
-      if (b) {
-        b.style.transform = "translateY(20px)";
-        b.style.transition = "transform .55s cubic-bezier(.22,1,.36,1)";
-      }
-      setPlaying(s, false);
-    });
-    const update = () => {
-      const rect = root.getBoundingClientRect();
-      const vh = window.innerHeight || 800;
-      const start = vh * 0.85,
-        end = vh * 0.4;
-      let p = (start - rect.top) / (start - end);
-      p = Math.max(0, Math.min(1, p));
-      steps.forEach((s, i) => {
-        const local = Math.max(0, Math.min(1, (p - i * 0.1) / 0.28));
-        s.style.opacity = String(local);
-        const b = bodies[i];
-        if (b) b.style.transform = "translateY(" + (1 - local) * 20 + "px)";
-        const on = p >= thresholds[i];
-        if (on !== active[i]) {
-          active[i] = on;
-          setPlaying(s, on);
-        }
-      });
-    };
-    let ticking = false;
-    const onScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(() => {
-          update();
-          ticking = false;
-        });
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    update();
+    reduce.current =
+      typeof window !== "undefined" &&
+      !!window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    startCycle();
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      if (timer.current) clearInterval(timer.current);
     };
   }, []);
 
+  const jump = (i: number) => {
+    startCycle();
+    setFrag(i);
+  };
+
+  const panel = (i: number) =>
+    parseStyle(`display:${frag === i ? "flex" : "none"}; ${panelBase}`);
+
   return (
-    <section id="how" style={parseStyle("background:#efece7; border-top:1px solid #e6e2da; border-bottom:1px solid #e6e2da;")}>
-      <div style={parseStyle("max-width:1200px; margin:0 auto; padding:78px 30px;")}>
-        <div style={parseStyle("display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:18px; margin-bottom:54px;")}>
-          <div style={parseStyle("max-width:640px;")}>
-            <p style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#3b62e0; margin:0 0 14px;")}>
+    <section
+      id="how"
+      style={parseStyle(
+        "background:#efece7; border-top:1px solid #e6e2da; border-bottom:1px solid #e6e2da;",
+      )}
+    >
+      <div style={parseStyle("max-width:1200px; margin:0 auto; padding:82px 30px 72px;")}>
+        <div
+          style={parseStyle(
+            "display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:18px; margin-bottom:52px;",
+          )}
+        >
+          <div style={parseStyle("max-width:520px;")}>
+            <p
+              style={parseStyle(
+                "font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#3b62e0; margin:0 0 14px;",
+              )}
+            >
               How it works
             </p>
-            <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:38px; letter-spacing:-0.03em; line-height:1.08; color:#16161a;")}>
-              From a sentence to a rendered scene.
+            <h2
+              style={parseStyle(
+                "margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:38px; letter-spacing:-0.03em; line-height:1.08; color:#16161a;",
+              )}
+            >
+              Every word is an instruction.
             </h2>
           </div>
+          <p style={parseStyle("margin:0; max-width:420px; font-size:14.5px; line-height:1.65; color:#6b6b73;")}>
+            You describe a scene, Manition writes real Manim code, cloud GPUs render the MP4. The
+            magic is the middle step - here it is, word by word.{" "}
+            <strong style={parseStyle("color:#16161a; font-weight:600;")}>Click any highlighted word.</strong>
+          </p>
         </div>
-        <div ref={stepsRef} style={parseStyle("position:relative; padding-top:2px;")}>
-          <svg
-            className="hh-pipe"
-            aria-hidden="true"
-            style={parseStyle("position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none;")}
-            viewBox="0 0 1200 330"
-            preserveAspectRatio="none"
-            fill="none"
-          >
-            <path
-              d="M155 42 C 300 42 310 70 455 70 C 600 70 610 98 755 98 C 900 98 910 126 1055 126"
-              stroke="#cfc9bc"
-              strokeWidth="1.6"
-              strokeDasharray="7 8"
-              style={parseStyle("animation:hh-dash 10s linear infinite;")}
-            ></path>
-          </svg>
-          <div className="hh-2col" style={parseStyle("display:grid; grid-template-columns:repeat(4,1fr); gap:0; position:relative; z-index:2;")}>
-            {/* STEP 01 · Describe */}
-            <div className="hh-step" style={parseStyle("position:relative; z-index:2; display:flex; flex-direction:column; padding:0 14px;")}>
-              <div style={parseStyle(numStyle)}>01</div>
-              <div className="hh-body" style={parseStyle(bodyStyle)}>
-                <div style={parseStyle(`${visShell} border:1px solid #e6e2da; box-shadow:0 8px 20px -14px rgba(22,22,26,0.3);`)}>
-                  <div style={parseStyle("position:absolute; inset:0; padding:15px; display:flex; flex-direction:column; justify-content:center; gap:10px; background:linear-gradient(180deg,#faf9f6,#f1eee9);")}>
-                    <div style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.16em; color:#a6a29a; text-transform:uppercase;")}>Your prompt</div>
-                    <div style={parseStyle("display:flex; align-items:center; gap:5px; background:#fff; border:1px solid #e6e2da; border-radius:9px; padding:9px 11px; box-shadow:0 1px 2px rgba(0,0,0,0.04);")}>
-                      <span style={parseStyle("display:inline-block; overflow:hidden; white-space:nowrap; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#2a2a30; animation:hh-type 3.6s steps(21,end) infinite; animation-play-state:paused;")}>sine wave to a circle</span>
-                      <span style={parseStyle("flex:none; width:1.5px; height:13px; background:#5b46d9; animation:hh-caret 0.9s step-end infinite; animation-play-state:paused;")}></span>
-                    </div>
-                  </div>
-                </div>
-                <div style={parseStyle(`${titleRow} color:#5b46d9;`)}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
-                  <h3 style={parseStyle(stepH3)}>Describe</h3>
-                </div>
-                <p style={parseStyle(stepP)}>Type what you want to see - “a Fourier series building a square wave.” Plain English is the only syntax.</p>
-              </div>
-            </div>
 
-            {/* STEP 02 · Generate */}
-            <div className="hh-step" style={parseStyle("position:relative; z-index:2; display:flex; flex-direction:column; padding:0 14px; margin-top:28px;")}>
-              <div style={parseStyle(numStyle)}>02</div>
-              <div className="hh-body" style={parseStyle(bodyStyle)}>
-                <div style={parseStyle(`${visShell} border:1px solid #1c2030; box-shadow:0 8px 20px -14px rgba(22,22,26,0.35);`)}>
-                  <div style={parseStyle("position:absolute; inset:0; padding:14px 15px; background:#0f1117; display:flex; flex-direction:column; gap:5px; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:10px; line-height:1.35; color:#cfd3dc;")}>
-                    <div style={parseStyle("white-space:nowrap; opacity:0; animation:hh-line 3s ease infinite; animation-delay:0s; animation-play-state:paused;")}><span style={parseStyle("color:#c98fff;")}>class</span> Sine(<span style={parseStyle("color:#6cc7ff;")}>Scene</span>):</div>
-                    <div style={parseStyle("white-space:nowrap; opacity:0; animation:hh-line 3s ease infinite; animation-delay:.22s; animation-play-state:paused;")}>&nbsp;&nbsp;<span style={parseStyle("color:#c98fff;")}>def</span> construct(<span style={parseStyle("color:#e88fb0;")}>self</span>):</div>
-                    <div style={parseStyle("white-space:nowrap; opacity:0; animation:hh-line 3s ease infinite; animation-delay:.44s; animation-play-state:paused;")}>&nbsp;&nbsp;&nbsp;&nbsp;ax = <span style={parseStyle("color:#ffcf6c;")}>Axes</span>()</div>
-                    <div style={parseStyle("white-space:nowrap; opacity:0; animation:hh-line 3s ease infinite; animation-delay:.66s; animation-play-state:paused;")}>&nbsp;&nbsp;&nbsp;&nbsp;self.play(<span style={parseStyle("color:#ffcf6c;")}>Create</span>(ax))</div>
-                  </div>
-                </div>
-                <div style={parseStyle(`${titleRow} color:#3b62e0;`)}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-                  <h3 style={parseStyle(stepH3)}>Generate</h3>
-                </div>
-                <p style={parseStyle(stepP)}>Manition writes real, editable Manim code for the scene, generated straight from your description.</p>
-              </div>
+        <div
+          className="hh-how"
+          style={parseStyle("display:grid; grid-template-columns:1.05fr 0.95fr; gap:60px; align-items:center;")}
+        >
+          {/* ── the prompt ── */}
+          <div>
+            <div
+              style={parseStyle(
+                "font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:#a6a29a; margin-bottom:24px; display:flex; align-items:center; gap:9px;",
+              )}
+            >
+              <span style={parseStyle("width:7px; height:7px; border-radius:50%; background:#3b62e0; flex:none;")}></span>
+              One prompt, as Manition reads it
             </div>
+            <div
+              className="hh-prompt"
+              style={parseStyle(
+                "font-family:'Space Grotesk'; font-weight:700; font-size:42px; letter-spacing:-0.025em; line-height:1.5; color:#b6afa0;",
+              )}
+            >
+              Show a{" "}
+              <FragWord index={0} active={frag === 0} onClick={jump} />{" "}
+              <FragWord index={1} active={frag === 1} onClick={jump} />,{" "}
+              <FragWord index={2} active={frag === 2} onClick={jump} /> - then{" "}
+              <FragWord index={3} active={frag === 3} onClick={jump} />.
+              <span
+                style={parseStyle(
+                  "display:inline-block; width:3px; height:0.68em; background:#16161a; margin-left:9px; animation:hh-caret 1.05s step-end infinite;",
+                )}
+              ></span>
+            </div>
+            <p style={parseStyle("margin:28px 0 0; font-size:14px; line-height:1.65; color:#8a8579; max-width:430px;")}>
+              The dim words are grammar. The highlighted ones are decisions - each one becomes the
+              code and the canvas on the right.
+            </p>
+          </div>
 
-            {/* STEP 03 · Render */}
-            <div className="hh-step" style={parseStyle("position:relative; z-index:2; display:flex; flex-direction:column; padding:0 14px; margin-top:56px;")}>
-              <div style={parseStyle(numStyle)}>03</div>
-              <div className="hh-body" style={parseStyle(bodyStyle)}>
-                <div style={parseStyle(`${visShell} border:1px solid #e6e2da; box-shadow:0 8px 20px -14px rgba(22,22,26,0.3);`)}>
-                  <div style={parseStyle("position:absolute; inset:0; padding:15px; background:linear-gradient(180deg,#faf9f6,#f1eee9); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;")}>
-                    <div style={parseStyle("width:30px; height:30px; border-radius:50%; border:3px solid #ece3cf; border-top-color:#c2913a; animation:hh-spin 0.9s linear infinite; animation-play-state:paused;")}></div>
-                    <div style={parseStyle("width:100%;")}>
-                      <div style={parseStyle("display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#8a8a82; margin-bottom:6px;")}><span>Rendering scene</span><span>1080p</span></div>
-                      <div style={parseStyle("height:6px; background:#e6e2da; border-radius:4px; overflow:hidden;")}><div style={parseStyle("height:100%; width:0%; background:linear-gradient(90deg,#e0b45f,#c2913a); border-radius:4px; animation:hh-prog 2.8s ease-out infinite; animation-play-state:paused;")}></div></div>
-                    </div>
+          {/* ── the panels ── */}
+          <div>
+            <div style={parseStyle("min-height:478px; display:flex; flex-direction:column; justify-content:flex-start;")}>
+              {/* 01 · Nouns → objects */}
+              <div style={panel(0)}>
+                <div style={parseStyle(badgeRow)}>
+                  <span style={badge("#7f97e8", "#1c2233")}>Nouns → objects</span>
+                  <span style={parseStyle(counter)}>01 / 04</span>
+                </div>
+                <p style={parseStyle(paraStyle)}>
+                  <strong style={parseStyle(strong)}>&ldquo;unit circle&rdquo;</strong> becomes real
+                  geometry - an actual circle with a radius and center Manition can measure, spin,
+                  and build on. Not clip-art.
+                </p>
+                <div style={parseStyle(codeBox)}>
+                  <div className="hh-codeline" style={parseStyle("white-space:nowrap; animation:hh-code .5s steps(18,end) .1s both;")}>
+                    circle = <span style={parseStyle("color:#ffcf6c;")}>Circle</span>(radius=<span style={parseStyle("color:#5fcf86;")}>1</span>)
+                  </div>
+                  <div className="hh-codeline" style={parseStyle("white-space:nowrap; animation:hh-code .6s steps(24,end) .4s both;")}>
+                    dot = <span style={parseStyle("color:#ffcf6c;")}>Dot</span>(circle.point_at_angle(<span style={parseStyle("color:#5fcf86;")}>0</span>))
+                    <span style={parseStyle(codeCaret)}></span>
                   </div>
                 </div>
-                <div style={parseStyle(`${titleRow} color:#c2913a;`)}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"></path><path d="M12 18v4"></path><path d="m4.9 4.9 2.8 2.8"></path><path d="m16.3 16.3 2.8 2.8"></path><path d="M2 12h4"></path><path d="M18 12h4"></path></svg>
-                  <h3 style={parseStyle(stepH3)}>Render</h3>
+                <div style={parseStyle(canvasBox)}>
+                  <svg viewBox="0 0 320 120" style={parseStyle("width:100%; height:auto; display:block;")}>
+                    <line x1="90" y1="10" x2="90" y2="110" stroke="#232839" strokeWidth="1"></line>
+                    <line x1="28" y1="60" x2="152" y2="60" stroke="#232839" strokeWidth="1"></line>
+                    <circle className="hh-anim" cx="90" cy="60" r="38" fill="none" stroke="#7f97e8" strokeWidth="2.5" style={parseStyle("stroke-dasharray:240; stroke-dashoffset:240; animation:hh-draw 1.1s cubic-bezier(.4,0,.2,1) .55s forwards;")}></circle>
+                    <line className="hh-anim" x1="90" y1="60" x2="128" y2="60" stroke="#ffcf6c" strokeWidth="2" style={parseStyle("stroke-dasharray:38; stroke-dashoffset:38; animation:hh-draw .35s ease 1.65s forwards;")}></line>
+                    <circle className="hh-anim" cx="128" cy="60" r="4.5" fill="#ffcf6c" style={parseStyle("opacity:0; animation:hh-fadein .3s ease 1.95s forwards;")}></circle>
+                    <text className="hh-anim" x="98" y="50" fontFamily="IBM Plex Mono,monospace" fontSize="11" fill="#ffcf6c" style={parseStyle("opacity:0; animation:hh-fadein .3s ease 1.95s forwards;")}>r = 1</text>
+                    <text className="hh-anim" x="176" y="64" fontFamily="IBM Plex Mono,monospace" fontSize="11" fill="#5b6070" style={parseStyle("opacity:0; animation:hh-fadein .4s ease 2.2s forwards;")}>← real geometry</text>
+                  </svg>
                 </div>
-                <p style={parseStyle(stepP)}>Cloud GPUs render the scene to crisp 1080p or 4K. No installs, no dependencies, no waiting on your laptop.</p>
               </div>
-            </div>
 
-            {/* STEP 04 · Watch */}
-            <div className="hh-step" style={parseStyle("position:relative; z-index:2; display:flex; flex-direction:column; padding:0 14px; margin-top:84px;")}>
-              <div style={parseStyle(numStyle)}>04</div>
-              <div className="hh-body" style={parseStyle(bodyStyle)}>
-                <div style={parseStyle(`${visShell} border:1px solid #10140f; box-shadow:0 8px 20px -14px rgba(22,22,26,0.35);`)}>
-                  <div style={parseStyle("position:absolute; inset:0; display:flex; flex-direction:column;")}>
-                    <div style={parseStyle("flex:1; position:relative; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 42%, #21402a, #0f140f);")}>
-                      <div style={parseStyle("width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28); display:flex; align-items:center; justify-content:center;")}><svg width="14" height="14" viewBox="0 0 24 24" fill="#eafff0" style={parseStyle("margin-left:2px;")}><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div>
-                    </div>
-                    <div style={parseStyle("display:flex; align-items:center; gap:8px; padding:8px 11px; background:#0b0f0b;")}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="#7fd79c"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
-                      <div style={parseStyle("flex:1; height:4px; background:rgba(255,255,255,0.16); border-radius:3px; overflow:hidden;")}><div style={parseStyle("height:100%; width:0%; background:#5fcf86; border-radius:3px; animation:hh-scrub 3.4s linear infinite; animation-play-state:paused;")}></div></div>
-                      <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:9px; color:#9fb7a5;")}>0:12</span>
-                    </div>
+              {/* 02 · Math → plotted */}
+              <div style={panel(1)}>
+                <div style={parseStyle(badgeRow)}>
+                  <span style={badge("#a78bfa", "#241f38")}>Math → plotted</span>
+                  <span style={parseStyle(counter)}>02 / 04</span>
+                </div>
+                <p style={parseStyle(paraStyle)}>
+                  <strong style={parseStyle(strong)}>&ldquo;generating sin(x)&rdquo;</strong> is
+                  computed, not drawn by hand - the curve is plotted point by point on real axes,
+                  exactly like the math says.
+                </p>
+                <div style={parseStyle(codeBox)}>
+                  <div className="hh-codeline" style={parseStyle("white-space:nowrap; animation:hh-code .5s steps(20,end) .1s both;")}>
+                    ax = <span style={parseStyle("color:#ffcf6c;")}>Axes</span>(x_range=[<span style={parseStyle("color:#5fcf86;")}>0</span>, <span style={parseStyle("color:#6cc7ff;")}>TAU</span>])
+                  </div>
+                  <div className="hh-codeline" style={parseStyle("white-space:nowrap; animation:hh-code .6s steps(18,end) .4s both;")}>
+                    wave = ax.plot(np.sin)
+                    <span style={parseStyle(codeCaret)}></span>
                   </div>
                 </div>
-                <div style={parseStyle(`${titleRow} color:#2f7a4a;`)}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="14" height="14" rx="2"></rect><polygon points="22 7 16 12 22 17"></polygon></svg>
-                  <h3 style={parseStyle(stepH3)}>Watch</h3>
+                <div style={parseStyle(canvasBox)}>
+                  <svg viewBox="0 0 320 120" style={parseStyle("width:100%; height:auto; display:block;")}>
+                    <line className="hh-anim" x1="24" y1="100" x2="300" y2="100" stroke="#3a4157" strokeWidth="1.5" style={parseStyle("opacity:0; animation:hh-fadein .4s ease .5s forwards;")}></line>
+                    <line className="hh-anim" x1="30" y1="12" x2="30" y2="106" stroke="#3a4157" strokeWidth="1.5" style={parseStyle("opacity:0; animation:hh-fadein .4s ease .5s forwards;")}></line>
+                    <path className="hh-anim" d="M30,60 Q62.5,10 95,60 T160,60 T225,60 T290,60" fill="none" stroke="#a78bfa" strokeWidth="2.5" style={parseStyle("stroke-dasharray:312; stroke-dashoffset:312; animation:hh-draw 1.7s cubic-bezier(.3,0,.2,1) .85s forwards;")}></path>
+                    <text className="hh-anim" x="238" y="26" fontFamily="IBM Plex Mono,monospace" fontSize="11" fill="#a78bfa" style={parseStyle("opacity:0; animation:hh-fadein .35s ease 2.4s forwards;")}>sin(x)</text>
+                  </svg>
                 </div>
-                <p style={parseStyle(stepP)}>Preview instantly, refine in chat, then export the MP4. Every scene stays saved in your library.</p>
+              </div>
+
+              {/* 03 · Adverbs → tempo */}
+              <div style={panel(2)}>
+                <div style={parseStyle(badgeRow)}>
+                  <span style={badge("#e0b45f", "#2b2415")}>Adverbs → tempo</span>
+                  <span style={parseStyle(counter)}>03 / 04</span>
+                </div>
+                <p style={parseStyle(paraStyle)}>
+                  <strong style={parseStyle(strong)}>&ldquo;slowly&rdquo;</strong> sets the tempo -
+                  the same scene, given twice the room to breathe. Say &ldquo;snappy&rdquo; instead
+                  and it tightens right up.
+                </p>
+                <div style={parseStyle(codeBox)}>
+                  <div className="hh-codeline" style={parseStyle("white-space:nowrap; animation:hh-code .5s steps(20,end) .1s both;")}>
+                    run_time=<span style={parseStyle("color:#5fcf86;")}>6</span>, <span style={parseStyle("color:#5b6070;")}># &ldquo;slowly&rdquo; - was 3</span>
+                  </div>
+                  <div className="hh-codeline" style={parseStyle("white-space:nowrap; animation:hh-code .6s steps(14,end) .4s both;")}>
+                    rate_func=<span style={parseStyle("color:#6cc7ff;")}>smooth</span>
+                    <span style={parseStyle(codeCaret)}></span>
+                  </div>
+                </div>
+                <div style={parseStyle(canvasBox)}>
+                  <svg viewBox="0 0 320 120" style={parseStyle("width:100%; height:auto; display:block;")}>
+                    <text x="20" y="20" fontFamily="IBM Plex Mono,monospace" fontSize="10" fill="#5b6070">&ldquo;snappy&rdquo; · run_time=3</text>
+                    <path className="hh-anim" d="M20,44 Q50,20 80,44 T140,44 T200,44 T260,44" fill="none" stroke="#3a4157" strokeWidth="2" style={parseStyle("stroke-dasharray:280; stroke-dashoffset:280; animation:hh-draw .85s linear .55s forwards;")}></path>
+                    <text x="20" y="76" fontFamily="IBM Plex Mono,monospace" fontSize="10" fill="#e0b45f">&ldquo;slowly&rdquo; · run_time=6</text>
+                    <path className="hh-anim" d="M20,100 Q50,76 80,100 T140,100 T200,100 T260,100" fill="none" stroke="#e0b45f" strokeWidth="2.5" style={parseStyle("stroke-dasharray:280; stroke-dashoffset:280; animation:hh-draw 2.9s linear .55s forwards;")}></path>
+                  </svg>
+                </div>
+              </div>
+
+              {/* 04 · Verbs → motion */}
+              <div style={panel(3)}>
+                <div style={parseStyle(badgeRow)}>
+                  <span style={badge("#7fd79c", "#16281d")}>Verbs → motion</span>
+                  <span style={parseStyle(counter)}>04 / 04</span>
+                </div>
+                <p style={parseStyle(paraStyle)}>
+                  <strong style={parseStyle(strong)}>&ldquo;trace the wave&rdquo;</strong> picks the
+                  motion - the wave draws itself along its own path, right when your sentence says so.
+                </p>
+                <div style={parseStyle(codeBox)}>
+                  <div className="hh-codeline" style={parseStyle("white-space:nowrap; animation:hh-code .5s steps(24,end) .1s both;")}>
+                    <span style={parseStyle("color:#e88fb0;")}>self</span>.play(<span style={parseStyle("color:#ffcf6c;")}>Create</span>(wave), run_time=<span style={parseStyle("color:#5fcf86;")}>6</span>)
+                  </div>
+                  <div className="hh-codeline" style={parseStyle("white-space:nowrap; animation:hh-code .6s steps(10,end) .4s both;")}>
+                    <span style={parseStyle("color:#e88fb0;")}>self</span>.wait()
+                    <span style={parseStyle(codeCaret)}></span>
+                  </div>
+                </div>
+                <div style={parseStyle(canvasBox)}>
+                  <svg viewBox="0 0 320 120" style={parseStyle("width:100%; height:auto; display:block;")}>
+                    <path d="M30,60 Q62.5,10 95,60 T160,60 T225,60 T290,60" fill="none" stroke="#1e2b23" strokeWidth="2"></path>
+                    <path className="hh-anim" d="M30,60 Q62.5,10 95,60 T160,60 T225,60 T290,60" fill="none" stroke="#7fd79c" strokeWidth="2.5" style={parseStyle("stroke-dasharray:312; stroke-dashoffset:312; animation:hh-draw 2.5s linear .6s forwards;")}></path>
+                    <circle className="hh-anim hh-tracedot" r="5" fill="#7fd79c" style={parseStyle("offset-path:path('M30,60 Q62.5,10 95,60 T160,60 T225,60 T290,60'); animation:hh-trace 2.5s linear .6s forwards;")}></circle>
+                  </svg>
+                </div>
               </div>
             </div>
+            <div style={parseStyle("margin-top:13px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.06em; color:#a6a29a;")}>
+              auto-plays · click a word to jump
+            </div>
+          </div>
+        </div>
+
+        {/* ── what one sentence buys you ── */}
+        <div style={parseStyle("margin-top:56px; border-top:1px solid #ddd8cc; padding-top:30px;")}>
+          <div style={parseStyle("display:flex; flex-wrap:wrap; align-items:flex-start; gap:22px;")}>
+            <div
+              className="hh-llabel"
+              style={parseStyle(
+                "flex:0 0 auto; margin-right:16px; max-width:150px; margin-top:2px; font-family:'Space Grotesk'; font-weight:700; font-size:17px; line-height:1.3; letter-spacing:-0.01em; color:#16161a;",
+              )}
+            >
+              What one sentence buys you
+            </div>
+            <Stat label="You type" value="11 words" sub="one plain sentence" />
+            <StatArrow />
+            <Stat label="Manition writes" value="34 lines of Manim" sub="real, editable Python" />
+            <StatArrow />
+            <Stat label="GPUs render" value="288 frames" sub="1080p, in the cloud" />
+            <StatArrow />
+            <Stat label="You get" value="one MP4 · 0:12" sub="ready for slides, edits, posts" />
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function FragWord({
+  index,
+  active,
+  onClick,
+}: {
+  index: number;
+  active: boolean;
+  onClick: (i: number) => void;
+}) {
+  const f = FRAGMENTS[index];
+  return (
+    <button
+      onClick={() => onClick(index)}
+      style={parseStyle(
+        `appearance:none; background:none; border:0; border-bottom:5px solid ${f.underline}; border-radius:0; padding:0 2px 1px; margin:0; cursor:pointer; font:inherit; letter-spacing:inherit; color:${active ? f.accent : "#16161a"}; position:relative; display:inline-block; transition:color .25s;`,
+      )}
+    >
+      {f.label}
+      <span
+        className="hh-fragbar"
+        style={parseStyle(
+          `display:${active ? "block" : "none"}; position:absolute; left:0; bottom:-5px; height:5px; background:${f.bar}; width:0%; animation:hh-bar ${CYCLE_MS / 1000}s linear forwards;`,
+        )}
+      ></span>
+    </button>
+  );
+}
+
+function Stat({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div style={parseStyle("flex:1; min-width:150px;")}>
+      <div style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#a6a29a; margin-bottom:8px;")}>
+        {label}
+      </div>
+      <div style={parseStyle("font-family:'Space Grotesk'; font-weight:700; font-size:20px; letter-spacing:-0.015em; color:#16161a;")}>
+        {value}
+      </div>
+      <div style={parseStyle("font-size:12.5px; color:#8a8a92; margin-top:4px;")}>{sub}</div>
+    </div>
+  );
+}
+
+function StatArrow() {
+  return (
+    <div className="hh-larrow" style={parseStyle("flex:none; color:#c2bcae; margin-top:24px;")}>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 12h14"></path>
+        <path d="M13 6l6 6-6 6"></path>
+      </svg>
+    </div>
   );
 }
