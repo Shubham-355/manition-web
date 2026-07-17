@@ -53,13 +53,14 @@ details[open] .faq-chevron { transform: rotate(180deg); }
 }
 
 /* ===== Features (Features.dc.html) ===== */
-@keyframes fr-draw { to { stroke-dashoffset:0; } }
-@media (max-width:860px){
-  .fr-row{ grid-template-columns:1fr !important; }
-  .fr-row .fr-vis{ order:2; }
-  .fr-grid{ grid-template-columns:1fr 1fr !important; }
+@keyframes ftIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+@media (max-width:900px){
+  .ft-body{ grid-template-columns:1fr !important; }
+  .ft-stage{ border-left:0 !important; border-top:1px solid #1f1f26; min-height:320px !important; }
+  .ft-lb{ display:none !important; }
+  .fr-cap{ grid-template-columns:40px 1fr !important; }
+  .fr-cap .fr-ex{ text-align:left !important; grid-column:2; }
 }
-@media (max-width:560px){ .fr-grid{ grid-template-columns:1fr !important; } }
 
 /* ===== Pricing (Pricing.dc.html) ===== */
 details[open] .pc-chev { transform:rotate(180deg); }
