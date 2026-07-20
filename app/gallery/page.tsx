@@ -1,22 +1,9 @@
 import { parseStyle } from "../lib/css";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
-import { Hover } from "../components/Interactive";
-import GalleryVideo from "../components/GalleryVideo";
+import GalleryFilter, { type GalleryCard } from "../components/GalleryFilter";
 
-const pillActive =
-  "font-size:13px; font-weight:600; color:#f7f6f3; background:#16161a; padding:8px 15px; border-radius:100px;";
-const pill =
-  "font-size:13px; font-weight:500; color:#4b4b52; background:#fff; border:1px solid #e6e2da; padding:8px 15px; border-radius:100px;";
-
-type Card = {
-  scene: string;
-  label: string;
-  title: string;
-  prompt: string;
-};
-
-const CARDS: Card[] = [
+const CARDS: GalleryCard[] = [
   {
     scene: "sine",
     label: "Trigonometry",
@@ -82,7 +69,7 @@ export default function Gallery() {
     >
       <Nav active="gallery" />
 
-      <section style={parseStyle("max-width:1200px; margin:0 auto; padding:70px 30px 28px;")}>
+      <section style={parseStyle("max-width:1200px; margin:0 auto; padding:70px 30px 70px;")}>
         <p style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#3b62e0; margin:0 0 16px;")}>
           Gallery
         </p>
@@ -93,49 +80,7 @@ export default function Gallery() {
           Every clip below started as one plain-language prompt - press play and watch it render. The prompt is printed on each card; try to guess it before it plays.
         </p>
 
-        <div style={parseStyle("display:flex; flex-wrap:wrap; gap:9px; margin-top:30px;")}>
-          <span style={parseStyle(pillActive)}>All</span>
-          <span style={parseStyle(pill)}>Calculus</span>
-          <span style={parseStyle(pill)}>Linear algebra</span>
-          <span style={parseStyle(pill)}>Trigonometry</span>
-          <span style={parseStyle(pill)}>Geometry</span>
-          <span style={parseStyle(pill)}>Probability</span>
-        </div>
-      </section>
-
-      <section style={parseStyle("max-width:1200px; margin:0 auto; padding:14px 30px 70px;")}>
-        <div className="gl-grid" style={parseStyle("display:grid; grid-template-columns:repeat(3,1fr); gap:18px;")}>
-          {CARDS.map((card, i) => (
-            <div key={i} className="gl-card">
-              <div style={parseStyle("position:relative; aspect-ratio:16/10; background:#0a0a0d;")}>
-                <GalleryVideo scene={card.scene} label={card.label} />
-              </div>
-              <div style={parseStyle("padding:15px 17px 16px;")}>
-                <p style={parseStyle("margin:0 0 7px; font-family:'Space Grotesk'; font-weight:600; font-size:15.5px; color:#f4f4f5; letter-spacing:-0.01em;")}>
-                  {card.title}
-                </p>
-                <p style={parseStyle("margin:0; font-size:12.5px; line-height:1.5; color:#8a8a92; font-style:italic;")}>
-                  {card.prompt}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div style={parseStyle("text-align:center; margin-top:44px;")}>
-          <Hover
-            as="a"
-            href="/#waitlist"
-            style="display:inline-flex; align-items:center; gap:8px; text-decoration:none; background:#16161a; color:#f7f6f3; font-size:15px; font-weight:600; padding:14px 24px; border-radius:12px;"
-            hoverStyle={{ background: "#000" }}
-          >
-            Make your own{" "}
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14"></path>
-              <path d="M13 6l6 6-6 6"></path>
-            </svg>
-          </Hover>
-        </div>
+        <GalleryFilter cards={CARDS} />
       </section>
 
       <Footer />
