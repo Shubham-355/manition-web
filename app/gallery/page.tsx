@@ -58,6 +58,42 @@ const CARDS: GalleryCard[] = [
     title: "Spiral of primes",
     prompt: "“plot primes on an Ulam spiral”",
   },
+  {
+    scene: "fourier",
+    label: "Trigonometry",
+    title: "Square wave from circles",
+    prompt: "“build a square wave by stacking spinning circles”",
+  },
+  {
+    scene: "lorenz",
+    label: "Chaos",
+    title: "The Lorenz butterfly",
+    prompt: "“trace the Lorenz attractor”",
+  },
+  {
+    scene: "pendulum",
+    label: "Chaos",
+    title: "Butterfly effect",
+    prompt: "“nudge a double pendulum by 0.001 radians”",
+  },
+  {
+    scene: "phyllo",
+    label: "Geometry",
+    title: "Sunflower spiral",
+    prompt: "“grow a sunflower with the golden angle”",
+  },
+  {
+    scene: "taylor",
+    label: "Calculus",
+    title: "Taylor series",
+    prompt: "“approximate sin(x) with polynomials”",
+  },
+  {
+    scene: "waves",
+    label: "Physics",
+    title: "Interference",
+    prompt: "“ripple two waves through each other”",
+  },
 ];
 
 export default function Gallery() {

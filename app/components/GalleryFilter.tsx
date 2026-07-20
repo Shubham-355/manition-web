@@ -20,6 +20,8 @@ const CATEGORIES = [
   "Trigonometry",
   "Geometry",
   "Probability",
+  "Chaos",
+  "Physics",
 ];
 
 const pillActive =

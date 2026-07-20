@@ -96,6 +96,11 @@ function PLOT(g: Ctx, x0: number, x1: number, f: (x: number) => number, p: numbe
   g.stroke();
 }
 
+// Interpolate between two [r,g,b] colours → "rgb(…)".
+function MX(a: number[], b: number[], p: number) {
+  return "rgb(" + Math.round(lp(a[0], b[0], p)) + "," + Math.round(lp(a[1], b[1], p)) + "," + Math.round(lp(a[2], b[2], p)) + ")";
+}
+
 export interface Scene {
   T: number;
   poster: number;
@@ -104,6 +109,9 @@ export interface Scene {
   _S?: { tau: number; b: number; k: number }[];
   _max?: number;
   _P?: { pos: number[][]; isP: boolean[]; pc: number[]; N: number };
+  _L?: number[][];
+  _A?: number[][];
+  _B?: number[][];
 }
 
 export const SCENES: Record<string, Scene> = {
@@ -800,6 +808,344 @@ export const SCENES: Record<string, Scene> = {
         }
       }
       TX(g, "n = " + nv + " · " + PD.pc[nv] + " primes", 16, 188, 9.5, K.dim);
+    },
+  },
+  /* 10 · Fourier epicycles building a square wave */
+  fourier: {
+    T: 16,
+    poster: 9.5,
+    draw(g, t) {
+      const cx = 64,
+        cy = 100,
+        x0 = 136,
+        x1 = 306,
+        sc = 30;
+      let i: number, k: number;
+      const th = (TAU / 4) * Math.max(0, t - 0.8);
+      const aps = [sg(t, 0.2, 1)];
+      for (i = 1; i < 5; i++) aps.push(sg(t, 1.6 + i * 1.7, 2.4 + i * 1.7));
+      let px = cx,
+        py = cy,
+        nAct = 0;
+      for (i = 0; i < 5; i++) {
+        const ap = aps[i];
+        if (ap <= 0) break;
+        nAct++;
+        k = 2 * i + 1;
+        const r = (4 / (k * Math.PI)) * sc * ap,
+          ph = k * th;
+        g.strokeStyle = "rgba(126,166,217,.38)";
+        g.lineWidth = 1;
+        g.beginPath();
+        g.arc(px, py, r, 0, TAU);
+        g.stroke();
+        const nx = px + r * Math.cos(ph),
+          ny = py - r * Math.sin(ph);
+        L(g, px, py, nx, ny, "rgba(244,244,245,.7)", 1.2);
+        px = nx;
+        py = ny;
+      }
+      let st = false;
+      g.strokeStyle = K.blue;
+      g.lineWidth = 2.2;
+      g.lineJoin = "round";
+      g.beginPath();
+      for (let xx = x0; xx <= x1; xx += 2) {
+        const phw = th - (xx - x0) * 0.052;
+        if (phw < 0) break;
+        let y = cy;
+        for (i = 0; i < nAct; i++) {
+          k = 2 * i + 1;
+          y -= (4 / (k * Math.PI)) * sc * aps[i] * Math.sin(k * phw);
+        }
+        if (st) g.lineTo(xx, y);
+        else {
+          g.moveTo(xx, y);
+          st = true;
+        }
+      }
+      g.stroke();
+      g.setLineDash([3, 4]);
+      L(g, px, py, x0, py, "rgba(255,255,255,.25)", 1);
+      g.setLineDash([]);
+      D(g, px, py, 3, K.gold);
+      D(g, x0, py, 2.6, K.blue);
+      const la = sg(t, 1.2, 1.9);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "n = " + nAct + (nAct === 5 ? " terms" : ""), 304, 22, 10, K.gold, "right");
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 12.5, 13.5);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "f(θ) = Σ 4/kπ · sin(kθ)", 160, 188, 9.5, K.dim, "center");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 11 · Lorenz attractor */
+  lorenz: {
+    T: 18,
+    poster: 12,
+    draw(g, t) {
+      let i: number;
+      if (!this._L) {
+        const P: number[][] = [];
+        let x = 0.6,
+          y = 0.6,
+          z = 12;
+        const dt = 0.0042;
+        for (i = 0; i < 10000; i++) {
+          const dx = 10 * (y - x),
+            dy = x * (28 - z) - y,
+            dz = x * y - 2.6667 * z;
+          x += dx * dt;
+          y += dy * dt;
+          z += dz * dt;
+          P.push([160 + x * 5.3, 196 - z * 3.45]);
+        }
+        this._L = P;
+      }
+      const P = this._L,
+        n = Math.max(2, Math.floor(ss(ln(t, 0.2, 17.4)) * (P.length - 1)));
+      g.strokeStyle = "rgba(126,166,217,.15)";
+      g.lineWidth = 1;
+      g.beginPath();
+      g.moveTo(P[0][0], P[0][1]);
+      for (i = 1; i <= n; i += 3) g.lineTo(P[i][0], P[i][1]);
+      g.stroke();
+      const tail = Math.min(n, 900),
+        s0 = n - tail;
+      for (i = s0; i < n; i += 2) {
+        const p = (i - s0) / tail;
+        g.strokeStyle = MX([126, 166, 217], [194, 145, 58], p);
+        g.globalAlpha = 0.15 + 0.85 * p;
+        g.lineWidth = 0.8 + 1.6 * p;
+        g.beginPath();
+        g.moveTo(P[i][0], P[i][1]);
+        g.lineTo(P[Math.min(n, i + 2)][0], P[Math.min(n, i + 2)][1]);
+        g.stroke();
+      }
+      g.globalAlpha = 1;
+      const hd = P[n];
+      g.globalAlpha = 0.25;
+      D(g, hd[0], hd[1], 6, K.gold);
+      g.globalAlpha = 1;
+      D(g, hd[0], hd[1], 2.6, "#ffd98a");
+      const la = sg(t, 2, 3);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "σ=10  ρ=28  β=8/3", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 15, 16);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "never crosses itself", 16, 186, 9.5, K.dim);
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 12 · double pendulum chaos, two runs 0.001 rad apart */
+  pendulum: {
+    T: 16,
+    poster: 12,
+    draw(g, t) {
+      if (!this._A) {
+        const mk = (off: number) => {
+          let t1 = 1.85,
+            w1 = 0,
+            t2 = 2.05 + off,
+            w2 = 0;
+          const out: number[][] = [],
+            dt = 1 / 240;
+          for (let i = 0; i < 16 * 240; i++) {
+            const d = t1 - t2,
+              G = 9.81,
+              den = 3 - Math.cos(2 * d);
+            const a1 = (-3 * G * Math.sin(t1) - G * Math.sin(t1 - 2 * t2) - 2 * Math.sin(d) * (w2 * w2 + w1 * w1 * Math.cos(d))) / den;
+            const a2 = (2 * Math.sin(d) * (2 * w1 * w1 + 2 * G * Math.cos(t1) + w2 * w2 * Math.cos(d))) / den;
+            w1 += a1 * dt;
+            w2 += a2 * dt;
+            t1 += w1 * dt;
+            t2 += w2 * dt;
+            out.push([t1, t2]);
+          }
+          return out;
+        };
+        this._A = mk(0);
+        this._B = mk(0.001);
+      }
+      const A = this._A,
+        B = this._B!;
+      const ox = 160,
+        oy = 84,
+        AL = 38;
+      const idx = Math.min(A.length - 1, Math.max(0, Math.floor(t * 240)));
+      const one = (run: number[][], armC: string, bobC: string, trailC: string, alpha: number) => {
+        const tl = Math.min(idx, 520);
+        let i: number;
+        g.lineWidth = 1.2;
+        for (i = idx - tl; i < idx; i += 3) {
+          if (i < 0) continue;
+          const p = (i - (idx - tl)) / tl;
+          const q1 = run[i],
+            q2 = run[Math.min(idx, i + 3)];
+          const X1 = ox + AL * Math.sin(q1[0]) + AL * Math.sin(q1[1]),
+            Y1 = oy + AL * Math.cos(q1[0]) + AL * Math.cos(q1[1]);
+          const X2 = ox + AL * Math.sin(q2[0]) + AL * Math.sin(q2[1]),
+            Y2 = oy + AL * Math.cos(q2[0]) + AL * Math.cos(q2[1]);
+          g.globalAlpha = alpha * p * 0.5;
+          g.strokeStyle = trailC;
+          g.beginPath();
+          g.moveTo(X1, Y1);
+          g.lineTo(X2, Y2);
+          g.stroke();
+        }
+        g.globalAlpha = alpha;
+        const q = run[idx];
+        const x1 = ox + AL * Math.sin(q[0]),
+          y1 = oy + AL * Math.cos(q[0]),
+          x2 = x1 + AL * Math.sin(q[1]),
+          y2 = y1 + AL * Math.cos(q[1]);
+        L(g, ox, oy, x1, y1, armC, 2);
+        L(g, x1, y1, x2, y2, armC, 2);
+        D(g, x1, y1, 3, bobC);
+        D(g, x2, y2, 3.6, bobC);
+        g.globalAlpha = 1;
+      };
+      D(g, ox, oy, 2.2, "#4b4b52");
+      const vis = sg(t, 0.2, 0.9);
+      one(B, "rgba(95,191,126,.8)", K.green, "rgba(95,191,126,.5)", vis);
+      one(A, "rgba(244,244,245,.9)", K.gold, "rgba(194,145,58,.55)", vis);
+      const la = sg(t, 1.2, 2);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "Δθ₀ = 0.001 rad", 16, 50, 10, K.txt);
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 9.5, 10.5);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "same laws, different worlds", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 13 · phyllotaxis, golden-angle bloom */
+  phyllo: {
+    T: 14,
+    poster: 11,
+    draw(g, t) {
+      const cx = 160,
+        cy = 100,
+        GA = Math.PI * (3 - Math.sqrt(5));
+      let i: number;
+      const N = Math.floor(ss(ln(t, 0.2, 12.6)) * 430),
+        rot = t * 0.05;
+      for (i = 0; i < N; i++) {
+        const r = 4.55 * Math.sqrt(i);
+        if (r > 126) continue;
+        const a = i * GA + rot,
+          p = r / 126,
+          last = i >= N - 3;
+        g.globalAlpha = last ? 1 : 0.4 + 0.5 * p;
+        D(g, cx + r * Math.cos(a), cy + r * Math.sin(a), (1.4 + 2.4 * p) * (last ? 1.6 : 1), last ? "#ffd98a" : MX([194, 145, 58], [126, 166, 217], p));
+      }
+      g.globalAlpha = 1;
+      const la = sg(t, 3, 4);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "θ = 137.507°", 16, 50, 10, K.gold);
+        TX(g, "r = c√n", 16, 66, 9.5, K.dim);
+        g.globalAlpha = 1;
+      }
+      TX(g, "n = " + N, 304, 186, 9.5, K.dim, "right");
+    },
+  },
+  /* 14 · Taylor polynomials converging to sin */
+  taylor: {
+    T: 15,
+    poster: 9,
+    draw(g, t) {
+      const Yv = (v: number) => 100 - v * 34;
+      g.globalAlpha = sg(t, 0, 0.7);
+      L(g, 18, 100, 302, 100, K.grid, 1);
+      L(g, 160, 14, 160, 190, K.grid, 1);
+      g.globalAlpha = 1;
+      PLOT(g, 160 - 3.55 * 40, 160 + 3.55 * 40, (x) => Yv(Math.sin((x - 160) / 40)), sg(t, 0.3, 1.6), "rgba(126,166,217,.5)", 1.6);
+      const fact = [1, 6, 120, 5040, 362880, 39916800];
+      const stage = Math.min(5, Math.floor(Math.max(0, t - 1.6) / 1.9));
+      const tay = (u: number, nS: number) => {
+        let s = 0;
+        for (let k = 0; k <= nS; k++) s += (Math.pow(-1, k) * Math.pow(u, 2 * k + 1)) / fact[k];
+        return s;
+      };
+      const F = (nS: number) => (x: number) => {
+        const u = (x - 160) / 40;
+        return Yv(Math.max(-2.6, Math.min(2.6, tay(u, nS))));
+      };
+      if (stage > 0) {
+        g.globalAlpha = 0.3;
+        PLOT(g, 160 - 3.55 * 40, 160 + 3.55 * 40, F(stage - 1), 1, K.dim, 1.3);
+        g.globalAlpha = 1;
+      }
+      const prog = t < 1.6 ? 0 : Math.min(1, (t - 1.6 - stage * 1.9) / 1.4);
+      PLOT(g, 160 - 3.55 * 40, 160 + 3.55 * 40, F(stage), prog, K.gold, 2.3);
+      const la = sg(t, 1.6, 2.2);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "x - x³/3! + x⁵/5! - …", 82, 182, 10, K.txt, "center");
+        TX(g, "n = " + (2 * stage + 1), 296, 24, 11, K.gold, "right");
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 13, 14);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "→ sin(x)", 296, 40, 10, K.blue, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 15 · two-source wave interference */
+  waves: {
+    T: 14,
+    poster: 8,
+    draw(g, t) {
+      const s1x = 112,
+        s2x = 208,
+        sy = 100,
+        kk = 0.25,
+        om = 3.1;
+      const on1 = sg(t, 0.3, 0.9),
+        on2 = sg(t, 3.2, 3.8);
+      let gx: number, gy: number;
+      for (gx = 18; gx <= 302; gx += 7.5)
+        for (gy = 14; gy <= 186; gy += 7.5) {
+          const r1 = Math.hypot(gx - s1x, gy - sy),
+            r2 = Math.hypot(gx - s2x, gy - sy);
+          const v =
+            (on1 * Math.cos(kk * r1 - om * t)) / (1 + r1 * 0.012) +
+            (on2 * Math.cos(kk * r2 - om * t)) / (1 + r2 * 0.012);
+          const mag = Math.min(1, Math.abs(v));
+          if (mag < 0.06) continue;
+          g.globalAlpha = mag * 0.9;
+          D(g, gx, gy, 0.8 + 2.1 * mag, v > 0 ? K.blue : K.gold);
+        }
+      g.globalAlpha = 1;
+      D(g, s1x, sy, 3, "#fff");
+      if (on2 > 0) {
+        g.globalAlpha = on2;
+        D(g, s2x, sy, 3, "#fff");
+        g.globalAlpha = 1;
+      }
+      const la = sg(t, 4.2, 5);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "cos(kr₁ - ωt) + cos(kr₂ - ωt)", 160, 188, 9.5, K.dim, "center");
+        g.globalAlpha = 1;
+      }
     },
   },
 };
