@@ -22,6 +22,8 @@ const CATEGORIES = [
   "Probability",
   "Chaos",
   "Physics",
+  "Number theory",
+  "Fractals",
 ];
 
 const pillActive =

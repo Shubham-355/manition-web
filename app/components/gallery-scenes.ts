@@ -112,6 +112,20 @@ export interface Scene {
   _L?: number[][];
   _A?: number[][];
   _B?: number[][];
+  _M?: number[];
+  _TB?: number[][][];
+  _cv?: HTMLCanvasElement;
+  _W?: number[][][];
+  _Q?: [number, number, boolean, number][];
+  _C?: number[][];
+  _seeds?: number[];
+  _K?: number[][][];
+  _V?: { mark: number[]; ev: number[][] };
+  _R?: {
+    rs: { x: number; y: number; w: number; h: number }[];
+    arcs: { cx: number; cy: number; r: number; a0: number; a1: number }[];
+  };
+  _G?: { grid: Uint8Array; gen: number; hist: Uint8Array[] };
 }
 
 export const SCENES: Record<string, Scene> = {
@@ -1144,6 +1158,879 @@ export const SCENES: Record<string, Scene> = {
       if (la > 0) {
         g.globalAlpha = la;
         TX(g, "cos(kr₁ - ωt) + cos(kr₂ - ωt)", 160, 188, 9.5, K.dim, "center");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 16 · Mandelbrot scanline render */
+  mandel: {
+    T: 16,
+    poster: 12,
+    draw(g, t) {
+      let ix: number, iy: number;
+      if (!this._M) {
+        const M: number[] = [];
+        for (iy = 0; iy < 50; iy++)
+          for (ix = 0; ix < 80; ix++) {
+            const cr = -2.3 + (ix / 79) * 3,
+              ci = -1.22 + (iy / 49) * 2.44;
+            let zr = 0,
+              zi = 0,
+              it = 0;
+            while (it < 70 && zr * zr + zi * zi < 4) {
+              const nr = zr * zr - zi * zi + cr;
+              zi = 2 * zr * zi + ci;
+              zr = nr;
+              it++;
+            }
+            M.push(it);
+          }
+        this._M = M;
+      }
+      const data = this._M;
+      const rows = Math.floor(ss(ln(t, 0.3, 12.5)) * 50);
+      for (iy = 0; iy < rows; iy++)
+        for (ix = 0; ix < 80; ix++) {
+          const it2 = data[iy * 80 + ix];
+          if (it2 >= 70) g.fillStyle = "#060609";
+          else {
+            const p = Math.min(1, it2 / 26);
+            g.fillStyle = p < 0.55 ? MX([13, 16, 30], [126, 166, 217], p / 0.55) : MX([126, 166, 217], [255, 217, 138], (p - 0.55) / 0.45);
+          }
+          g.fillRect(ix * 4, iy * 4, 4.15, 4.15);
+        }
+      if (rows > 0 && rows < 50) L(g, 0, rows * 4, 320, rows * 4, "rgba(255,217,138,.4)", 1);
+      const la = sg(t, 12.8, 13.6);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "z → z² + c", 304, 186, 10, K.wht, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 17 · three-body figure-8 choreography */
+  threebody: {
+    T: 18,
+    poster: 12,
+    draw(g, t) {
+      let k: number, i: number;
+      if (!this._TB) {
+        const b = [
+          [-0.97000436, 0.24308753],
+          [0.97000436, -0.24308753],
+          [0, 0],
+        ];
+        const v = [
+          [0.466203685, 0.43236573],
+          [0.466203685, 0.43236573],
+          [-0.93240737, -0.86473146],
+        ];
+        const P: number[][][] = [[], [], []];
+        const dt = 0.001;
+        let l: number;
+        for (i = 0; i < 20000; i++) {
+          const acc = [
+            [0, 0],
+            [0, 0],
+            [0, 0],
+          ];
+          for (k = 0; k < 3; k++)
+            for (l = 0; l < 3; l++) {
+              if (k === l) continue;
+              const dx = b[l][0] - b[k][0],
+                dy = b[l][1] - b[k][1],
+                d = Math.hypot(dx, dy),
+                f = 1 / (d * d * d);
+              acc[k][0] += dx * f;
+              acc[k][1] += dy * f;
+            }
+          for (k = 0; k < 3; k++) {
+            v[k][0] += acc[k][0] * dt;
+            v[k][1] += acc[k][1] * dt;
+            b[k][0] += v[k][0] * dt;
+            b[k][1] += v[k][1] * dt;
+            if (i % 10 === 0) P[k].push([160 + b[k][0] * 118, 100 - b[k][1] * 118]);
+          }
+        }
+        this._TB = P;
+      }
+      const P = this._TB,
+        n = Math.max(2, Math.floor(ln(t, 0.3, 17.5) * (P[0].length - 1))),
+        cols = [K.gold, K.blue, K.green];
+      for (k = 0; k < 3; k++) {
+        g.strokeStyle = cols[k];
+        g.globalAlpha = 0.3;
+        g.lineWidth = 1;
+        g.beginPath();
+        g.moveTo(P[k][0][0], P[k][0][1]);
+        for (i = 1; i <= n; i++) g.lineTo(P[k][i][0], P[k][i][1]);
+        g.stroke();
+        g.globalAlpha = 1;
+        const h = P[k][n];
+        g.globalAlpha = 0.25;
+        D(g, h[0], h[1], 7, cols[k]);
+        g.globalAlpha = 1;
+        D(g, h[0], h[1], 3.4, cols[k]);
+      }
+      const la = sg(t, 1, 1.8);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "three equal masses", 16, 52, 9.5, K.dim);
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 8, 9);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "a stable figure-8", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 18 · times-table chords morphing cardioid → epicycloids */
+  modular: {
+    T: 16,
+    poster: 8,
+    draw(g, t) {
+      const cx = 160,
+        cy = 100,
+        R = 82,
+        N = 180;
+      let i: number;
+      const k = 2 + 3 * ss(ln(t, 1.2, 14.5));
+      g.strokeStyle = K.grid2;
+      g.lineWidth = 1.2;
+      g.beginPath();
+      g.arc(cx, cy, R, 0, TAU);
+      g.stroke();
+      const ap = sg(t, 0.2, 1.1);
+      g.globalAlpha = ap * 0.5;
+      for (i = 0; i < N; i++) {
+        const a = (i / N) * TAU;
+        D(g, cx + R * Math.cos(a), cy + R * Math.sin(a), 1, K.dim);
+      }
+      g.globalAlpha = 1;
+      const ch = sg(t, 0.8, 1.8);
+      if (ch > 0) {
+        g.globalAlpha = ch * 0.32;
+        g.strokeStyle = K.blue;
+        g.lineWidth = 0.7;
+        g.beginPath();
+        for (i = 0; i < N; i++) {
+          const a1 = (i / N) * TAU,
+            a2 = (((k * i) % N) / N) * TAU;
+          g.moveTo(cx + R * Math.cos(a1), cy + R * Math.sin(a1));
+          g.lineTo(cx + R * Math.cos(a2), cy + R * Math.sin(a2));
+        }
+        g.stroke();
+        g.globalAlpha = 1;
+      }
+      const names: Record<number, string> = { 2: "cardioid", 3: "nephroid", 4: "epicycloid", 5: "epicycloid" },
+        kr = Math.round(k);
+      if (Math.abs(k - kr) < 0.08 && names[kr] && t > 1) {
+        g.globalAlpha = (1 - Math.abs(k - kr) / 0.08) * 0.9;
+        TX(g, names[kr], cx, cy, 11, K.gold, "center");
+        g.globalAlpha = 1;
+      }
+      const la = sg(t, 1.6, 2.4);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "n → " + k.toFixed(2) + " · n  (mod 180)", 160, 188, 9.5, K.txt, "center");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 19 · logistic-map bifurcation sweep */
+  logistic: {
+    T: 16,
+    poster: 12,
+    draw(g, t) {
+      let i: number, c: number;
+      if (!this._cv) {
+        const oc = document.createElement("canvas");
+        oc.width = 640;
+        oc.height = 400;
+        const og = oc.getContext("2d")!;
+        og.scale(2, 2);
+        og.fillStyle = "rgba(126,166,217,.16)";
+        for (c = 0; c < 272; c++) {
+          const r = 2.8 + (c / 271) * 1.2;
+          let x = 0.4;
+          for (i = 0; i < 90; i++) x = r * x * (1 - x);
+          for (i = 0; i < 110; i++) {
+            x = r * x * (1 - x);
+            og.fillRect(24 + c, 26 + (1 - x) * 148, 1, 1);
+          }
+        }
+        this._cv = oc;
+      }
+      const cv = this._cv;
+      const pr = ss(ln(t, 0.4, 13.5)),
+        wpx = Math.floor(pr * 320);
+      if (wpx > 0) g.drawImage(cv, 0, 0, wpx * 2, 400, 0, 0, wpx, 200);
+      L(g, 24, 178, 298, 178, K.grid2, 1.2);
+      const ticks: [number, string][] = [
+        [3, "3.0"],
+        [3.45, "3.45"],
+        [3.57, "3.57"],
+        [4, "4.0"],
+      ];
+      for (i = 0; i < ticks.length; i++) {
+        const tx = 24 + ((ticks[i][0] - 2.8) / 1.2) * 271;
+        if (tx > wpx) continue;
+        L(g, tx, 178, tx, 182, K.dim, 1);
+        TX(g, ticks[i][1], tx, 190, 8.5, K.dim, "center");
+      }
+      if (pr > 0 && pr < 1) L(g, wpx, 22, wpx, 176, "rgba(255,217,138,.5)", 1);
+      const la = sg(t, 1, 1.8);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "x → rx(1-x)", 304, 24, 10, K.txt, "right");
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 13.6, 14.4);
+      if (lb > 0) {
+        const cx3 = 24 + ((3.57 - 2.8) / 1.2) * 271;
+        g.globalAlpha = lb;
+        g.setLineDash([3, 4]);
+        L(g, cx3, 22, cx3, 176, "rgba(194,145,58,.5)", 1);
+        g.setLineDash([]);
+        TX(g, "chaos", cx3 + 6, 30, 9, K.gold);
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 20 · random walk vs √n envelope */
+  walk: {
+    T: 15,
+    poster: 10,
+    draw(g, t) {
+      let i: number, w: number;
+      if (!this._W) {
+        const R = rng(11),
+          W2: number[][][] = [];
+        for (w = 0; w < 5; w++) {
+          const p: number[][] = [[24, 100]];
+          let y = 0;
+          for (i = 1; i <= 260; i++) {
+            y += (R() < 0.5 ? -1 : 1) * 3.1;
+            y = Math.max(-88, Math.min(88, y));
+            p.push([24 + i * (276 / 260), 100 - y * 0.82]);
+          }
+          W2.push(p);
+        }
+        this._W = W2;
+      }
+      const paths = this._W;
+      L(g, 24, 100, 300, 100, K.grid2, 1);
+      const env = sg(t, 10.5, 12);
+      if (env > 0) {
+        g.globalAlpha = env;
+        g.setLineDash([3, 4]);
+        g.strokeStyle = K.gold;
+        g.lineWidth = 1.3;
+        g.beginPath();
+        for (i = 0; i <= 100; i++) {
+          const xx = 24 + (i / 100) * 276,
+            e = Math.sqrt((i / 100) * 260) * 3.1 * 0.82;
+          if (i) g.lineTo(xx, 100 - e);
+          else g.moveTo(xx, 100);
+        }
+        g.stroke();
+        g.beginPath();
+        for (i = 0; i <= 100; i++) {
+          const x2 = 24 + (i / 100) * 276,
+            e2 = Math.sqrt((i / 100) * 260) * 3.1 * 0.82;
+          if (i) g.lineTo(x2, 100 + e2);
+          else g.moveTo(x2, 100);
+        }
+        g.stroke();
+        g.setLineDash([]);
+        TX(g, "±√n", 302, 52, 10, K.gold, "right");
+        g.globalAlpha = 1;
+      }
+      const cols = ["#7ea6d9", "#5fbf7e", "#c2913a", "#b07ed9", "#d97e7e"];
+      for (w = 0; w < 5; w++) {
+        const pts = paths[w],
+          n = Math.floor(sg(t, w * 0.5, w * 0.5 + 9.5) * 260);
+        if (n < 2) continue;
+        g.strokeStyle = cols[w];
+        g.globalAlpha = 0.75;
+        g.lineWidth = 1.3;
+        g.beginPath();
+        g.moveTo(pts[0][0], pts[0][1]);
+        for (i = 1; i <= n; i++) g.lineTo(pts[i][0], pts[i][1]);
+        g.stroke();
+        g.globalAlpha = 1;
+        D(g, pts[n][0], pts[n][1], 2.2, cols[w]);
+      }
+      const la = sg(t, 0.8, 1.6);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "coin flips, +1 / −1", 16, 52, 9.5, K.dim);
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 21 · Monte Carlo estimate of π */
+  montecarlo: {
+    T: 16,
+    poster: 11,
+    draw(g, t) {
+      const cx = 104,
+        cy = 104,
+        R = 78;
+      let i: number;
+      if (!this._Q) {
+        const Rr = rng(19),
+          Q: [number, number, boolean, number][] = [];
+        for (i = 0; i < 560; i++) {
+          const x = Rr() * 2 - 1,
+            y = Rr() * 2 - 1;
+          Q.push([x, y, x * x + y * y <= 1, 0.6 + i * (13 / 560)]);
+        }
+        this._Q = Q;
+      }
+      const Q = this._Q;
+      g.strokeStyle = K.grid2;
+      g.lineWidth = 1.2;
+      g.strokeRect(cx - R, cy - R, 2 * R, 2 * R);
+      g.strokeStyle = "rgba(126,166,217,.8)";
+      g.beginPath();
+      g.arc(cx, cy, R, 0, TAU);
+      g.stroke();
+      let inC = 0,
+        tot = 0;
+      for (i = 0; i < Q.length; i++) {
+        const q = Q[i];
+        if (t < q[3]) break;
+        const ag = Math.min(1, (t - q[3]) / 0.25);
+        tot++;
+        if (q[2]) inC++;
+        g.globalAlpha = ag * (q[2] ? 0.9 : 0.55);
+        D(g, cx + q[0] * R, cy + q[1] * R, 1.7, q[2] ? K.green : "#d97e7e");
+      }
+      g.globalAlpha = 1;
+      const est = tot > 0 ? (4 * inC) / tot : 0;
+      TX(g, "in circle", 212, 60, 9.5, K.green);
+      TX(g, String(inC), 282, 60, 9.5, K.wht, "right");
+      TX(g, "total", 212, 78, 9.5, K.dim);
+      TX(g, String(tot), 282, 78, 9.5, K.wht, "right");
+      L(g, 212, 90, 282, 90, K.grid2, 1);
+      TX(g, "4·in/total", 212, 104, 9.5, K.txt);
+      if (tot > 0) TX(g, est.toFixed(3), 282, 122, 12, K.gold, "right");
+      const la = sg(t, 14, 15);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "π ≈ 3.14159…", 212, 144, 9.5, K.blue);
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 22 · e^iθ walking the unit circle to −1 */
+  euler: {
+    T: 14,
+    poster: 9,
+    draw(g, t) {
+      const cx = 118,
+        cy = 100,
+        R = 64;
+      g.globalAlpha = sg(t, 0, 0.8);
+      L(g, cx - R - 18, cy, cx + R + 18, cy, K.grid, 1);
+      L(g, cx, cy - R - 16, cx, cy + R + 16, K.grid, 1);
+      g.globalAlpha = 1;
+      g.strokeStyle = K.grid2;
+      g.lineWidth = 1.2;
+      g.beginPath();
+      g.arc(cx, cy, R, 0, TAU);
+      g.stroke();
+      TX(g, "1", cx + R + 9, cy + 11, 9, K.dim);
+      TX(g, "i", cx - 9, cy - R - 8, 9, K.dim);
+      const th = Math.PI * ss(ln(t, 1.2, 9.5));
+      g.strokeStyle = K.blue;
+      g.lineWidth = 2.4;
+      g.beginPath();
+      g.arc(cx, cy, R, 0, -th, true);
+      g.stroke();
+      const px = cx + R * Math.cos(th),
+        py = cy - R * Math.sin(th);
+      L(g, cx, cy, px, py, K.gold, 1.8);
+      D(g, px, py, 3.6, K.gold);
+      g.strokeStyle = "rgba(194,145,58,.5)";
+      g.lineWidth = 1;
+      g.beginPath();
+      g.arc(cx, cy, 13, 0, -th, true);
+      g.stroke();
+      const tl = sg(t, 1.2, 2);
+      if (tl > 0) {
+        g.globalAlpha = tl;
+        TX(g, "θ = " + th.toFixed(2), cx + 18, cy - 12, 9, K.gold);
+        g.globalAlpha = 1;
+      }
+      TX(g, "e", 226, 84, 15, K.wht);
+      TX(g, "iθ", 237, 77, 9.5, K.blue);
+      const done = th > Math.PI - 0.02;
+      if (done) {
+        const fin = sg(t, 9.6, 10.4);
+        TX(g, "= −1", 252, 84, 15, K.wht);
+        if (fin > 0) {
+          g.globalAlpha = fin;
+          TX(g, "e", 226, 116, 15, K.wht);
+          TX(g, "iπ", 237, 109, 9.5, K.gold);
+          TX(g, "+ 1 = 0", 252, 116, 15, K.wht);
+          D(g, cx - R, cy, 4.4, "#ffd98a");
+          g.globalAlpha = 1;
+        }
+      } else TX(g, "= cos θ + i sin θ", 226, 104, 9, K.dim);
+    },
+  },
+  /* 23 · Collatz hailstone trajectories */
+  collatz: {
+    T: 15,
+    poster: 10,
+    draw(g, t) {
+      let i: number, s: number;
+      if (!this._C) {
+        const seeds = [27, 97, 871, 231, 703],
+          C: number[][] = [];
+        for (s = 0; s < seeds.length; s++) {
+          let n = seeds[s];
+          const seq = [n];
+          while (n !== 1 && seq.length < 120) {
+            n = n % 2 ? 3 * n + 1 : n / 2;
+            seq.push(n);
+          }
+          C.push(seq);
+        }
+        this._C = C;
+        this._seeds = seeds;
+      }
+      const C = this._C,
+        seeds = this._seeds!,
+        cols = ["#c2913a", "#7ea6d9", "#5fbf7e", "#b07ed9", "#d97e7e"];
+      const Y = (v: number) => 176 - (Math.log(v) / Math.log(10000)) * 150;
+      L(g, 22, 176, 302, 176, K.grid2, 1);
+      TX(g, "1", 14, 176, 9, K.dim);
+      for (s = 0; s < C.length; s++) {
+        const seq = C[s],
+          col = cols[s];
+        const n2 = Math.floor(sg(t, s * 1.1 + 0.3, s * 1.1 + 7.5) * (seq.length - 1));
+        if (n2 < 1) continue;
+        g.strokeStyle = col;
+        g.globalAlpha = 0.8;
+        g.lineWidth = 1.3;
+        g.lineJoin = "round";
+        g.beginPath();
+        for (i = 0; i <= n2; i++) {
+          const xx = 24 + i * (276 / 119);
+          if (i) g.lineTo(xx, Y(seq[i]));
+          else g.moveTo(xx, Y(seq[i]));
+        }
+        g.stroke();
+        g.globalAlpha = 1;
+        const hx = 24 + n2 * (276 / 119);
+        D(g, hx, Y(seq[n2]), 2.4, col);
+        if (n2 === seq.length - 1) {
+          g.globalAlpha = 0.9;
+          TX(g, String(seeds[s]), hx + 7, Y(seq[n2]), 8.5, col);
+          g.globalAlpha = 1;
+        }
+      }
+      const la = sg(t, 0.6, 1.4);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "n → n/2  or  3n+1", 16, 52, 10, K.txt);
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 12.6, 13.6);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "every start falls to 1 — no one knows why", 160, 190, 9, K.dim, "center");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 24 · Koch snowflake iterations */
+  koch: {
+    T: 15,
+    poster: 11,
+    draw(g, t) {
+      let i: number;
+      if (!this._K) {
+        const base: number[][] = [
+          [160, 26],
+          [233, 152],
+          [87, 152],
+          [160, 26],
+        ];
+        const lvls: number[][][] = [base];
+        let cur = base,
+          l: number;
+        for (l = 0; l < 4; l++) {
+          const nx: number[][] = [];
+          for (i = 0; i < cur.length - 1; i++) {
+            const a = cur[i],
+              b = cur[i + 1];
+            const dx = (b[0] - a[0]) / 3,
+              dy = (b[1] - a[1]) / 3;
+            const p1 = [a[0] + dx, a[1] + dy],
+              p3 = [a[0] + 2 * dx, a[1] + 2 * dy];
+            const mx = (p1[0] + p3[0]) / 2,
+              my = (p1[1] + p3[1]) / 2;
+            const px = -(p3[1] - p1[1]) * 0.8660254,
+              py = (p3[0] - p1[0]) * 0.8660254;
+            nx.push(a, p1, [mx - px, my - py], p3);
+          }
+          nx.push(cur[cur.length - 1]);
+          lvls.push(nx);
+          cur = nx;
+        }
+        this._K = lvls;
+      }
+      const lv = this._K;
+      const stage = Math.min(4, Math.floor(Math.max(0, t - 0.5) / 2.6));
+      const pr = t < 0.5 ? 0 : Math.min(1, (t - 0.5 - stage * 2.6) / 1.6);
+      const pts = lv[stage];
+      if (stage > 0) {
+        g.globalAlpha = 0.22;
+        g.strokeStyle = K.blue;
+        g.lineWidth = 1;
+        g.beginPath();
+        const pv = lv[stage - 1];
+        g.moveTo(pv[0][0], pv[0][1]);
+        for (i = 1; i < pv.length; i++) g.lineTo(pv[i][0], pv[i][1]);
+        g.stroke();
+        g.globalAlpha = 1;
+      }
+      const n = Math.max(1, Math.floor(pr * (pts.length - 1)));
+      g.strokeStyle = K.gold;
+      g.lineWidth = stage > 2 ? 1 : 1.6;
+      g.lineJoin = "round";
+      g.beginPath();
+      g.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i <= n; i++) g.lineTo(pts[i][0], pts[i][1]);
+      g.stroke();
+      TX(g, "iteration " + stage, 16, 52, 10, K.txt);
+      const per = (3 * Math.pow(4 / 3, stage)).toFixed(2);
+      TX(g, "perimeter = " + per, 16, 68, 9, K.dim);
+      const lb = sg(t, 13, 14);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "finite area, infinite edge", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 25 · sieve of Eratosthenes on a 10×10 grid */
+  sieve: {
+    T: 17,
+    poster: 12,
+    draw(g, t) {
+      const x0 = 88,
+        y0 = 22,
+        cs = 16.4;
+      let i: number, r: number, c: number;
+      if (!this._V) {
+        const mark = new Array(101).fill(0),
+          ev: number[][] = [];
+        let p: number, m: number;
+        for (p = 2; p <= 10; p++) {
+          if (mark[p]) continue;
+          for (m = p * p; m <= 100; m += p)
+            if (!mark[m]) {
+              mark[m] = p;
+              ev.push([m, p]);
+            }
+        }
+        this._V = { mark: mark, ev: ev };
+      }
+      const V = this._V,
+        pcol: Record<number, string> = { 2: "#7ea6d9", 3: "#5fbf7e", 5: "#c2913a", 7: "#b07ed9" };
+      const phase: Record<number, number> = { 2: 1.2, 3: 5, 5: 8.4, 7: 10.8 },
+        dur: Record<number, number> = { 2: 3.2, 3: 2.8, 5: 1.8, 7: 1.4 };
+      const kill: Record<number, number> = {};
+      for (i = 0; i < V.ev.length; i++) {
+        const e = V.ev[i],
+          p2 = e[1];
+        let idx = 0,
+          cnt = 0,
+          j: number;
+        for (j = 0; j < V.ev.length; j++)
+          if (V.ev[j][1] === p2) {
+            if (V.ev[j][0] === e[0]) idx = cnt;
+            cnt++;
+          }
+        const tt = phase[p2] + (idx / cnt) * dur[p2];
+        if (t >= tt) kill[e[0]] = ln(t, tt, tt + 0.4);
+      }
+      const fin = sg(t, 13.2, 14.6);
+      for (i = 1; i <= 100; i++) {
+        r = Math.floor((i - 1) / 10);
+        c = (i - 1) % 10;
+        const X = x0 + c * cs,
+          Y = y0 + r * cs;
+        let dead = kill[i] !== undefined ? kill[i] : 0;
+        const isPrime = !V.mark[i] && i > 1;
+        if (i === 1) dead = t > 1 ? 1 : 0;
+        if (isPrime && fin > 0) {
+          g.globalAlpha = fin * 0.28;
+          g.fillStyle = K.gold;
+          g.fillRect(X - cs / 2 + 1.4, Y - cs / 2 + 1.4, cs - 2.8, cs - 2.8);
+          g.globalAlpha = 1;
+        }
+        if (dead > 0 && dead < 1) {
+          g.globalAlpha = 0.5 * (1 - dead);
+          g.fillStyle = pcol[V.mark[i]] || "#555";
+          g.fillRect(X - cs / 2 + 1.4, Y - cs / 2 + 1.4, cs - 2.8, cs - 2.8);
+          g.globalAlpha = 1;
+        }
+        const a = 1 - dead * 0.82;
+        g.globalAlpha = a;
+        TX(g, String(i), X, Y, 8.2, dead > 0 ? "#3f3f47" : isPrime && fin > 0 ? "#ffd98a" : K.txt, "center");
+        g.globalAlpha = 1;
+      }
+      const order = [2, 3, 5, 7];
+      for (i = 0; i < 4; i++) {
+        const pp = order[i],
+          on = sg(t, phase[pp] - 0.5, phase[pp]);
+        if (on <= 0) continue;
+        g.globalAlpha = on;
+        D(g, 26, 52 + i * 22, 3.4, pcol[pp]);
+        TX(g, "× " + pp, 36, 52 + i * 22, 10, K.txt);
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 14.6, 15.6);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "25 primes survive", 26, 160, 9.5, K.gold);
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 26 · derivative as limit: secant → tangent */
+  limit: {
+    T: 13,
+    poster: 8,
+    draw(g, t) {
+      const F = (u: number) => 0.3 * u * u,
+        X = (u: number) => 62 + u * 30,
+        Y = (v: number) => 168 - v * 30;
+      g.globalAlpha = sg(t, 0, 0.7);
+      L(g, 40, 168, 300, 168, K.grid, 1);
+      L(g, 62, 16, 62, 186, K.grid, 1);
+      g.globalAlpha = 1;
+      PLOT(
+        g,
+        X(0),
+        X(7.6),
+        (x) => {
+          const u = (x - 62) / 30;
+          return Y(F(u));
+        },
+        sg(t, 0.2, 1.4),
+        K.blue,
+        2.2,
+      );
+      if (t < 1.6) return;
+      const a = 2.6,
+        h = lp(3.6, 0.06, ss(ln(t, 2, 10.5)));
+      const x1 = X(a),
+        y1 = Y(F(a)),
+        x2 = X(a + h),
+        y2 = Y(F(a + h));
+      const m = (F(a + h) - F(a)) / h;
+      const sl = (y2 - y1) / (x2 - x1);
+      const ex1 = x1 - 40,
+        ey1 = y1 - 40 * sl,
+        ex2 = x2 + 52,
+        ey2 = y2 + 52 * sl;
+      L(g, ex1, ey1, ex2, ey2, K.gold, 1.7);
+      g.setLineDash([3, 4]);
+      L(g, x2, y2, x2, 168, "rgba(255,255,255,.22)", 1);
+      L(g, x1, y1, x1, 168, "rgba(255,255,255,.22)", 1);
+      g.setLineDash([]);
+      D(g, x1, y1, 3.4, "#fff");
+      D(g, x2, y2, 3.2, K.gold);
+      TX(g, "a", x1, 178, 9, K.txt, "center");
+      if (h > 0.5) TX(g, "a+h", x2, 178, 9, K.gold, "center");
+      const bo = sg(t, 1.8, 2.5);
+      if (bo > 0) {
+        g.globalAlpha = bo;
+        TX(g, "h = " + h.toFixed(2), 230, 34, 10, K.gold, "left");
+        TX(g, "slope = " + m.toFixed(3), 230, 52, 10, K.txt, "left");
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 10.8, 11.8);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "h → 0:  secant becomes tangent", 160, 190, 9.5, K.dim, "center");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 27 · Fibonacci golden spiral */
+  fib: {
+    T: 15,
+    poster: 11,
+    draw(g, t) {
+      const seq = [1, 1, 2, 3, 5, 8];
+      let i: number;
+      if (!this._R) {
+        const rs = [
+          { x: 161, y: 90, w: 13, h: 13 },
+          { x: 148, y: 90, w: 13, h: 13 },
+          { x: 148, y: 64, w: 26, h: 26 },
+          { x: 174, y: 64, w: 39, h: 39 },
+          { x: 109, y: 38, w: 65, h: 65 },
+          { x: 109, y: 103, w: 104, h: 104 },
+        ];
+        const arcs = [
+          { cx: 161, cy: 90, r: 13, a0: Math.PI / 2, a1: Math.PI },
+          { cx: 161, cy: 90, r: 13, a0: Math.PI, a1: Math.PI * 1.5 },
+          { cx: 174, cy: 90, r: 26, a0: Math.PI * 1.5, a1: TAU },
+          { cx: 174, cy: 103, r: 39, a0: 0, a1: Math.PI / 2 },
+          { cx: 174, cy: 103, r: 65, a0: Math.PI / 2, a1: Math.PI },
+          { cx: 213, cy: 103, r: 104, a0: Math.PI, a1: Math.PI * 1.5 },
+        ];
+        this._R = { rs: rs, arcs: arcs };
+      }
+      const R = this._R;
+      for (i = 0; i < 6; i++) {
+        const ap = sg(t, 0.4 + i * 1.5, 1.4 + i * 1.5);
+        if (ap <= 0) continue;
+        const rc = R.rs[i];
+        g.globalAlpha = ap;
+        g.strokeStyle = K.grid2;
+        g.lineWidth = 1.1;
+        g.strokeRect(rc.x, rc.y, rc.w, rc.h);
+        if (rc.w > 18) TX(g, String(seq[i]), rc.x + rc.w / 2, rc.y + rc.h / 2, Math.min(13, rc.w * 0.3), "#4b4b52", "center");
+        g.globalAlpha = 1;
+      }
+      for (i = 0; i < 6; i++) {
+        const st = 1 + i * 1.5,
+          pr2 = sg(t, st, st + 1.5);
+        if (pr2 <= 0) continue;
+        const ar = R.arcs[i];
+        g.strokeStyle = K.gold;
+        g.lineWidth = 2.2;
+        g.beginPath();
+        g.arc(ar.cx, ar.cy, ar.r, ar.a0, ar.a0 + (ar.a1 - ar.a0) * pr2);
+        g.stroke();
+      }
+      const la = sg(t, 1, 1.8);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "1  1  2  3  5  8 …", 26, 52, 10.5, K.txt);
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 11.5, 12.5);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "ratio → φ = 1.618…", 26, 70, 9.5, K.gold);
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 28 · Conway's Game of Life */
+  gameoflife: {
+    T: 18,
+    poster: 12,
+    draw(g, t) {
+      const cs = 6.2,
+        gw = 34,
+        gh = 22,
+        x0 = (320 - gw * cs) / 2,
+        y0 = (200 - gh * cs) / 2 + 6;
+      let i: number, r: number, c: number;
+      if (!this._G) {
+        const grid = new Uint8Array(gw * gh);
+        const glider = [
+          [1, 0],
+          [2, 1],
+          [0, 2],
+          [1, 2],
+          [2, 2],
+        ];
+        for (i = 0; i < glider.length; i++) grid[(glider[i][1] + 2) * gw + glider[i][0] + 2] = 1;
+        for (i = 0; i < glider.length; i++) grid[(glider[i][1] + 3) * gw + (gw - 6 - glider[i][0])] = 1;
+        const blk = [
+          [14, 9],
+          [15, 9],
+          [14, 10],
+          [15, 10],
+        ];
+        for (i = 0; i < blk.length; i++) grid[blk[i][1] * gw + blk[i][0]] = 1;
+        const blinker = [
+          [24, 16],
+          [25, 16],
+          [26, 16],
+        ];
+        for (i = 0; i < blinker.length; i++) grid[blinker[i][1] * gw + blinker[i][0]] = 1;
+        const rp = [
+          [6, 15],
+          [7, 15],
+          [6, 16],
+          [7, 17],
+          [8, 15],
+        ];
+        for (i = 0; i < rp.length; i++) grid[rp[i][1] * gw + rp[i][0]] = 1;
+        this._G = { grid: grid, gen: 0, hist: [grid.slice()] };
+      }
+      const G = this._G,
+        step = (gr: Uint8Array) => {
+          const nx = new Uint8Array(gw * gh);
+          let rr: number, cc: number;
+          for (rr = 0; rr < gh; rr++)
+            for (cc = 0; cc < gw; cc++) {
+              let nb = 0,
+                dr: number,
+                dc2: number;
+              for (dr = -1; dr <= 1; dr++)
+                for (dc2 = -1; dc2 <= 1; dc2++) {
+                  if (!dr && !dc2) continue;
+                  nb += gr[((rr + dr + gh) % gh) * gw + ((cc + dc2 + gw) % gw)];
+                }
+              const al = gr[rr * gw + cc];
+              nx[rr * gw + cc] = (al && (nb === 2 || nb === 3)) || (!al && nb === 3) ? 1 : 0;
+            }
+          return nx;
+        };
+      const want = Math.floor(Math.max(0, t - 1) / 0.42);
+      while (G.gen < want && G.gen < 40) {
+        G.grid = step(G.grid);
+        G.gen++;
+        G.hist.push(G.grid.slice());
+      }
+      const show = Math.min(want, 40),
+        cur = G.hist[show] || G.grid,
+        prev = G.hist[Math.max(0, show - 1)];
+      const frac = t < 1 ? 0 : Math.min(1, ((Math.max(0, t - 1) - show * 0.42) / 0.42) * 2);
+      g.strokeStyle = "rgba(255,255,255,.04)";
+      g.lineWidth = 1;
+      for (r = 0; r <= gh; r++) L(g, x0, y0 + r * cs, x0 + gw * cs, y0 + r * cs, "rgba(255,255,255,.045)", 1);
+      for (c = 0; c <= gw; c++) L(g, x0 + c * cs, y0, x0 + c * cs, y0 + gh * cs, "rgba(255,255,255,.045)", 1);
+      for (r = 0; r < gh; r++)
+        for (c = 0; c < gw; c++) {
+          const v = cur[r * gw + c],
+            pv = prev[r * gw + c];
+          if (!v && !pv) continue;
+          const a2 = v ? (pv ? 1 : frac) : 1 - frac;
+          if (a2 <= 0) continue;
+          g.globalAlpha = a2;
+          g.fillStyle = v && !pv ? "#ffd98a" : K.green;
+          g.fillRect(x0 + c * cs + 0.8, y0 + r * cs + 0.8, cs - 1.6, cs - 1.6);
+          g.globalAlpha = 1;
+        }
+      TX(g, "gen " + show, 304, 24, 10, K.dim, "right");
+      const la = sg(t, 0.4, 1);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "B3/S23", 16, 52, 10, K.txt);
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 15, 16);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "four rules, endless life", 160, 196, 9.5, K.dim, "center");
         g.globalAlpha = 1;
       }
     },

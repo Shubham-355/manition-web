@@ -94,6 +94,84 @@ const CARDS: GalleryCard[] = [
     title: "Interference",
     prompt: "“ripple two waves through each other”",
   },
+  {
+    scene: "mandel",
+    label: "Fractals",
+    title: "The Mandelbrot set",
+    prompt: "“render the Mandelbrot set line by line”",
+  },
+  {
+    scene: "threebody",
+    label: "Physics",
+    title: "Three-body ballet",
+    prompt: "“make three planets orbit in a figure-8”",
+  },
+  {
+    scene: "modular",
+    label: "Number theory",
+    title: "Times-table cardioid",
+    prompt: "“connect n to 2n around a circle, then sweep”",
+  },
+  {
+    scene: "logistic",
+    label: "Chaos",
+    title: "Route to chaos",
+    prompt: "“sweep r through the logistic map”",
+  },
+  {
+    scene: "walk",
+    label: "Probability",
+    title: "Random walks",
+    prompt: "“flip coins and show the √n envelope”",
+  },
+  {
+    scene: "montecarlo",
+    label: "Probability",
+    title: "Estimating π with darts",
+    prompt: "“throw random darts at a square, count the circle”",
+  },
+  {
+    scene: "euler",
+    label: "Trigonometry",
+    title: "Euler's identity",
+    prompt: "“walk e^iθ around the unit circle to −1”",
+  },
+  {
+    scene: "collatz",
+    label: "Number theory",
+    title: "Hailstone numbers",
+    prompt: "“race five Collatz sequences down to 1”",
+  },
+  {
+    scene: "koch",
+    label: "Fractals",
+    title: "Koch snowflake",
+    prompt: "“bend every edge into four, forever”",
+  },
+  {
+    scene: "sieve",
+    label: "Number theory",
+    title: "Sieve of Eratosthenes",
+    prompt: "“cross out the multiples, keep the primes”",
+  },
+  {
+    scene: "limit",
+    label: "Calculus",
+    title: "The limit definition",
+    prompt: "“slide h to zero until the secant kisses the curve”",
+  },
+  {
+    scene: "fib",
+    label: "Geometry",
+    title: "Golden spiral",
+    prompt: "“tile Fibonacci squares and sweep the spiral”",
+  },
+  {
+    scene: "gameoflife",
+    label: "Chaos",
+    title: "Game of Life",
+    prompt: "“run Conway's rules on gliders and blinkers”",
+  },
 ];
 
 export default function Gallery() {
