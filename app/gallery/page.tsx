@@ -54,7 +54,7 @@ const CARDS: GalleryCard[] = [
   },
   {
     scene: "primes",
-    label: "Geometry",
+    label: "Number theory",
     title: "Spiral of primes",
     prompt: "“plot primes on an Ulam spiral”",
   },
