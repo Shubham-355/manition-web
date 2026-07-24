@@ -103,6 +103,8 @@ details[open] .pc-chev { transform:rotate(180deg); }
 }
 
 /* ===== Docs (Docs.dc.html) ===== */
+@keyframes omDrawerFade { from { opacity:0; } to { opacity:1; } }
+@keyframes omDrawerSlide { from { transform:translateX(26px); opacity:0; } to { transform:translateX(0); opacity:1; } }
 @media (max-width:880px){
   .dc-grid{ grid-template-columns:1fr 1fr !important; }
   .dc-pop{ grid-template-columns:1fr !important; }

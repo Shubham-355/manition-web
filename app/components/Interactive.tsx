@@ -20,6 +20,8 @@ export function Hover({
   hoverStyle,
   href,
   title,
+  type,
+  onClick,
   className,
   children,
 }: {
@@ -28,6 +30,8 @@ export function Hover({
   hoverStyle: CSSProperties;
   href?: string;
   title?: string;
+  type?: "button" | "submit";
+  onClick?: () => void;
   className?: string;
   children?: ReactNode;
 }) {
@@ -39,6 +43,8 @@ export function Hover({
     <Tag
       href={href}
       title={title}
+      type={type}
+      onClick={onClick}
       className={className}
       style={hovered ? { ...base, ...hoverStyle } : base}
       onMouseEnter={() => setHovered(true)}
