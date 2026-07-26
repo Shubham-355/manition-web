@@ -2,7 +2,6 @@ import Link from "next/link";
 import { parseStyle } from "../lib/css";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
-import { DocsSearch } from "../components/Interactive";
 import DocsReader from "../components/DocsReader";
 
 export default function Docs() {
@@ -14,18 +13,7 @@ export default function Docs() {
     >
       <Nav active="docs" />
 
-      {/* header + search */}
-      <section style={parseStyle("max-width:820px; margin:0 auto; padding:72px 30px 26px; text-align:center;")}>
-        <p style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#3b62e0; margin:0 0 16px;")}>
-          Docs
-        </p>
-        <h1 style={parseStyle("margin:0 auto; font-family:'Space Grotesk'; font-weight:700; font-size:46px; line-height:1.06; letter-spacing:-0.035em;")}>
-          How can we help?
-        </h1>
-        <DocsSearch />
-      </section>
-
-      {/* categories + popular articles + reader drawer */}
+      {/* header + search + categories + popular articles + reader drawer */}
       <DocsReader />
 
       {/* support strip */}

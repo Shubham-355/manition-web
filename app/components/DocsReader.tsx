@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { parseStyle } from "../lib/css";
 import { Hover } from "./Interactive";
 
@@ -457,9 +457,18 @@ const catH3 = "margin:0 0 7px; font-family:'Space Grotesk'; font-weight:600; fon
 const catP = "margin:0 0 14px; font-size:13.5px; line-height:1.6; color:#6b6b73;";
 const catCount = "font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9a9aa2;";
 
+type Result = { catId: string; catTitle: string; index: number; guide: Guide };
+
+function blockText(b: Block): string[] {
+  if (b.t === "p" || b.t === "tip") return [b.text];
+  if (b.t === "s") return b.items;
+  return [b.code];
+}
+
 export default function DocsReader() {
   const [openCat, setOpenCat] = useState<string | null>(null);
   const [openGuide, setOpenGuide] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -494,8 +503,111 @@ export default function DocsReader() {
   const hasPrev = !!guide && openGuide != null && openGuide > 0;
   const hasNext = !!guide && cat != null && openGuide != null && openGuide < cat.guides.length - 1;
 
+  const q = query.trim().toLowerCase();
+  const results = useMemo<Result[]>(() => {
+    if (!q) return [];
+    const out: Result[] = [];
+    for (const c of CATEGORIES) {
+      c.guides.forEach((gu, i) => {
+        const hay = [gu.title, c.title, ...gu.blocks.flatMap(blockText)].join(" ").toLowerCase();
+        if (hay.includes(q)) out.push({ catId: c.id, catTitle: c.title, index: i, guide: gu });
+      });
+    }
+    return out;
+  }, [q]);
+  const searching = q.length > 0;
+
   return (
     <>
+      {/* header + search */}
+      <section style={parseStyle("max-width:820px; margin:0 auto; padding:72px 30px 26px; text-align:center;")}>
+        <p style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#3b62e0; margin:0 0 16px;")}>
+          Docs
+        </p>
+        <h1 style={parseStyle("margin:0 auto; font-family:'Space Grotesk'; font-weight:700; font-size:46px; line-height:1.06; letter-spacing:-0.035em;")}>
+          How can we help?
+        </h1>
+        <form
+          onSubmit={(e) => e.preventDefault()}
+          style={parseStyle("display:flex; align-items:center; gap:10px; max-width:520px; margin:28px auto 0; background:#fff; border:1px solid #e0dcd2; border-radius:13px; padding:6px 6px 6px 16px; box-shadow:0 2px 8px rgba(24,24,27,0.04);")}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9aa2" strokeWidth="2" strokeLinecap="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.2" y2="16.2"></line>
+          </svg>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={"Search guides… e.g. “transparent export”"}
+            style={parseStyle("flex:1; border:0; outline:none; background:transparent; font-family:inherit; font-size:14.5px; color:#16161a; padding:9px 0;")}
+          />
+          {searching ? (
+            <Hover
+              as="button"
+              type="button"
+              onClick={() => setQuery("")}
+              title="Clear"
+              style="flex:0 0 auto; width:34px; height:34px; display:flex; align-items:center; justify-content:center; background:#f2eee6; color:#6b6b73; border:0; border-radius:9px; cursor:pointer;"
+              hoverStyle={{ background: "#e6e1d6", color: "#16161a" }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </Hover>
+          ) : (
+            <Hover
+              as="button"
+              type="submit"
+              style="background:#16161a; color:#f7f6f3; border:0; border-radius:9px; font-family:inherit; font-size:13.5px; font-weight:600; padding:10px 18px; cursor:pointer;"
+              hoverStyle={{ background: "#000" }}
+            >
+              Search
+            </Hover>
+          )}
+        </form>
+      </section>
+
+      {searching ? (
+        /* search results */
+        <section style={parseStyle("max-width:820px; margin:0 auto; padding:10px 30px 30px;")}>
+          <p style={parseStyle("margin:0 0 16px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#9a9aa2;")}>
+            {results.length === 0
+              ? `No guides match “${query.trim()}”`
+              : `${results.length} ${results.length === 1 ? "guide" : "guides"} for “${query.trim()}”`}
+          </p>
+          {results.length === 0 ? (
+            <div style={parseStyle("background:#fff; border:1px solid #e6e2da; border-radius:16px; padding:34px 26px; text-align:center;")}>
+              <p style={parseStyle("margin:0 0 6px; font-size:15px; font-weight:500; color:#2a2a30;")}>Nothing here yet.</p>
+              <p style={parseStyle("margin:0; font-size:13.5px; line-height:1.6; color:#6b6b73;")}>
+                Try a different word, or browse the categories by clearing the search.
+              </p>
+            </div>
+          ) : (
+            <div style={parseStyle("background:#fff; border:1px solid #e6e2da; border-radius:16px; overflow:hidden;")}>
+              {results.map((r, i) => (
+                <Hover
+                  key={`${r.catId}-${r.index}`}
+                  as="a"
+                  onClick={() => openGuideAt(r.catId, r.index)}
+                  style={`cursor:pointer; display:flex; align-items:center; gap:14px; padding:16px 22px; text-decoration:none; color:inherit;${i < results.length - 1 ? " border-bottom:1px solid #f2eee6;" : ""}`}
+                  hoverStyle={{ background: "#faf8f4" }}
+                >
+                  <span style={parseStyle("flex:1; min-width:0;")}>
+                    <span style={parseStyle("display:block; font-size:14.5px; font-weight:500; color:#26262c;")}>{r.guide.title}</span>
+                    <span style={parseStyle("display:block; margin-top:3px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9a9aa2;")}>
+                      {r.catTitle} · {r.guide.read}
+                    </span>
+                  </span>
+                  {arrowRow}
+                </Hover>
+              ))}
+            </div>
+          )}
+        </section>
+      ) : (
+        <>
       {/* doc categories */}
       <section style={parseStyle("max-width:1120px; margin:0 auto; padding:30px 30px 20px;")}>
         <div className="dc-grid" style={parseStyle("display:grid; grid-template-columns:repeat(3,1fr); gap:16px;")}>
@@ -537,6 +649,8 @@ export default function DocsReader() {
           ))}
         </div>
       </section>
+        </>
+      )}
 
       {/* docs reader drawer */}
       {drawerOpen && cat && (
