@@ -57,6 +57,7 @@ const PERSONAS: Persona[] = [
 
 export default function UseCases() {
   const [sel, setSel] = useState(0);
+  const [hovered, setHovered] = useState(-1);
   const cur = PERSONAS[sel];
 
   return (
@@ -66,7 +67,7 @@ export default function UseCases() {
           <p style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#7f97e8; margin:0 0 14px;")}>
             Who it&apos;s for
           </p>
-          <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:38px; letter-spacing:-0.03em; line-height:1.08; color:#f7f6f3;")}>
+          <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(27px,4.9vw,38px); letter-spacing:-0.03em; line-height:1.08; color:#f7f6f3;")}>
             One tool, every kind of explainer.
           </h2>
         </div>
@@ -78,12 +79,17 @@ export default function UseCases() {
                 <button
                   key={p.name}
                   onClick={() => setSel(i)}
-                  style={parseStyle("appearance:none; background:none; border:0; border-top:1px solid #26262c; text-align:left; width:100%; padding:24px 6px; cursor:pointer; display:flex; align-items:center; gap:18px; transition:opacity .15s;")}
+                  onMouseEnter={() => setHovered(i)}
+                  onMouseLeave={() => setHovered(-1)}
+                  style={{
+                    ...parseStyle("appearance:none; background:none; border:0; border-top:1px solid #26262c; text-align:left; width:100%; padding:24px 6px; cursor:pointer; display:flex; align-items:center; gap:18px; transition:opacity .15s;"),
+                    ...(hovered === i ? { opacity: 0.82 } : {}),
+                  }}
                 >
                   <span style={parseStyle(`font-family:'IBM Plex Mono',monospace; font-size:12px; width:26px; flex:none; color:${on ? p.accent : "#3a3a42"}; transition:color .2s;`)}>
                     {"0" + (i + 1)}
                   </span>
-                  <span style={parseStyle(`font-family:'Space Grotesk'; font-weight:700; font-size:31px; letter-spacing:-0.02em; line-height:1.1; color:${on ? "#f7f6f3" : "#55555d"}; transition:color .2s;`)}>
+                  <span style={parseStyle(`font-family:'Space Grotesk'; font-weight:700; font-size:clamp(24px,4.4vw,31px); letter-spacing:-0.02em; line-height:1.1; color:${on ? "#f7f6f3" : "#55555d"}; transition:color .2s;`)}>
                     {p.name}
                   </span>
                   <span style={parseStyle(`margin-left:auto; flex:none; display:flex; opacity:${on ? 1 : 0}; transition:opacity .2s; color:#7f97e8;`)}>
