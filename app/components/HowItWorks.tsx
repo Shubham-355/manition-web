@@ -97,7 +97,7 @@ export default function HowItWorks() {
             </p>
             <h2
               style={parseStyle(
-                "margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:38px; letter-spacing:-0.03em; line-height:1.08; color:#16161a;",
+                "margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(27px,4.9vw,38px); letter-spacing:-0.03em; line-height:1.08; color:#16161a;",
               )}
             >
               Every word is an instruction.
@@ -127,7 +127,7 @@ export default function HowItWorks() {
             <div
               className="hh-prompt"
               style={parseStyle(
-                "font-family:'Space Grotesk'; font-weight:700; font-size:42px; letter-spacing:-0.025em; line-height:1.5; color:#b6afa0;",
+                "font-family:'Space Grotesk'; font-weight:700; font-size:clamp(30px,6vw,42px); letter-spacing:-0.025em; line-height:1.5; color:#b6afa0;",
               )}
             >
               Show a{" "}
