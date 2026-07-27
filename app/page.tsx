@@ -80,7 +80,7 @@ export default function Home() {
 
             <h1
               style={parseStyle(
-                "margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:58px; line-height:1.02; letter-spacing:-0.035em; color:#16161a;",
+                "margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(40px,8.5vw,58px); line-height:1.02; letter-spacing:-0.035em; color:#16161a;",
               )}
             >
               Math,
@@ -162,7 +162,7 @@ export default function Home() {
         <div style={parseStyle("display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:44px;")}>
           <div style={parseStyle("max-width:560px;")}>
             <p style={parseStyle(eyebrow)}>Why Manition</p>
-            <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:38px; letter-spacing:-0.03em; line-height:1.08;")}>
+            <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(27px,4.9vw,38px); letter-spacing:-0.03em; line-height:1.08;")}>
               The power of Manim, without the Python.
             </h2>
           </div>
@@ -278,7 +278,7 @@ export default function Home() {
         <div style={parseStyle("display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:34px;")}>
           <div style={parseStyle("max-width:560px;")}>
             <p style={parseStyle(eyebrow)}>Made with Manition</p>
-            <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:38px; letter-spacing:-0.03em; line-height:1.08;")}>
+            <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(27px,4.9vw,38px); letter-spacing:-0.03em; line-height:1.08;")}>
               A gallery of one-sentence scenes.
             </h2>
           </div>
@@ -359,7 +359,7 @@ export default function Home() {
         <div className="hh-quotes" style={parseStyle("display:grid; grid-template-columns:0.8fr 1.2fr; gap:60px; align-items:start;")}>
           <div>
             <p style={parseStyle(eyebrow)}>Loved by explainers</p>
-            <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:38px; letter-spacing:-0.03em; line-height:1.08;")}>
+            <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(27px,4.9vw,38px); letter-spacing:-0.03em; line-height:1.08;")}>
               People are making things they couldn&apos;t before.
             </h2>
             <p style={parseStyle("margin:18px 0 0; font-size:15px; line-height:1.6; color:#6b6b73; max-width:340px;")}>
@@ -402,7 +402,7 @@ export default function Home() {
         <div style={parseStyle("max-width:1200px; margin:0 auto; padding:78px 30px;")}>
           <div style={parseStyle("text-align:center; max-width:600px; margin:0 auto 20px;")}>
             <p style={parseStyle(eyebrow)}>Pricing</p>
-            <h2 style={parseStyle("margin:0 0 10px; font-family:'Space Grotesk'; font-weight:700; font-size:38px; letter-spacing:-0.03em; line-height:1.08;")}>
+            <h2 style={parseStyle("margin:0 0 10px; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(27px,4.9vw,38px); letter-spacing:-0.03em; line-height:1.08;")}>
               Simple plans, still being shaped.
             </h2>
             <p style={parseStyle("margin:0; font-size:15px; color:#6b6b73; line-height:1.6;")}>
@@ -463,7 +463,7 @@ export default function Home() {
 
       {/* ============ FAQ ============ */}
       <section style={parseStyle("max-width:820px; margin:0 auto; padding:82px 30px 40px;")}>
-        <h2 style={parseStyle("margin:0 0 36px; text-align:center; font-family:'Space Grotesk'; font-weight:700; font-size:34px; letter-spacing:-0.03em;")}>
+        <h2 style={parseStyle("margin:0 0 36px; text-align:center; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(26px,4.6vw,34px); letter-spacing:-0.03em;")}>
           Questions, answered.
         </h2>
         <div style={parseStyle("display:flex; flex-direction:column; gap:12px;")}>
@@ -487,7 +487,7 @@ export default function Home() {
         <div style={parseStyle("position:relative; background:#0c0c0f; border-radius:24px; overflow:hidden; padding:64px 40px; text-align:center;")}>
           <div style={parseStyle("position:absolute; inset:0; opacity:0.5; background:radial-gradient(600px 300px at 50% -10%, rgba(59,98,224,0.22), transparent);")}></div>
           <div style={parseStyle("position:relative;")}>
-            <h2 style={parseStyle("margin:0 0 14px; font-family:'Space Grotesk'; font-weight:700; font-size:42px; letter-spacing:-0.035em; line-height:1.05; color:#f7f6f3;")}>
+            <h2 style={parseStyle("margin:0 0 14px; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(29px,5.6vw,42px); letter-spacing:-0.035em; line-height:1.05; color:#f7f6f3;")}>
               Get early access to Manition.
             </h2>
             <p style={parseStyle("margin:0 auto 30px; max-width:480px; font-size:16px; line-height:1.6; color:#a1a1aa;")}>
