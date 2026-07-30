@@ -23,6 +23,8 @@ export function Hover({
   type,
   onClick,
   className,
+  ariaLabel,
+  ariaExpanded,
   children,
 }: {
   as?: ElementType;
@@ -33,6 +35,8 @@ export function Hover({
   type?: "button" | "submit";
   onClick?: () => void;
   className?: string;
+  ariaLabel?: string;
+  ariaExpanded?: boolean;
   children?: ReactNode;
 }) {
   const [hovered, setHovered] = useState(false);
@@ -46,6 +50,8 @@ export function Hover({
       type={type}
       onClick={onClick}
       className={className}
+      aria-label={ariaLabel}
+      aria-expanded={ariaExpanded}
       style={hovered ? { ...base, ...hoverStyle } : base}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
