@@ -10,13 +10,13 @@ const cardHover = { borderColor: "#d3cfc4" };
 const thumb =
   "aspect-ratio:16/9; background:radial-gradient(circle at 50% 40%,#15151d,#0b0b0e); display:flex; align-items:center; justify-content:center;";
 
-type Post = { tag: string; title: string; date: string; svg: ReactNode };
+type Post = { tag: string; title: string; read: string; svg: ReactNode };
 
 const POSTS: Post[] = [
   {
     tag: "Tutorial",
     title: "Five prompts that make great trig visuals",
-    date: "Apr 9, 2025 · 5 min",
+    read: "5 min read",
     svg: (
       <svg width="120" height="66" viewBox="0 0 120 66" fill="none">
         <circle cx="30" cy="33" r="18" stroke="#33333d" strokeWidth="1.4"></circle>
@@ -27,7 +27,7 @@ const POSTS: Post[] = [
   {
     tag: "Behind the scenes",
     title: "Rendering at scale on ephemeral GPUs",
-    date: "Mar 28, 2025 · 6 min",
+    read: "6 min read",
     svg: (
       <svg width="120" height="66" viewBox="0 0 120 66" fill="none">
         <g stroke="#5fbf7e" strokeWidth="1.6">
@@ -41,7 +41,7 @@ const POSTS: Post[] = [
   {
     tag: "Education",
     title: "How a teacher built a full unit of visuals",
-    date: "Mar 14, 2025 · 4 min",
+    read: "4 min read",
     svg: (
       <svg width="120" height="66" viewBox="0 0 120 66" fill="none">
         <line x1="20" y1="52" x2="100" y2="52" stroke="#33333d" strokeWidth="1.2"></line>
@@ -56,7 +56,7 @@ const POSTS: Post[] = [
   {
     tag: "Product",
     title: "Iterating on scenes with chat, done right",
-    date: "Feb 27, 2025 · 5 min",
+    read: "5 min read",
     svg: (
       <svg width="120" height="66" viewBox="0 0 120 66" fill="none">
         <line x1="60" y1="10" x2="60" y2="56" stroke="#26262c" strokeWidth="1"></line>
@@ -70,7 +70,6 @@ const POSTS: Post[] = [
 type Change = {
   version: string;
   badge: string;
-  date: string;
   title: string;
   body: string;
   last?: boolean;
@@ -80,21 +79,18 @@ const CHANGES: Change[] = [
   {
     version: "v0.9",
     badge: "background:#eef2fd; color:#2f4fc0;",
-    date: "Apr 20, 2025",
     title: "4K exports & transparent backgrounds",
     body: "Pro renders can now export at 4K with an alpha channel for overlays.",
   },
   {
     version: "v0.8",
     badge: "background:#eef2fd; color:#2f4fc0;",
-    date: "Apr 6, 2025",
     title: "Editable code panel",
     body: "Open, edit and re-run the generated Manim without re-prompting.",
   },
   {
     version: "v0.7",
     badge: "background:#e9f5ec; color:#2f7a4a;",
-    date: "Mar 22, 2025",
     title: "Searchable library",
     body: "Find any past render by title, prompt or category.",
     last: true,
@@ -114,7 +110,7 @@ export default function Blog() {
         <p style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#3b62e0; margin:0 0 16px;")}>
           Blog
         </p>
-        <h1 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:50px; line-height:1.05; letter-spacing:-0.035em;")}>
+        <h1 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(33px,6.8vw,50px); line-height:1.05; letter-spacing:-0.035em;")}>
           Notes from the studio.
         </h1>
         <p style={parseStyle("margin:18px 0 0; max-width:520px; font-size:17px; line-height:1.6; color:#54545c;")}>
@@ -153,7 +149,7 @@ export default function Blog() {
                 A look at the pipeline behind Manition - from parsing your prompt, to planning the scene graph, to writing code a cloud GPU can render in seconds.
               </p>
               <div style={parseStyle("display:flex; align-items:center; gap:11px;")}>
-                <p style={parseStyle("margin:0; font-size:12px; color:#8a8a92;")}>Apr 18, 2025 · 8 min read</p>
+                <p style={parseStyle("margin:0; font-size:12px; color:#8a8a92;")}>8 min read</p>
               </div>
             </div>
           </Hover>
@@ -174,7 +170,7 @@ export default function Blog() {
                   <div style={parseStyle("padding:18px;")}>
                     <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#3b62e0;")}>{post.tag}</span>
                     <h4 style={parseStyle("margin:7px 0 8px; font-family:'Space Grotesk'; font-weight:600; font-size:16px; line-height:1.25;")}>{post.title}</h4>
-                    <p style={parseStyle("margin:0; font-size:12.5px; color:#8a8a92;")}>{post.date}</p>
+                    <p style={parseStyle("margin:0; font-size:12.5px; color:#8a8a92;")}>{post.read}</p>
                   </div>
                 </Hover>
               ))}
@@ -191,7 +187,6 @@ export default function Blog() {
                 <div key={i} style={parseStyle(`padding:18px 0;${c.last ? "" : " border-bottom:1px solid #f2eee6;"}`)}>
                   <div style={parseStyle("display:flex; align-items:center; gap:9px; margin-bottom:8px;")}>
                     <span style={parseStyle(`font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; ${c.badge} padding:3px 8px; border-radius:6px;`)}>{c.version}</span>
-                    <span style={parseStyle("font-size:12px; color:#8a8a92;")}>{c.date}</span>
                   </div>
                   <p style={parseStyle("margin:0 0 6px; font-family:'Space Grotesk'; font-weight:600; font-size:14.5px;")}>{c.title}</p>
                   <p style={parseStyle("margin:0; font-size:13px; line-height:1.55; color:#6b6b73;")}>{c.body}</p>
