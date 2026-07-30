@@ -147,9 +147,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* animated product demo - shared IntroDemo component (same as the login page) */}
           <div>
-            <IntroDemo theme="light" />
+            <IntroDemo />
           </div>
         </div>
       </section>
