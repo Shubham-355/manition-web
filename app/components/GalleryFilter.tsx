@@ -27,6 +27,9 @@ const PREFERRED_ORDER = [
   "Physics",
   "Number theory",
   "Fractals",
+  "Complex analysis",
+  "Topology",
+  "Emergence",
 ];
 
 // Labels are compared loosely so that stray case/whitespace in the card data

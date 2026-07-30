@@ -172,6 +172,66 @@ const CARDS: GalleryCard[] = [
     title: "Game of Life",
     prompt: "“run Conway's rules on gliders and blinkers”",
   },
+  {
+    scene: "hilbert",
+    label: "Geometry",
+    title: "Hilbert curve",
+    prompt: "“fill a square with one unbroken line”",
+  },
+  {
+    scene: "chaosgame",
+    label: "Fractals",
+    title: "A fern from dice",
+    prompt: "“roll four matrices at random until a fern grows”",
+  },
+  {
+    scene: "apollonian",
+    label: "Geometry",
+    title: "Apollonian gasket",
+    prompt: "“pack a circle with circles until the gaps run out”",
+  },
+  {
+    scene: "julia",
+    label: "Fractals",
+    title: "Julia set, breathing",
+    prompt: "“walk c around a circle and morph the set”",
+  },
+  {
+    scene: "newton",
+    label: "Complex analysis",
+    title: "Newton's basins",
+    prompt: "“color every start by the root it falls into”",
+  },
+  {
+    scene: "complexmap",
+    label: "Complex analysis",
+    title: "Domain coloring",
+    prompt: "“paint a complex function by its angle”",
+  },
+  {
+    scene: "tesseract",
+    label: "Topology",
+    title: "Square to hypercube",
+    prompt: "“unfold a square into 3D, then into 4D”",
+  },
+  {
+    scene: "boids",
+    label: "Emergence",
+    title: "Flocking",
+    prompt: "“give 130 birds three rules, then add a hawk”",
+  },
+  {
+    scene: "turing",
+    label: "Emergence",
+    title: "Turing patterns",
+    prompt: "“let two chemicals fight until stripes appear”",
+  },
+  {
+    scene: "galaxy",
+    label: "Physics",
+    title: "Galaxy collision",
+    prompt: "“throw two galaxies through each other”",
+  },
 ];
 
 export default function Gallery() {
@@ -187,7 +247,7 @@ export default function Gallery() {
         <p style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#3b62e0; margin:0 0 16px;")}>
           Gallery
         </p>
-        <h1 style={parseStyle("margin:0; max-width:760px; font-family:'Space Grotesk'; font-weight:700; font-size:50px; line-height:1.05; letter-spacing:-0.035em;")}>
+        <h1 style={parseStyle("margin:0; max-width:760px; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(34px,7vw,50px); line-height:1.05; letter-spacing:-0.035em;")}>
           Scenes made from a single sentence.
         </h1>
         <p style={parseStyle("margin:20px 0 0; max-width:560px; font-size:17px; line-height:1.6; color:#54545c;")}>

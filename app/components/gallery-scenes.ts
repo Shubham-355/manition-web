@@ -101,6 +101,56 @@ function MX(a: number[], b: number[], p: number) {
   return "rgb(" + Math.round(lp(a[0], b[0], p)) + "," + Math.round(lp(a[1], b[1], p)) + "," + Math.round(lp(a[2], b[2], p)) + ")";
 }
 
+function MN(a: number[], b: number[], p: number): number[] {
+  return [lp(a[0], b[0], p) | 0, lp(a[1], b[1], p) | 0, lp(a[2], b[2], p) | 0];
+}
+
+function HSV(h: number, s: number, v: number): number[] {
+  h = ((h % 1) + 1) % 1;
+  const i = Math.floor(h * 6),
+    f = h * 6 - i,
+    p = v * (1 - s),
+    q = v * (1 - f * s),
+    w = v * (1 - (1 - f) * s);
+  let r: number, g2: number, b: number;
+  switch (i % 6) {
+    case 0: r = v; g2 = w; b = p; break;
+    case 1: r = q; g2 = v; b = p; break;
+    case 2: r = p; g2 = v; b = w; break;
+    case 3: r = p; g2 = q; b = v; break;
+    case 4: r = w; g2 = p; b = v; break;
+    default: r = v; g2 = p; b = q;
+  }
+  return [(r * 255) | 0, (g2 * 255) | 0, (b * 255) | 0];
+}
+
+type Img = { c: HTMLCanvasElement; g: Ctx; d: ImageData };
+type Acc = { c: HTMLCanvasElement; g: Ctx };
+
+// Offscreen pixel buffer for scenes that write an ImageData per frame.
+function IMG(o: Scene, w: number, h: number): Img {
+  if (!o._im) {
+    const oc = document.createElement("canvas");
+    oc.width = w;
+    oc.height = h;
+    const og = oc.getContext("2d") as Ctx;
+    o._im = { c: oc, g: og, d: og.createImageData(w, h) };
+  }
+  return o._im;
+}
+
+// Offscreen buffer that accumulates across frames instead of being cleared.
+function ACC(o: Scene, w: number, h: number): Acc {
+  if (!o._ac) {
+    const oc = document.createElement("canvas");
+    oc.width = w;
+    oc.height = h;
+    o._ac = { c: oc, g: oc.getContext("2d") as Ctx };
+    o._an = 0;
+  }
+  return o._ac;
+}
+
 export interface Scene {
   T: number;
   poster: number;
@@ -126,6 +176,27 @@ export interface Scene {
     arcs: { cx: number; cy: number; r: number; a0: number; a1: number }[];
   };
   _G?: { grid: Uint8Array; gen: number; hist: Uint8Array[] };
+  _im?: Img;
+  _ac?: Acc;
+  _an?: number;
+  _hil?: number[][][];
+  _fern?: number[][];
+  _gasket?: { x: number; y: number; r: number; d: number }[];
+  _newton?: boolean;
+  _dom?: boolean;
+  _tessV?: number[][];
+  _tessE?: number[][];
+  _tessP?: number[][];
+  _flock?: { b: { x: number; y: number; vx: number; vy: number }[]; tt: number; warm?: boolean };
+  _rd?: { U: Float32Array; V: Float32Array; A: Float32Array; B: Float32Array; n: number };
+  _gal?: {
+    P: { x: number; y: number; vx: number; vy: number; g: number }[];
+    C: { x: number; y: number; vx: number; vy: number }[];
+    tt: number;
+    M: number;
+    s2: number;
+    warm?: boolean;
+  };
 }
 
 export const SCENES: Record<string, Scene> = {
@@ -2031,6 +2102,838 @@ export const SCENES: Record<string, Scene> = {
       if (lb > 0) {
         g.globalAlpha = lb;
         TX(g, "four rules, endless life", 160, 196, 9.5, K.dim, "center");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+  /* 30 · Hilbert curve filling a square */
+  hilbert: {
+    T: 16,
+    poster: 10,
+    draw(g, t) {
+      let i: number, j: number;
+      if (!this._hil) {
+        const mk = (n: number) => {
+          const pts: number[][] = [];
+          const rec = (x0: number, y0: number, xi: number, xj: number, yi: number, yj: number, d: number) => {
+            if (d <= 0) {
+              pts.push([x0 + (xi + yi) / 2, y0 + (xj + yj) / 2]);
+              return;
+            }
+            rec(x0, y0, yi / 2, yj / 2, xi / 2, xj / 2, d - 1);
+            rec(x0 + xi / 2, y0 + xj / 2, xi / 2, xj / 2, yi / 2, yj / 2, d - 1);
+            rec(x0 + xi / 2 + yi / 2, y0 + xj / 2 + yj / 2, xi / 2, xj / 2, yi / 2, yj / 2, d - 1);
+            rec(x0 + xi / 2 + yi, y0 + xj / 2 + yj, -yi / 2, -yj / 2, -xi / 2, -xj / 2, d - 1);
+          };
+          rec(80, 18, 164, 0, 0, 164, n);
+          return pts;
+        };
+        const L2: number[][][] = [];
+        for (let n2 = 1; n2 <= 6; n2++) L2.push(mk(n2));
+        this._hil = L2;
+      }
+      const HL = this._hil;
+      const stage = Math.min(5, Math.floor(Math.max(0, t - 0.3) / 2.5));
+      const pr = t < 0.3 ? 0 : Math.min(1, (t - 0.3 - stage * 2.5) / 1.9);
+      if (stage > 0) {
+        const pv = HL[stage - 1];
+        g.globalAlpha = 0.15;
+        g.strokeStyle = K.blue;
+        g.lineWidth = 1;
+        g.lineJoin = "round";
+        g.beginPath();
+        g.moveTo(pv[0][0], pv[0][1]);
+        for (i = 1; i < pv.length; i++) g.lineTo(pv[i][0], pv[i][1]);
+        g.stroke();
+        g.globalAlpha = 1;
+      }
+      const P = HL[stage],
+        n = Math.max(1, Math.floor(pr * (P.length - 1))),
+        seg = Math.max(1, Math.ceil(n / 48));
+      g.lineJoin = "round";
+      g.lineCap = "round";
+      g.lineWidth = Math.max(0.9, 3.4 - stage * 0.5);
+      for (i = 0; i < n; i += seg) {
+        g.strokeStyle = MX([126, 166, 217], [255, 217, 138], i / (P.length - 1));
+        g.beginPath();
+        g.moveTo(P[i][0], P[i][1]);
+        for (j = i + 1; j <= Math.min(n, i + seg); j++) g.lineTo(P[j][0], P[j][1]);
+        g.stroke();
+      }
+      TX(g, "order " + (stage + 1), 16, 52, 10, K.txt);
+      TX(g, Math.pow(4, stage + 1) + " cells", 16, 68, 9, K.dim);
+      const lb = sg(t, 14, 15);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "one line, every square", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* 31 · chaos game growing a Barnsley fern */
+  chaosgame: {
+    T: 17,
+    poster: 11,
+    draw(g, t) {
+      let i: number;
+      if (!this._fern) {
+        const R = rng(23),
+          P: number[][] = [];
+        let x = 0,
+          y = 0;
+        for (i = 0; i < 42000; i++) {
+          const r = R();
+          let nx: number, ny: number, m: number;
+          if (r < 0.01) {
+            nx = 0;
+            ny = 0.16 * y;
+            m = 0;
+          } else if (r < 0.86) {
+            nx = 0.85 * x + 0.04 * y;
+            ny = -0.04 * x + 0.85 * y + 1.6;
+            m = 1;
+          } else if (r < 0.93) {
+            nx = 0.2 * x - 0.26 * y;
+            ny = 0.23 * x + 0.22 * y + 1.6;
+            m = 2;
+          } else {
+            nx = -0.15 * x + 0.28 * y;
+            ny = 0.26 * x + 0.24 * y + 0.44;
+            m = 3;
+          }
+          x = nx;
+          y = ny;
+          P.push([160 + x * 17.5, 196 - y * 17.5, m]);
+        }
+        this._fern = P;
+      }
+      const ac = ACC(this, 640, 400),
+        n = Math.floor(ss(ln(t, 0.3, 15.5)) * this._fern.length);
+      if (n < (this._an ?? 0)) {
+        ac.g.clearRect(0, 0, 640, 400);
+        this._an = 0;
+      }
+      const ag = ac.g;
+      let last = "";
+      for (i = this._an ?? 0; i < n; i++) {
+        const q = this._fern[i];
+        const col = q[2] === 1 ? "rgba(95,191,126,.5)" : q[2] === 0 ? "rgba(126,166,217,.6)" : "rgba(194,145,58,.55)";
+        if (col !== last) {
+          ag.fillStyle = col;
+          last = col;
+        }
+        ag.fillRect(q[0] * 2, q[1] * 2, 1.5, 1.5);
+      }
+      this._an = n;
+      g.drawImage(ac.c, 0, 0, 320, 200);
+      TX(g, "points: " + n, 16, 52, 10, K.txt);
+      const la = sg(t, 1, 1.8);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "four matrices, rolled at random", 16, 68, 9, K.dim);
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 14.6, 15.6);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "no one drew the leaves", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* 32 · Apollonian gasket */
+  apollonian: {
+    T: 18,
+    poster: 12,
+    draw(g, t) {
+      let i: number;
+      if (!this._gasket) {
+        type Cur = { k: number; kx: number; ky: number };
+        const C: { x: number; y: number; r: number; d: number }[] = [];
+        const O: Cur = { k: -1, kx: 0, ky: 0 },
+          A: Cur = { k: 2, kx: -1, ky: 0 },
+          B: Cur = { k: 2, kx: 1, ky: 0 },
+          D1: Cur = { k: 3, kx: 0, ky: 2 },
+          D2: Cur = { k: 3, kx: 0, ky: -2 };
+        const add = (c: Cur, d: number) => {
+          C.push({ x: c.kx / c.k, y: c.ky / c.k, r: Math.abs(1 / c.k), d });
+        };
+        add(O, 0);
+        add(A, 0);
+        add(B, 0);
+        add(D1, 0);
+        add(D2, 0);
+        const rec = (a: Cur, b: Cur, c: Cur, d: Cur, dep: number) => {
+          if (C.length > 2200 || dep > 13) return;
+          const k = 2 * (a.k + b.k + c.k) - d.k,
+            r = Math.abs(1 / k);
+          if (r < 0.0055) return;
+          const e: Cur = { k, kx: 2 * (a.kx + b.kx + c.kx) - d.kx, ky: 2 * (a.ky + b.ky + c.ky) - d.ky };
+          add(e, dep);
+          rec(a, b, e, c, dep + 1);
+          rec(a, c, e, b, dep + 1);
+          rec(b, c, e, a, dep + 1);
+        };
+        rec(O, A, D1, B, 1);
+        rec(O, B, D1, A, 1);
+        rec(A, B, D1, O, 1);
+        rec(O, A, D2, B, 1);
+        rec(O, B, D2, A, 1);
+        rec(A, B, D2, O, 1);
+        C.sort((p, q) => p.d - q.d);
+        this._gasket = C;
+      }
+      const C = this._gasket,
+        S = 88,
+        show = Math.floor(ss(ln(t, 0.3, 15.6)) * C.length);
+      for (i = 0; i < show; i++) {
+        const c = C[i],
+          rr = c.r * S;
+        if (rr < 0.35) continue;
+        g.strokeStyle = i === 0 ? K.grid2 : MX([126, 166, 217], [255, 217, 138], Math.min(1, c.d / 7));
+        g.lineWidth = i === 0 ? 1.4 : Math.max(0.5, Math.min(1.5, rr * 0.09));
+        g.beginPath();
+        g.arc(160 + c.x * S, 100 - c.y * S, rr, 0, TAU);
+        g.stroke();
+      }
+      TX(g, show + " circles", 16, 52, 10, K.txt);
+      const la = sg(t, 1.4, 2.2);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "every gap holds another circle", 160, 192, 9.5, K.dim, "center");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* 33 · Julia set morphing around a circle of c */
+  julia: {
+    T: 18,
+    poster: 9,
+    draw(g, t) {
+      const W = 88,
+        H = 55,
+        im = IMG(this, W, H),
+        d = im.d.data;
+      let x: number, y: number;
+      const th = TAU * ss(ln(t, 0.4, 16.4)),
+        cr = 0.7885 * Math.cos(th),
+        ci = 0.7885 * Math.sin(th),
+        IT = 46;
+      for (y = 0; y < H; y++)
+        for (x = 0; x < W; x++) {
+          let zr = -1.7 + (x / (W - 1)) * 3.4,
+            zi = -1.06 + (y / (H - 1)) * 2.12,
+            k = 0;
+          while (k < IT && zr * zr + zi * zi < 4) {
+            const nr = zr * zr - zi * zi + cr;
+            zi = 2 * zr * zi + ci;
+            zr = nr;
+            k++;
+          }
+          const o = (y * W + x) * 4;
+          if (k >= IT) {
+            d[o] = 6;
+            d[o + 1] = 6;
+            d[o + 2] = 11;
+          } else {
+            const p = k / IT,
+              c = HSV(0.58 - p * 0.46, 0.68, 0.24 + 0.76 * Math.pow(p, 0.55));
+            d[o] = c[0];
+            d[o + 1] = c[1];
+            d[o + 2] = c[2];
+          }
+          d[o + 3] = 255;
+        }
+      im.g.putImageData(im.d, 0, 0);
+      g.imageSmoothingEnabled = true;
+      g.drawImage(im.c, 0, 0, 320, 200);
+      const ix = 284,
+        iy = 32,
+        ir = 15;
+      g.strokeStyle = "rgba(255,255,255,.35)";
+      g.lineWidth = 1;
+      g.beginPath();
+      g.arc(ix, iy, ir, 0, TAU);
+      g.stroke();
+      D(g, ix + ir * Math.cos(th), iy - ir * Math.sin(th), 2.6, "#ffd98a");
+      const la = sg(t, 1, 1.8);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "z → z² + c", 16, 50, 10, "rgba(255,255,255,.85)");
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 14.8, 15.8);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "one number, endless shapes", 308, 190, 9.5, "rgba(255,255,255,.7)", "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* 34 · Newton's method basins for z³ = 1 */
+  newton: {
+    T: 16,
+    poster: 11,
+    draw(g, t) {
+      const W = 104,
+        H = 65;
+      let x: number, y: number, k: number, j: number;
+      if (!this._newton) {
+        const im = IMG(this, W, H),
+          d = im.d.data;
+        const roots = [
+            [1, 0],
+            [-0.5, 0.8660254],
+            [-0.5, -0.8660254],
+          ],
+          cols = [
+            [126, 166, 217],
+            [220, 168, 72],
+            [95, 191, 126],
+          ];
+        for (y = 0; y < H; y++)
+          for (x = 0; x < W; x++) {
+            let zr = -2 + (x / (W - 1)) * 4,
+              zi = -1.25 + (y / (H - 1)) * 2.5,
+              ri = 0;
+            for (k = 0; k < 26; k++) {
+              const r2 = zr * zr,
+                i2 = zi * zi;
+              const dr = 3 * (r2 - i2),
+                di = 6 * zr * zi;
+              const nr = r2 * zr - 3 * zr * i2 - 1,
+                ni = 3 * r2 * zi - i2 * zi;
+              const dn = dr * dr + di * di;
+              if (dn < 1e-12) break;
+              zr -= (nr * dr + ni * di) / dn;
+              zi -= (ni * dr - nr * di) / dn;
+              let done = false;
+              for (j = 0; j < 3; j++)
+                if (Math.abs(zr - roots[j][0]) < 0.004 && Math.abs(zi - roots[j][1]) < 0.004) {
+                  ri = j;
+                  done = true;
+                  break;
+                }
+              if (done) break;
+            }
+            const sh = 1 - Math.min(1, k / 15) * 0.74,
+              o = (y * W + x) * 4,
+              cc = cols[ri];
+            d[o] = (cc[0] * sh) | 0;
+            d[o + 1] = (cc[1] * sh) | 0;
+            d[o + 2] = (cc[2] * sh) | 0;
+            d[o + 3] = 255;
+          }
+        im.g.putImageData(im.d, 0, 0);
+        this._newton = true;
+      }
+      const rows = Math.floor(ss(ln(t, 0.3, 10.5)) * H);
+      if (rows > 0 && this._im) {
+        g.imageSmoothingEnabled = true;
+        g.drawImage(this._im.c, 0, 0, W, rows, 0, 0, 320, (rows / H) * 200);
+        if (rows < H) L(g, 0, (rows / H) * 200, 320, (rows / H) * 200, "rgba(255,217,138,.45)", 1);
+      }
+      const pth = sg(t, 11, 11.6);
+      if (pth > 0) {
+        let zr2 = -0.28,
+          zi2 = 0.62;
+        const steps = Math.min(7, Math.floor((t - 11) / 0.55) + 1);
+        const X = (u: number) => ((u + 2) / 4) * 320,
+          Y = (v: number) => ((v + 1.25) / 2.5) * 200;
+        g.globalAlpha = pth;
+        let lx = X(zr2),
+          ly = Y(zi2);
+        D(g, lx, ly, 3, "#fff");
+        for (k = 0; k < steps; k++) {
+          const a2 = zr2 * zr2,
+            b2 = zi2 * zi2,
+            drb = 3 * (a2 - b2),
+            dib = 6 * zr2 * zi2;
+          const nrb = a2 * zr2 - 3 * zr2 * b2 - 1,
+            nib = 3 * a2 * zi2 - b2 * zi2,
+            dnb = drb * drb + dib * dib;
+          if (dnb < 1e-12) break;
+          zr2 -= (nrb * drb + nib * dib) / dnb;
+          zi2 -= (nib * drb - nrb * dib) / dnb;
+          const nx2 = X(zr2),
+            ny2 = Y(zi2);
+          AR(g, lx, ly, nx2, ny2, "rgba(255,255,255,.85)", 1.4);
+          lx = nx2;
+          ly = ny2;
+        }
+        D(g, lx, ly, 3.2, "#ffd98a");
+        TX(g, "z ← z − f/f′", 12, 190, 9.5, "rgba(255,255,255,.85)");
+        g.globalAlpha = 1;
+      }
+      TX(g, "z³ = 1", 308, 20, 10, "rgba(255,255,255,.85)", "right");
+    },
+  },
+
+  /* 35 · domain coloring of a rational function */
+  complexmap: {
+    T: 16,
+    poster: 10,
+    draw(g, t) {
+      const W = 112,
+        H = 70;
+      let x: number, y: number, i: number;
+      if (!this._dom) {
+        const im = IMG(this, W, H),
+          d = im.d.data;
+        for (y = 0; y < H; y++)
+          for (x = 0; x < W; x++) {
+            const zr = -3.2 + (x / (W - 1)) * 6.4,
+              zi = 2 - (y / (H - 1)) * 4;
+            const ar = zr * zr - zi * zi - 1,
+              ai = 2 * zr * zi;
+            const br = zr - 2,
+              bi = zi - 1,
+              b2r = br * br - bi * bi,
+              b2i = 2 * br * bi;
+            const nr = ar * b2r - ai * b2i,
+              ni = ar * b2i + ai * b2r;
+            const dr = zr * zr - zi * zi + 2,
+              di = 2 * zr * zi + 2,
+              dn = dr * dr + di * di;
+            let fr: number, fi: number;
+            if (dn < 1e-9) {
+              fr = 1e9;
+              fi = 0;
+            } else {
+              fr = (nr * dr + ni * di) / dn;
+              fi = (ni * dr - nr * di) / dn;
+            }
+            const m = Math.hypot(fr, fi),
+              lg = Math.log(m + 1e-9) / Math.LN2,
+              band = lg - Math.floor(lg);
+            const c = HSV(Math.atan2(fi, fr) / TAU, 0.74 - 0.2 * band, 0.3 + 0.6 * band),
+              o = (y * W + x) * 4;
+            d[o] = c[0];
+            d[o + 1] = c[1];
+            d[o + 2] = c[2];
+            d[o + 3] = 255;
+          }
+        im.g.putImageData(im.d, 0, 0);
+        this._dom = true;
+      }
+      const r = ss(ln(t, 0.3, 9)) * 232;
+      if (r > 1 && this._im) {
+        g.save();
+        g.beginPath();
+        g.arc(160, 100, r, 0, TAU);
+        g.clip();
+        g.imageSmoothingEnabled = true;
+        g.drawImage(this._im.c, 0, 0, 320, 200);
+        g.restore();
+      }
+      const X = (u: number) => ((u + 3.2) / 6.4) * 320,
+        Y = (v: number) => ((2 - v) / 4) * 200;
+      const an = sg(t, 9.4, 10.4);
+      if (an > 0) {
+        g.globalAlpha = an;
+        g.strokeStyle = "#fff";
+        g.lineWidth = 1.3;
+        const zs = [
+          [1, 0],
+          [-1, 0],
+          [2, 1],
+        ];
+        for (i = 0; i < 3; i++) {
+          g.beginPath();
+          g.arc(X(zs[i][0]), Y(zs[i][1]), 5.5, 0, TAU);
+          g.stroke();
+        }
+        const ps = [
+          [0.6436, -1.5538],
+          [-0.6436, 1.5538],
+        ];
+        for (i = 0; i < 2; i++) {
+          const px = X(ps[i][0]),
+            py = Y(ps[i][1]);
+          L(g, px - 4.5, py - 4.5, px + 4.5, py + 4.5, "#fff", 1.4);
+          L(g, px - 4.5, py + 4.5, px + 4.5, py - 4.5, "#fff", 1.4);
+        }
+        TX(g, "circles = zeros    crosses = poles", 160, 190, 9, "rgba(255,255,255,.9)", "center");
+        g.globalAlpha = 1;
+      }
+      const la = sg(t, 1.2, 2);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "hue = angle of f(z)", 16, 50, 9.5, "rgba(255,255,255,.85)");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* 36 · square → cube → tesseract */
+  tesseract: {
+    T: 18,
+    poster: 13,
+    draw(g, t) {
+      let i: number, j: number;
+      if (!this._tessV) {
+        const V: number[][] = [],
+          E: number[][] = [];
+        for (let n = 0; n < 16; n++) V.push([n & 1 ? 1 : -1, n & 2 ? 1 : -1, n & 4 ? 1 : -1, n & 8 ? 1 : -1]);
+        for (i = 0; i < 16; i++)
+          for (j = i + 1; j < 16; j++) {
+            const q = i ^ j;
+            if (q && !(q & (q - 1))) E.push([i, j]);
+          }
+        this._tessV = V;
+        this._tessE = E;
+        this._tessP = [];
+      }
+      const V = this._tessV,
+        E = this._tessE!,
+        PR = this._tessP!;
+      const sz = sg(t, 3, 6),
+        sw = sg(t, 7, 10.5),
+        az = t * 0.18,
+        a = t * 0.34 * sz,
+        b = t * 0.23 * sz,
+        c = t * 0.41 * sw;
+      const cz = Math.cos(az),
+        szn = Math.sin(az),
+        ca = Math.cos(a),
+        sa = Math.sin(a);
+      const cb = Math.cos(b),
+        sb = Math.sin(b),
+        cc = Math.cos(c),
+        sc2 = Math.sin(c);
+      for (i = 0; i < 16; i++) {
+        const v = V[i];
+        const x = v[0] * cz - v[1] * szn,
+          y = v[0] * szn + v[1] * cz,
+          z = v[2] * sz,
+          w = v[3] * sw;
+        const x2 = x * cc - w * sc2,
+          w2 = x * sc2 + w * cc;
+        const y2 = y * cb - z * sb,
+          z2 = y * sb + z * cb;
+        const x3 = x2 * ca - z2 * sa,
+          z3 = x2 * sa + z2 * ca;
+        const k4 = 2.6 / (2.6 - w2 * 0.55),
+          X3 = x3 * k4,
+          Y3 = y2 * k4,
+          Z3 = z3 * k4;
+        const k3 = 3.4 / (3.4 - Z3 * 0.6);
+        PR[i] = [160 + X3 * k3 * 36, 100 - Y3 * k3 * 36, (w2 + 2) / 4];
+      }
+      const order: number[][] = [];
+      for (i = 0; i < E.length; i++) order.push([(PR[E[i][0]][2] + PR[E[i][1]][2]) / 2, i]);
+      order.sort((p, q) => p[0] - q[0]);
+      for (i = 0; i < order.length; i++) {
+        const e = E[order[i][1]],
+          dp = order[i][0],
+          p1 = PR[e[0]],
+          p2 = PR[e[1]];
+        g.globalAlpha = 0.22 + 0.78 * dp;
+        L(g, p1[0], p1[1], p2[0], p2[1], MX([88, 118, 168], [255, 217, 138], dp), 0.7 + 1.7 * dp);
+      }
+      for (i = 0; i < 16; i++) {
+        g.globalAlpha = 0.3 + 0.7 * PR[i][2];
+        D(g, PR[i][0], PR[i][1], 1.3 + 1.5 * PR[i][2], "#f4f4f5");
+      }
+      g.globalAlpha = 1;
+      const dim = sw > 0.04 ? 4 : sz > 0.04 ? 3 : 2;
+      TX(g, dim + "D", 16, 50, 13, K.gold);
+      TX(g, dim === 2 ? "4 corners · 4 edges" : dim === 3 ? "8 corners · 12 edges" : "16 corners · 32 edges", 16, 68, 9, K.dim);
+      const lb = sg(t, 12, 13);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "a shadow of a shadow", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* 37 · flocking, then a hawk */
+  boids: {
+    T: 20,
+    poster: 9,
+    draw(g, t) {
+      let i: number, j: number;
+      if (!this._flock || t < this._flock.tt - 0.05) {
+        const R = rng(5),
+          B: { x: number; y: number; vx: number; vy: number }[] = [];
+        for (i = 0; i < 130; i++) B.push({ x: R() * 320, y: R() * 200, vx: (R() - 0.5) * 90, vy: (R() - 0.5) * 90 });
+        this._flock = { b: B, tt: 0 };
+      }
+      const S = this._flock,
+        B = S.b,
+        dt = 1 / 60,
+        gcap = S.warm ? 150 : 600;
+      let guard = 0;
+      while (S.tt < t && guard++ < gcap) {
+        const hOn = S.tt > 7.5,
+          hx = 160 + 96 * Math.cos(S.tt * 0.9),
+          hy = 100 + 62 * Math.sin(S.tt * 1.25);
+        for (i = 0; i < B.length; i++) {
+          const o = B[i];
+          let cx = 0,
+            cy = 0,
+            ax = 0,
+            ay = 0,
+            sx = 0,
+            sy = 0,
+            cnt = 0;
+          for (j = 0; j < B.length; j++) {
+            if (i === j) continue;
+            const p = B[j],
+              dx = p.x - o.x,
+              dy = p.y - o.y,
+              d2 = dx * dx + dy * dy;
+            if (d2 > 2600) continue;
+            cnt++;
+            cx += p.x;
+            cy += p.y;
+            ax += p.vx;
+            ay += p.vy;
+            if (d2 < 300 && d2 > 0.01) {
+              const dd = Math.sqrt(d2);
+              sx -= (dx / dd) * (18 - dd * 0.6);
+              sy -= (dy / dd) * (18 - dd * 0.6);
+            }
+          }
+          let fx = sx * 2.2,
+            fy = sy * 2.2;
+          if (cnt) {
+            fx += (cx / cnt - o.x) * 0.9 + (ax / cnt - o.vx) * 1.4;
+            fy += (cy / cnt - o.y) * 0.9 + (ay / cnt - o.vy) * 1.4;
+          }
+          if (o.x < 26) fx += (26 - o.x) * 7;
+          if (o.x > 294) fx -= (o.x - 294) * 7;
+          if (o.y < 20) fy += (20 - o.y) * 7;
+          if (o.y > 180) fy -= (o.y - 180) * 7;
+          if (hOn) {
+            const ex = o.x - hx,
+              ey = o.y - hy,
+              ed = Math.hypot(ex, ey);
+            if (ed < 58 && ed > 0.01) {
+              fx += (ex / ed) * (58 - ed) * 11;
+              fy += (ey / ed) * (58 - ed) * 11;
+            }
+          }
+          o.vx += fx * dt;
+          o.vy += fy * dt;
+          const sp = Math.hypot(o.vx, o.vy);
+          if (sp > 86) {
+            o.vx = (o.vx / sp) * 86;
+            o.vy = (o.vy / sp) * 86;
+          } else if (sp < 34 && sp > 0.01) {
+            o.vx = (o.vx / sp) * 34;
+            o.vy = (o.vy / sp) * 34;
+          }
+          o.x += o.vx * dt;
+          o.y += o.vy * dt;
+        }
+        S.tt += dt;
+      }
+      S.warm = true;
+      for (i = 0; i < B.length; i++) {
+        const o2 = B[i],
+          s2 = Math.hypot(o2.vx, o2.vy) || 1,
+          ux = o2.vx / s2,
+          uy = o2.vy / s2;
+        g.fillStyle = MX([126, 166, 217], [95, 191, 126], Math.min(1, (s2 - 34) / 52));
+        g.beginPath();
+        g.moveTo(o2.x + ux * 5, o2.y + uy * 5);
+        g.lineTo(o2.x - ux * 3 - uy * 2.4, o2.y - uy * 3 + ux * 2.4);
+        g.lineTo(o2.x - ux * 3 + uy * 2.4, o2.y - uy * 3 - ux * 2.4);
+        g.closePath();
+        g.fill();
+      }
+      if (t > 7.5) {
+        const px = 160 + 96 * Math.cos(t * 0.9),
+          py = 100 + 62 * Math.sin(t * 1.25);
+        g.globalAlpha = 0.2;
+        D(g, px, py, 17, K.gold);
+        g.globalAlpha = 1;
+        D(g, px, py, 4.4, "#ffd98a");
+      }
+      TX(g, "130 birds, 3 rules", 16, 50, 10, K.txt);
+      const la = sg(t, 7.6, 8.4);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "+ 1 hawk", 16, 66, 10, K.gold);
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 17, 18);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "no leader, no plan", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* 38 · Gray-Scott reaction-diffusion */
+  turing: {
+    T: 18,
+    poster: 10,
+    draw(g, t) {
+      const W = 80,
+        H = 50;
+      let i: number, x: number, y: number;
+      let S = this._rd;
+      const target = Math.floor(Math.max(0, t - 0.3) * 95);
+      if (!S || target < S.n) {
+        const R = rng(13),
+          U = new Float32Array(W * H),
+          Vv = new Float32Array(W * H);
+        let k2: number, j2: number, i2: number;
+        for (i = 0; i < W * H; i++) U[i] = 1;
+        for (k2 = 0; k2 < 12; k2++) {
+          const bx = 4 + Math.floor(R() * (W - 8)),
+            by = 4 + Math.floor(R() * (H - 8));
+          for (j2 = -3; j2 <= 3; j2++)
+            for (i2 = -3; i2 <= 3; i2++) {
+              const id = ((by + j2 + H) % H) * W + ((bx + i2 + W) % W);
+              U[id] = 0.42;
+              Vv[id] = 0.28;
+            }
+        }
+        S = this._rd = { U, V: Vv, A: new Float32Array(W * H), B: new Float32Array(W * H), n: 0 };
+      }
+      const U = S.U,
+        Vv = S.V,
+        A = S.A,
+        B = S.B,
+        cap = S.n === 0 ? 420 : 26;
+      let steps = 0;
+      while (S.n < target && steps < cap) {
+        steps++;
+        for (y = 0; y < H; y++) {
+          const ym = ((y - 1 + H) % H) * W,
+            yp = ((y + 1) % H) * W,
+            yc = y * W;
+          for (x = 0; x < W; x++) {
+            const xm = (x - 1 + W) % W,
+              xp = (x + 1) % W,
+              c = yc + x;
+            const lu = U[yc + xm] + U[yc + xp] + U[ym + x] + U[yp + x] - 4 * U[c];
+            const lv = Vv[yc + xm] + Vv[yc + xp] + Vv[ym + x] + Vv[yp + x] - 4 * Vv[c];
+            const uv = U[c] * Vv[c] * Vv[c];
+            A[c] = U[c] + 0.16 * lu - uv + 0.037 * (1 - U[c]);
+            B[c] = Vv[c] + 0.08 * lv + uv - 0.098 * Vv[c];
+          }
+        }
+        U.set(A);
+        Vv.set(B);
+        S.n++;
+      }
+      const im = IMG(this, W, H),
+        d = im.d.data;
+      for (i = 0; i < W * H; i++) {
+        const v = Math.min(1, Vv[i] * 3.2),
+          o = i * 4;
+        const cc = v < 0.5 ? MN([9, 10, 16], [126, 166, 217], v / 0.5) : MN([126, 166, 217], [255, 217, 138], (v - 0.5) / 0.5);
+        d[o] = cc[0];
+        d[o + 1] = cc[1];
+        d[o + 2] = cc[2];
+        d[o + 3] = 255;
+      }
+      im.g.putImageData(im.d, 0, 0);
+      g.imageSmoothingEnabled = true;
+      g.drawImage(im.c, 0, 0, 320, 200);
+      TX(g, "step " + S.n, 308, 20, 9.5, "rgba(255,255,255,.6)", "right");
+      const la = sg(t, 1, 1.8);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "f = 0.037   k = 0.061", 12, 190, 9.5, "rgba(255,255,255,.65)");
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 15, 16);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "two chemicals, one skin", 308, 190, 9.5, "rgba(255,255,255,.65)", "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* 39 · two galaxies passing through each other */
+  galaxy: {
+    T: 20,
+    poster: 13,
+    draw(g, t) {
+      let i: number;
+      let S = this._gal;
+      if (!S || t < S.tt - 0.05) {
+        const R = rng(29),
+          M = 62000,
+          P: { x: number; y: number; vx: number; vy: number; g: number }[] = [],
+          cores = [
+            { x: 70, y: 140, vx: 2.5, vy: 6 },
+            { x: 240, y: 70, vx: -2.5, vy: -6 },
+          ];
+        let k: number, j: number;
+        for (k = 0; k < 2; k++) {
+          const C0 = cores[k],
+            dir = k ? -1 : 1;
+          for (j = 0; j < 260; j++) {
+            const rr = 11 + Math.pow(R(), 0.55) * 33,
+              a = R() * TAU,
+              v = Math.sqrt(M / rr) * dir;
+            P.push({ x: C0.x + rr * Math.cos(a), y: C0.y + rr * Math.sin(a), vx: C0.vx - Math.sin(a) * v, vy: C0.vy + Math.cos(a) * v, g: k });
+          }
+        }
+        S = this._gal = { P, C: cores, tt: 0, M, s2: 169 };
+      }
+      const P = S.P,
+        C = S.C,
+        dt = 1 / 120,
+        gcap = S.warm ? 60 : 2600;
+      let guard = 0,
+        k2: number;
+      while (S.tt < t && guard++ < gcap) {
+        const dx = C[1].x - C[0].x,
+          dy = C[1].y - C[0].y,
+          dd = dx * dx + dy * dy + S.s2,
+          f = S.M / (dd * Math.sqrt(dd));
+        C[0].vx += dx * f * dt;
+        C[0].vy += dy * f * dt;
+        C[1].vx -= dx * f * dt;
+        C[1].vy -= dy * f * dt;
+        C[0].x += C[0].vx * dt;
+        C[0].y += C[0].vy * dt;
+        C[1].x += C[1].vx * dt;
+        C[1].y += C[1].vy * dt;
+        for (i = 0; i < P.length; i++) {
+          const p = P[i];
+          for (k2 = 0; k2 < 2; k2++) {
+            const ex = C[k2].x - p.x,
+              ey = C[k2].y - p.y,
+              e2 = ex * ex + ey * ey + S.s2,
+              ff = S.M / (e2 * Math.sqrt(e2));
+            p.vx += ex * ff * dt;
+            p.vy += ey * ff * dt;
+          }
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+        }
+        S.tt += dt;
+      }
+      S.warm = true;
+      for (i = 0; i < P.length; i++) {
+        const q = P[i];
+        if (q.x < -16 || q.x > 336 || q.y < -16 || q.y > 216) continue;
+        g.globalAlpha = 0.46 + 0.5 * Math.min(1, Math.hypot(q.vx, q.vy) / 150);
+        D(g, q.x, q.y, 1.4, q.g ? "#ffd98a" : "#9ec2ea");
+      }
+      g.globalAlpha = 1;
+      D(g, C[0].x, C[0].y, 2.6, "#fff");
+      D(g, C[1].x, C[1].y, 2.6, "#fff");
+      TX(g, "520 stars · 2 cores", 16, 50, 10, K.txt);
+      const lb = sg(t, 15, 16.4);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "tidal tails, then one galaxy", 304, 186, 9.5, K.dim, "right");
         g.globalAlpha = 1;
       }
     },
