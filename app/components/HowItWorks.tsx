@@ -103,11 +103,6 @@ export default function HowItWorks() {
               Every word is an instruction.
             </h2>
           </div>
-          <p style={parseStyle("margin:0; max-width:420px; font-size:14.5px; line-height:1.65; color:#6b6b73;")}>
-            You describe a scene, Manition writes real Manim code, cloud GPUs render the MP4. The
-            magic is the middle step - here it is, word by word.{" "}
-            <strong style={parseStyle("color:#16161a; font-weight:600;")}>Click any highlighted word.</strong>
-          </p>
         </div>
 
         <div
