@@ -28,7 +28,7 @@ export default function Features() {
           Features
         </p>
         <div style={parseStyle("display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap;")}>
-          <h1 style={parseStyle("margin:0; max-width:660px; font-family:'Space Grotesk'; font-weight:700; font-size:54px; line-height:1.02; letter-spacing:-0.035em;")}>
+          <h1 style={parseStyle("margin:0; max-width:660px; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(34px,7.2vw,54px); line-height:1.02; letter-spacing:-0.035em;")}>
             Everything you need to turn an idea into an animation.
           </h1>
           <p style={parseStyle("margin:0 0 6px; font-family:'IBM Plex Mono',monospace; font-size:12px; line-height:1.9; color:#8a8a82; text-align:right;")}>
@@ -83,7 +83,7 @@ export default function Features() {
         <div style={parseStyle("position:relative; overflow:hidden; background:#0c0c0f; border-radius:22px; padding:56px 40px; text-align:center;")}>
           <div style={parseStyle("position:absolute; inset:0; opacity:0.5; background:radial-gradient(600px 300px at 50% -10%, rgba(59,98,224,0.22), transparent);")}></div>
           <div style={parseStyle("position:relative;")}>
-            <h2 style={parseStyle("margin:0 0 14px; font-family:'Space Grotesk'; font-weight:700; font-size:34px; letter-spacing:-0.03em; color:#f7f6f3;")}>
+            <h2 style={parseStyle("margin:0 0 14px; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(26px,4.8vw,34px); letter-spacing:-0.03em; color:#f7f6f3;")}>
               See it move.
             </h2>
             <p style={parseStyle("margin:0 auto 28px; max-width:440px; font-size:15.5px; color:#a1a1aa; line-height:1.6;")}>

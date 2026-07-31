@@ -75,7 +75,7 @@ export default function About() {
         <p style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#3b62e0; margin:0 0 16px;")}>
           About
         </p>
-        <h1 style={parseStyle("margin:0 auto; max-width:700px; font-family:'Space Grotesk'; font-weight:700; font-size:50px; line-height:1.06; letter-spacing:-0.035em;")}>
+        <h1 style={parseStyle("margin:0 auto; max-width:700px; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(33px,6.8vw,50px); line-height:1.06; letter-spacing:-0.035em;")}>
           Math is beautiful when it moves.
         </h1>
         <p style={parseStyle("margin:22px auto 0; max-width:560px; font-size:17px; line-height:1.65; color:#54545c;")}>

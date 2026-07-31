@@ -69,7 +69,7 @@ export default function Pricing() {
         <p style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#3b62e0; margin:0 0 16px;")}>
           Pricing
         </p>
-        <h1 style={parseStyle("margin:0 auto; max-width:640px; font-family:'Space Grotesk'; font-weight:700; font-size:50px; line-height:1.05; letter-spacing:-0.035em;")}>
+        <h1 style={parseStyle("margin:0 auto; max-width:640px; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(34px,7vw,50px); line-height:1.05; letter-spacing:-0.035em;")}>
           Pricing you help decide.
         </h1>
         <p style={parseStyle("margin:20px auto 0; max-width:500px; font-size:17px; line-height:1.6; color:#54545c;")}>
@@ -192,7 +192,7 @@ export default function Pricing() {
 
       <section style={parseStyle("max-width:1080px; margin:0 auto; padding:44px 30px 90px;")}>
         <div style={parseStyle("background:#0c0c0f; border-radius:22px; padding:56px 40px; text-align:center;")}>
-          <h2 style={parseStyle("margin:0 0 14px; font-family:'Space Grotesk'; font-weight:700; font-size:34px; letter-spacing:-0.03em; color:#f7f6f3;")}>Help set the price.</h2>
+          <h2 style={parseStyle("margin:0 0 14px; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(26px,4.8vw,34px); letter-spacing:-0.03em; color:#f7f6f3;")}>Help set the price.</h2>
           <p style={parseStyle("margin:0 auto 28px; max-width:460px; font-size:15.5px; color:#a1a1aa; line-height:1.6;")}>
             Join the waitlist to shape the plans - and grab founder rates before launch.
           </p>

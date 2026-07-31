@@ -524,7 +524,7 @@ export default function DocsReader() {
         <p style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#3b62e0; margin:0 0 16px;")}>
           Docs
         </p>
-        <h1 style={parseStyle("margin:0 auto; font-family:'Space Grotesk'; font-weight:700; font-size:46px; line-height:1.06; letter-spacing:-0.035em;")}>
+        <h1 style={parseStyle("margin:0 auto; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(32px,6.6vw,46px); line-height:1.06; letter-spacing:-0.035em;")}>
           How can we help?
         </h1>
         <form
