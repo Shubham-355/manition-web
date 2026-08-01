@@ -69,6 +69,7 @@ const stageWrap = "width:min(430px,100%);";
 
 export default function FeaturesStudio() {
   const [step, setStep] = useState(0);
+  const [hovered, setHovered] = useState(-1);
   const paused = useRef(false);
 
   useEffect(() => {
@@ -97,9 +98,14 @@ export default function FeaturesStudio() {
               <button
                 key={s.label}
                 onClick={() => setStep(k)}
-                style={parseStyle(
-                  `appearance:none; background:none; border:0; border-right:${k < 3 ? "1px solid #1f1f26" : "0"}; flex:1; min-width:0; display:flex; align-items:center; justify-content:center; gap:10px; padding:17px 12px; cursor:pointer; position:relative; transition:background .15s;`,
-                )}
+                onMouseEnter={() => setHovered(k)}
+                onMouseLeave={() => setHovered(-1)}
+                style={{
+                  ...parseStyle(
+                    `appearance:none; background:none; border:0; border-right:${k < 3 ? "1px solid #1f1f26" : "0"}; flex:1; min-width:0; display:flex; align-items:center; justify-content:center; gap:10px; padding:17px 12px; cursor:pointer; position:relative; transition:background .15s;`,
+                  ),
+                  ...(hovered === k ? { background: "#121218" } : {}),
+                }}
               >
                 <span style={parseStyle(`font-family:'IBM Plex Mono',monospace; font-size:12px; color:${on ? s.accent : "#3f3f46"}; transition:color .2s;`)}>
                   {"0" + (k + 1)}
