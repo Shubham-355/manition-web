@@ -117,11 +117,8 @@ export default function Footer() {
           <Hover as="a" href="/blog" style={linkBase} hoverStyle={linkHover}>
             Blog
           </Hover>
-          <Hover as="a" href="/blog" style={linkBase} hoverStyle={linkHover}>
-            Changelog
-          </Hover>
-          <Hover as="a" href="/docs" style={linkBase} hoverStyle={linkHover}>
-            Manim guide
+          <Hover as="a" href="/gallery" style={linkBase} hoverStyle={linkHover}>
+            Example prompts
           </Hover>
         </div>
 
