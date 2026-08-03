@@ -9,9 +9,6 @@ const socialHover = { borderColor: "#4a4a52", color: "#f4f4f5" };
 const linkBase = "text-decoration:none; font-size:13.5px; color:#a1a1aa;";
 const linkHover = { color: "#f4f4f5" };
 
-const bottomLinkBase = "text-decoration:none; font-size:12.5px; color:#6b6b73;";
-const bottomLinkHover = { color: "#c8c8cc" };
-
 const columnLabel =
   "margin:0 0 4px; font-size:11px; font-weight:600; color:#5b5b63; text-transform:uppercase; letter-spacing:0.14em; font-family:'IBM Plex Mono',monospace;";
 
@@ -150,13 +147,6 @@ export default function Footer() {
         <p style={parseStyle("margin:0; font-size:12.5px; color:#6b6b73;")}>
           © 2026 Manition. All rights reserved.
         </p>
-        <div style={parseStyle("flex:1;")}></div>
-        <Hover as="a" href="#" style={bottomLinkBase} hoverStyle={bottomLinkHover}>
-          Privacy
-        </Hover>
-        <Hover as="a" href="#" style={bottomLinkBase} hoverStyle={bottomLinkHover}>
-          Terms
-        </Hover>
       </div>
     </footer>
   );
