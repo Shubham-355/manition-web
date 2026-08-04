@@ -15,7 +15,6 @@ const X0 = 216;
 const X1 = 462;
 const SPEED = 54;
 
-// Watch-phase progress points at which each harmonic joins the rig.
 const JOINS = [0.595, 0.68, 0.765, 0.85];
 
 const codeLine = "opacity:0; animation:mv-line " + LOOP + " linear infinite;";
@@ -51,8 +50,7 @@ export default function IntroDemo() {
     const penGlow = mk("circle", { r: "7", fill: "rgba(255,255,255,0.16)" });
     const pen = mk("circle", { r: "3.2", fill: "#ffffff" });
 
-    // Drive the rig off the mv-fs CSS animation's clock so the harmonics join in
-    // step with the watch phase even if the tab throttles rAF.
+    // Sync to the mv-fs clock so harmonics join on time even if rAF throttles.
     let clock: Animation | null = null;
     const findClock = () => {
       if (clock) return clock;
@@ -141,7 +139,6 @@ export default function IntroDemo() {
         <div style={parseStyle("position:absolute; inset:-48px -70px; background:radial-gradient(50% 55% at 50% 45%, rgba(126,166,217,0.08) 0%, rgba(9,9,11,0) 70%); pointer-events:none;")}></div>
         <div style={parseStyle("position:relative; width:100%; box-sizing:border-box; border:1px solid #26262c; border-radius:15px; background:rgba(13,13,16,0.92); box-shadow:0 32px 80px rgba(0,0,0,0.45), 0 2px 0 rgba(255,255,255,0.03) inset; overflow:hidden; backdrop-filter:blur(6px);")}>
 
-          {/* title bar */}
           <div style={parseStyle("display:flex; align-items:center; gap:7px; padding:11px 14px; border-bottom:1px solid #1c1c21; background:rgba(20,20,24,0.8);")}>
             <span style={parseStyle("width:9px; height:9px; border-radius:50%; background:#33343a;")}></span>
             <span style={parseStyle("width:9px; height:9px; border-radius:50%; background:#33343a;")}></span>
@@ -150,10 +147,8 @@ export default function IntroDemo() {
             <span style={parseStyle("width:43px;")}></span>
           </div>
 
-          {/* stage */}
           <div style={parseStyle("position:relative; aspect-ratio:16/10; overflow:hidden;")}>
 
-            {/* continuous app UI */}
             <div style={parseStyle(`position:absolute; inset:0; display:flex; flex-direction:column; transform-origin:50% 48%; animation:mv-ui ${LOOP} linear infinite, mv-zoom ${LOOP} linear infinite;`)}>
 
               <div style={parseStyle("flex:1 1 0; min-height:0; overflow:hidden; position:relative;")}>
@@ -224,7 +219,6 @@ export default function IntroDemo() {
                 </div>
               </div>
 
-              {/* composer */}
               <div style={parseStyle("flex:0 0 auto; padding:9px 12px 11px; border-top:1px solid #1a1a1f; background:rgba(17,17,21,0.65);")}>
                 <div style={parseStyle(`display:flex; align-items:center; gap:9px; background:#141418; border:1px solid #26262c; border-radius:11px; padding:7px 7px 7px 12px; animation:mv-focus ${LOOP} linear infinite;`)}>
                   <div style={parseStyle("position:relative; flex:1; min-width:0; height:15px;")}>
@@ -258,7 +252,6 @@ export default function IntroDemo() {
               </svg>
             </div>
 
-            {/* fullscreen video · watch phase */}
             <div ref={fsRef} style={parseStyle(`position:absolute; inset:0; z-index:4; background:#000; opacity:0; transform-origin:50% 48%; animation:mv-fs ${LOOP} linear infinite; pointer-events:none;`)}>
               <svg viewBox="0 0 480 300" preserveAspectRatio="xMidYMid meet" style={parseStyle("position:absolute; inset:0; width:100%; height:100%;")}>
                 <defs>
@@ -292,7 +285,6 @@ export default function IntroDemo() {
               </div>
             </div>
 
-            {/* opening title card */}
             <div style={parseStyle(`position:absolute; inset:0; z-index:7; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; background:#0b0b0e; overflow:hidden; animation:mv-open ${LOOP} linear infinite; pointer-events:none;`)}>
               <div style={parseStyle(`position:absolute; inset:-30%; background:radial-gradient(42% 42% at 50% 46%, rgba(126,166,217,0.13) 0%, rgba(11,11,14,0) 70%); opacity:0; animation:mv-open-glow ${LOOP} linear infinite;`)}></div>
               <div style={parseStyle(`position:relative; display:flex; align-items:center; gap:13px; opacity:0; animation:mv-open-mark ${LOOP} linear infinite;`)}>
@@ -305,7 +297,6 @@ export default function IntroDemo() {
               </div>
             </div>
 
-            {/* outro brand card */}
             <div style={parseStyle(`position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; background:#09090b; opacity:0; animation:mv-outro ${LOOP} linear infinite; pointer-events:none;`)}>
               <div style={parseStyle(`display:flex; align-items:center; opacity:0; animation:mv-outro-mark ${LOOP} cubic-bezier(.2,.7,.2,1) infinite;`)}>
                 <span style={parseStyle("font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:34px; letter-spacing:-0.01em; color:#fafafa;")}>Manition</span>
