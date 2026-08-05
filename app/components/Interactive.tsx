@@ -55,6 +55,8 @@ export function Hover({
       style={hovered ? { ...base, ...hoverStyle } : base}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
     >
       {children}
     </Tag>
