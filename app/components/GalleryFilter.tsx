@@ -47,7 +47,6 @@ const srOnly = parseStyle(
 
 export default function GalleryFilter({ cards }: { cards: GalleryCard[] }) {
   const [active, setActive] = useState(ALL);
-  const [hovered, setHovered] = useState<string | null>(null);
 
   const categories = useMemo(() => {
     // Keep the first spelling of each label as authored, keyed by its
@@ -111,25 +110,20 @@ export default function GalleryFilter({ cards }: { cards: GalleryCard[] }) {
         {categories.map((cat) => {
           const on = norm(cat) === norm(active);
           return (
-            <button
+            <Hover
+              as="button"
               key={cat}
               type="button"
-              aria-pressed={on}
+              ariaPressed={on}
               onClick={() => select(cat)}
-              onMouseEnter={() => setHovered(cat)}
-              onMouseLeave={() => setHovered(null)}
-              style={{
-                ...parseStyle(on ? pillActive : pillBase),
-                fontFamily: "inherit",
-                cursor: "pointer",
-                transition: "background .14s, border-color .14s, color .14s",
-                ...(!on && hovered === cat
-                  ? { borderColor: "#d0ccc2", color: "#16161a" }
-                  : {}),
-              }}
+              style={
+                (on ? pillActive : pillBase) +
+                " font-family:inherit; cursor:pointer; transition:background .14s, border-color .14s, color .14s;"
+              }
+              hoverStyle={on ? {} : { borderColor: "#d0ccc2", color: "#16161a" }}
             >
               {cat}
-            </button>
+            </Hover>
           );
         })}
       </div>

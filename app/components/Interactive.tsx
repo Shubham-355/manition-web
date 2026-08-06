@@ -25,6 +25,7 @@ export function Hover({
   className,
   ariaLabel,
   ariaExpanded,
+  ariaPressed,
   children,
 }: {
   as?: ElementType;
@@ -37,6 +38,7 @@ export function Hover({
   className?: string;
   ariaLabel?: string;
   ariaExpanded?: boolean;
+  ariaPressed?: boolean;
   children?: ReactNode;
 }) {
   const [hovered, setHovered] = useState(false);
@@ -52,6 +54,7 @@ export function Hover({
       className={className}
       aria-label={ariaLabel}
       aria-expanded={ariaExpanded}
+      aria-pressed={ariaPressed}
       style={hovered ? { ...base, ...hoverStyle } : base}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

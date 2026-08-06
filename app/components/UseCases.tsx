@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { parseStyle } from "../lib/css";
+import { Hover } from "./Interactive";
 
 type Persona = {
   name: string;
@@ -57,7 +58,6 @@ const PERSONAS: Persona[] = [
 
 export default function UseCases() {
   const [sel, setSel] = useState(0);
-  const [hovered, setHovered] = useState(-1);
   const cur = PERSONAS[sel];
 
   return (
@@ -76,15 +76,12 @@ export default function UseCases() {
             {PERSONAS.map((p, i) => {
               const on = i === sel;
               return (
-                <button
+                <Hover
+                  as="button"
                   key={p.name}
                   onClick={() => setSel(i)}
-                  onMouseEnter={() => setHovered(i)}
-                  onMouseLeave={() => setHovered(-1)}
-                  style={{
-                    ...parseStyle("appearance:none; background:none; border:0; border-top:1px solid #26262c; text-align:left; width:100%; padding:24px 6px; cursor:pointer; display:flex; align-items:center; gap:18px; transition:opacity .15s;"),
-                    ...(hovered === i ? { opacity: 0.82 } : {}),
-                  }}
+                  style="appearance:none; background:none; border:0; border-top:1px solid #26262c; text-align:left; width:100%; padding:24px 6px; cursor:pointer; display:flex; align-items:center; gap:18px; transition:opacity .15s;"
+                  hoverStyle={{ opacity: 0.82 }}
                 >
                   <span style={parseStyle(`font-family:'IBM Plex Mono',monospace; font-size:12px; width:26px; flex:none; color:${on ? p.accent : "#3a3a42"}; transition:color .2s;`)}>
                     {"0" + (i + 1)}
@@ -95,7 +92,7 @@ export default function UseCases() {
                   <span style={parseStyle(`margin-left:auto; flex:none; display:flex; opacity:${on ? 1 : 0}; transition:opacity .2s; color:#7f97e8;`)}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
                   </span>
-                </button>
+                </Hover>
               );
             })}
             <div style={parseStyle("border-top:1px solid #26262c; padding:20px 6px 0; font-size:13px; color:#5b5b63; line-height:1.6;")}>
