@@ -14,6 +14,17 @@ import { parseStyle } from "../lib/css";
  * pointer is over it — the runtime equivalent of the design's `style-hover`.
  * Internal ("/…") hrefs render through next/link for client-side navigation.
  */
+// A `borderColor` hover over a `border` shorthand would have React dropping a
+// longhand while the shorthand stays, so split the shorthand up front.
+function splitBorder(base: CSSProperties, hoverStyle: CSSProperties): CSSProperties {
+  if (!("borderColor" in hoverStyle) || typeof base.border !== "string") return base;
+  const parts = /^(\S+)\s+(\S+)\s+(.+)$/.exec(base.border.trim());
+  if (!parts) return base;
+  const next = { ...base, borderWidth: parts[1], borderStyle: parts[2], borderColor: parts[3] };
+  delete next.border;
+  return next;
+}
+
 export function Hover({
   as = "div",
   style,
@@ -44,7 +55,7 @@ export function Hover({
   const [hovered, setHovered] = useState(false);
   const isInternal = typeof href === "string" && href.startsWith("/");
   const Tag: ElementType = isInternal ? Link : as;
-  const base = parseStyle(style);
+  const base = splitBorder(parseStyle(style), hoverStyle);
   return (
     <Tag
       href={href}

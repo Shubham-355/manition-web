@@ -2,7 +2,8 @@ import Link from "next/link";
 import { parseStyle } from "./lib/css";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
-import IntroDemo from "./components/IntroDemo";
+import ManitionDemo from "./components/film/ManitionDemo";
+import GalleryVideo from "./components/GalleryVideo";
 import HowItWorks from "./components/HowItWorks";
 import UseCases from "./components/UseCases";
 import { Hover, WaitlistForm } from "./components/Interactive";
@@ -25,6 +26,27 @@ const arrowSmall = (
     <path d="M13 6l6 6-6 6"></path>
   </svg>
 );
+
+const GALLERY_PREVIEW = [
+  {
+    scene: "fourier",
+    label: "Trigonometry",
+    title: "Square wave from circles",
+    prompt: "build a square wave by stacking spinning circles",
+  },
+  {
+    scene: "lorenz",
+    label: "Chaos",
+    title: "The Lorenz butterfly",
+    prompt: "trace the Lorenz attractor",
+  },
+  {
+    scene: "phyllo",
+    label: "Geometry",
+    title: "Sunflower spiral",
+    prompt: "grow a sunflower with the golden angle",
+  },
+];
 
 const chevron = (
   <span className="faq-chevron" style={parseStyle("transition:transform .2s; color:#9a9aa2;")}>
@@ -147,8 +169,13 @@ export default function Home() {
             </div>
           </div>
 
-          <div>
-            <IntroDemo />
+          {/* product film - the same piece runs on the login page */}
+          <div
+            style={parseStyle(
+              "position:relative; width:100%; aspect-ratio:16/9; border-radius:16px; overflow:hidden; border:1px solid #e6e2da; background:#f7f6f3; box-shadow:0 34px 64px -36px rgba(22,22,26,0.42);",
+            )}
+          >
+            <ManitionDemo />
           </div>
         </div>
       </section>
@@ -182,7 +209,7 @@ export default function Home() {
             </div>
             <div className="hh-flow" style={parseStyle("margin-top:auto; display:grid; grid-template-columns:1fr auto 1fr; align-items:stretch; gap:12px;")}>
               <div style={parseStyle("display:flex; flex-direction:column; justify-content:center; gap:8px; background:#faf9f6; border:1px solid #e6e2da; border-radius:12px; padding:14px 16px;")}>
-                <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:#a6a29a;")}>You type</span>
+                <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:#8b8779;")}>You type</span>
                 <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12px; color:#2a2a30;")}>a sine wave unrolling from a circle</span>
               </div>
               <div className="hh-arrow" style={parseStyle("display:flex; align-items:center; justify-content:center; color:#c9c4b8;")}>
@@ -285,68 +312,24 @@ export default function Home() {
             Browse the gallery {arrowSmall}
           </Link>
         </div>
-        <div className="hh-3col" style={parseStyle("display:grid; grid-template-columns:repeat(3,1fr); gap:18px;")}>
-          <Hover
-            as="a"
-            href="/gallery"
-            style="text-decoration:none; color:inherit; background:#0c0c0f; border:1px solid #1f1f26; border-radius:15px; overflow:hidden; display:block;"
-            hoverStyle={{ transform: "translateY(-3px)" }}
-          >
-            <div style={parseStyle("aspect-ratio:16/10; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 40%,#15151d,#0b0b0e);")}>
-              <svg width="130" height="80" viewBox="0 0 130 80" fill="none">
-                <path d="M8 40 Q 30 6 52 40 T 96 40 T 130 40" stroke="#3b62e0" strokeWidth="2.4"></path>
-                <circle cx="24" cy="40" r="15" stroke="#33333d" strokeWidth="1.4"></circle>
-              </svg>
+        {/* The design nests the player inside the card's <a>; a <button> may not
+            live inside an anchor, so the card is a div and the caption links out. */}
+        <div className="hh-3col" style={parseStyle("display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px;")}>
+          {GALLERY_PREVIEW.map((card) => (
+            <div key={card.scene} className="gl-card">
+              <div style={parseStyle("position:relative; aspect-ratio:16/10; background:#0a0a0d;")}>
+                <GalleryVideo scene={card.scene} label={card.label} />
+              </div>
+              <Link href="/gallery" style={parseStyle("display:block; text-decoration:none; color:inherit; padding:15px 17px 16px;")}>
+                <p style={parseStyle("margin:0 0 6px; font-family:'Space Grotesk'; font-weight:600; font-size:15px; color:#f4f4f5; letter-spacing:-0.01em;")}>
+                  {card.title}
+                </p>
+                <p style={parseStyle("margin:0; font-size:12.5px; line-height:1.5; color:#8a8a92; font-style:italic;")}>
+                  &ldquo;{card.prompt}&rdquo;
+                </p>
+              </Link>
             </div>
-            <div style={parseStyle("padding:15px 17px;")}>
-              <p style={parseStyle("margin:0 0 4px; font-family:'Space Grotesk'; font-weight:600; font-size:15px; color:#f4f4f5;")}>Sine from a circle</p>
-              <p style={parseStyle("margin:0; font-size:12.5px; color:#8a8a92;")}>Trigonometry · 0:12</p>
-            </div>
-          </Hover>
-          <Hover
-            as="a"
-            href="/gallery"
-            style="text-decoration:none; color:inherit; background:#0c0c0f; border:1px solid #1f1f26; border-radius:15px; overflow:hidden; display:block;"
-            hoverStyle={{ transform: "translateY(-3px)" }}
-          >
-            <div style={parseStyle("aspect-ratio:16/10; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 40%,#15151d,#0b0b0e);")}>
-              <svg width="120" height="80" viewBox="0 0 120 80" fill="none">
-                <path d="M10 70 L110 70 M10 70 L10 10" stroke="#33333d" strokeWidth="1.4"></path>
-                <path d="M14 66 C 40 66 44 20 60 20 C 76 20 80 66 106 66" stroke="#c2913a" strokeWidth="2.4" fill="none"></path>
-                <path d="M14 66 L106 66 L106 66 Z" fill="none"></path>
-                <rect x="40" y="34" width="40" height="32" fill="#c2913a" opacity="0.14"></rect>
-              </svg>
-            </div>
-            <div style={parseStyle("padding:15px 17px;")}>
-              <p style={parseStyle("margin:0 0 4px; font-family:'Space Grotesk'; font-weight:600; font-size:15px; color:#f4f4f5;")}>Area under a curve</p>
-              <p style={parseStyle("margin:0; font-size:12.5px; color:#8a8a92;")}>Calculus · 0:18</p>
-            </div>
-          </Hover>
-          <Hover
-            as="a"
-            href="/gallery"
-            style="text-decoration:none; color:inherit; background:#0c0c0f; border:1px solid #1f1f26; border-radius:15px; overflow:hidden; display:block;"
-            hoverStyle={{ transform: "translateY(-3px)" }}
-          >
-            <div style={parseStyle("aspect-ratio:16/10; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 40%,#15151d,#0b0b0e);")}>
-              <svg width="110" height="80" viewBox="0 0 110 80" fill="none">
-                <g stroke="#5fbf7e" strokeWidth="1.6">
-                  <line x1="20" y1="60" x2="34" y2="42"></line>
-                  <line x1="45" y1="60" x2="59" y2="34"></line>
-                  <line x1="70" y1="60" x2="84" y2="46"></line>
-                </g>
-                <g fill="#5fbf7e">
-                  <path d="M34 42 l-5 1 4 3 1-4Z"></path>
-                  <path d="M59 34 l-5 1 4 3 1-4Z"></path>
-                  <path d="M84 46 l-5 1 4 3 1-4Z"></path>
-                </g>
-              </svg>
-            </div>
-            <div style={parseStyle("padding:15px 17px;")}>
-              <p style={parseStyle("margin:0 0 4px; font-family:'Space Grotesk'; font-weight:600; font-size:15px; color:#f4f4f5;")}>Vector field flow</p>
-              <p style={parseStyle("margin:0; font-size:12.5px; color:#8a8a92;")}>Linear algebra · 0:15</p>
-            </div>
-          </Hover>
+          ))}
         </div>
       </section>
 

@@ -48,8 +48,8 @@ details[open] .faq-chevron { transform: rotate(180deg); }
   .hh-hero{ grid-template-columns:1fr !important; }
   .hh-2col{ grid-template-columns:1fr !important; gap:34px !important; }
   .hh-3col{ grid-template-columns:1fr !important; }
-  .hh-how{ grid-template-columns:1fr !important; gap:38px !important; }
-  .hh-prompt{ font-size:31px !important; }
+  .hh-hw{ grid-template-columns:1fr !important; }
+  .hh-hwp{ min-height:0 !important; }
   .hh-larrow{ display:none !important; }
   .hh-bento > div{ grid-column:span 12 !important; }
   .hh-flow{ grid-template-columns:1fr !important; }
