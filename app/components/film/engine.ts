@@ -1,6 +1,3 @@
-/* Timing primitives from the design's animations-v2.jsx, trimmed to what the
-   film uses. */
-
 export const clamp = (v: number, min: number, max: number) =>
   Math.max(min, Math.min(max, v));
 

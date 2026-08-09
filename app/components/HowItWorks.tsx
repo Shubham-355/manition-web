@@ -6,11 +6,8 @@ import { parseStyle } from "../lib/css";
 import GalleryVideo from "./GalleryVideo";
 
 /**
- * "One sentence in, a finished video out." - ported from Home.dc.html.
- *
- * The active step auto-advances every 5.2s (the duration of the bar filling
- * across the top of the active button); clicking a step jumps to it and
- * restarts the cycle. Honours prefers-reduced-motion by not auto-cycling.
+ * "One sentence in, a finished video out." - ported from Home.dc.html. The
+ * active step auto-advances every 5.2s unless prefers-reduced-motion is set.
  */
 
 const CYCLE_MS = 5200;
@@ -134,7 +131,6 @@ export default function HowItWorks() {
         </div>
 
         <div className="hh-hw" style={parseStyle("display:grid; grid-template-columns:0.84fr 1.16fr; gap:26px; align-items:start;")}>
-          {/* ── the steps ── */}
           <div style={parseStyle("display:flex; flex-direction:column; gap:8px;")}>
             {STEPS.map((s, i) => {
               const on = step === i;
@@ -182,7 +178,6 @@ export default function HowItWorks() {
             })}
           </div>
 
-          {/* ── the panel ── */}
           <div
             style={parseStyle(
               "background:#0f1117; border:1px solid #1c2030; border-radius:18px; overflow:hidden; box-shadow:0 38px 70px -50px rgba(15,17,23,0.8);",

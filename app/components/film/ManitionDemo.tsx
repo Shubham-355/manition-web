@@ -5,8 +5,6 @@ import SceneStage, { type SceneDef, type SceneProps } from "./SceneStage";
 import { Easing, clamp, seg, band, type Ease } from "./engine";
 import { TILES } from "./tiles";
 
-/* The Manition product demo, ported from the design's film/manition-demo.jsx. */
-
 const DISP = "var(--font-space-grotesk), system-ui, sans-serif";
 const BODY = "var(--font-ibm-plex-sans), system-ui, sans-serif";
 const MONO = "var(--font-ibm-plex-mono), ui-monospace, monospace";
@@ -35,8 +33,6 @@ const MOTION = {
   draw: (p: number) => Easing.easeInOutCubic(clamp(p, 0, 1)),
   settle: (p: number) => Easing.easeOutQuart(clamp(p, 0, 1)),
 };
-
-/* ── persistent stage ─────────────────────────────────────────────── */
 
 function Field() {
   return <div style={{ position: "absolute", inset: 0, background: PAPER }} />;
@@ -96,7 +92,6 @@ function Wordmark({
   );
 }
 
-/* `rise` (a start time) adds a whole-block drift + scale-in over the per-phrase fades. */
 type Phrase = [string, number, boolean?];
 
 function Callout({
@@ -198,7 +193,6 @@ function Line({
   );
 }
 
-/* ── the render inside the product: the Lorenz attractor, traced in 3D ── */
 /* integrated once at load, resampled to even arc length so the head draws at a
    constant screen speed and the polyline stays smooth on the fast outer swings */
 type Vec3 = [number, number, number];
@@ -387,8 +381,6 @@ function LorenzPlate({
     </svg>
   );
 }
-
-/* ── the product, in the app's own (light) language ───────────────── */
 
 type Rect = { left: number; top: number; width: number; height: number };
 
@@ -804,8 +796,6 @@ function Composer({
   );
 }
 
-/* ── the generated file, streamed in like an editor ───────────────── */
-
 const CODE_SRC = [
   "from manim import *",
   "import numpy as np",
@@ -897,7 +887,6 @@ const CODE_VIS = 360;
 const CODE_LH = 30;
 
 function CodeRow({ i, n }: { i: number; n: number }) {
-  // Resolved up front so the render below stays a pure map.
   const takes: number[] = [];
   let acc = 0;
   for (const tk of CODE[i]) {
@@ -951,7 +940,6 @@ function CodeRow({ i, n }: { i: number; n: number }) {
   );
 }
 
-/* progressive reveal + auto-scroll: the caret line is kept near the bottom edge */
 function CodePanel({ p, a, shift }: { p: number; a: number; shift?: string }) {
   const shown = Math.round(clamp(p, 0, 1) * CODE_CHARS);
   const rows: { i: number; n: number }[] = [];
@@ -1239,7 +1227,6 @@ function AppWindow({
   );
 }
 
-/* window-local coordinates for anything placed inside AppWindow */
 const inWin = (r: Rect): Rect => ({
   left: r.left - WIN.left,
   top: r.top - WIN.top,
@@ -1247,7 +1234,6 @@ const inWin = (r: Rect): Rect => ({
   height: r.height,
 });
 
-/* ── virtual camera ───────────────────────────────────────────────── */
 /* A shot is a framing of the 1920×1080 stage: z = zoom (1 = whole frame),
    cx/cy = the stage point held at frame centre, dur = length of the move INTO
    this shot, push/dx/dy = the slow drift applied while the shot is held. */
@@ -1277,9 +1263,7 @@ function shotAt(s: Shot, t: number): Cam {
   };
 }
 
-/* a physical settle: ease-out that overshoots ~1.4% and damps back in */
 const EASE_SETTLE: Ease = (p) => (1 - Math.exp(-4 * p) * Math.cos(3.6 * p)) / 1.016424;
-/* a background layer tracks the same camera at a fraction of its depth */
 const paraCam = (cam: Cam, k: number): Cam => ({
   z: 1 + (cam.z - 1) * k,
   cx: 960 + (cam.cx - 960) * k,
@@ -1303,7 +1287,6 @@ function camAt(shots: Shot[], t: number): Cam {
   };
 }
 
-/* the chat pane with the sidebar cropped out - the workhorse medium shot */
 const F_MAIN = { z: 1.75, cx: 1091, cy: 555 };
 
 function Camera({ cam, children }: { cam: Cam; children?: ReactNode }) {
@@ -1327,8 +1310,6 @@ function Camera({ cam, children }: { cam: Cam; children?: ReactNode }) {
     </div>
   );
 }
-
-/* ── the cursor ───────────────────────────────────────────────────── */
 
 type CursorKey = { t: number; x: number; y: number };
 
@@ -1386,7 +1367,6 @@ function Pointer({ k, o, ghost }: { k: number; o: number; ghost?: boolean }) {
   );
 }
 
-/* zoom-aware: the pointer grows with a push-in, but far less than the frame does */
 function Cursor({
   path,
   t,
@@ -1450,14 +1430,11 @@ function Cursor({
   );
 }
 
-/* ── the wall of real renders ─────────────────────────────────────── */
-
 /* Stable element per tile so the wall's per-frame re-render never re-creates
    (and so never re-decodes) an <img>. */
 const TILE_IMG: Record<string, ReactElement> = {};
 for (const name of Object.keys(TILES)) {
-  // Fixed-size decorative frames in a 60fps film: next/image's wrapper would be
-  // reconciled ~50 times a frame for no optimisation benefit.
+  // next/image's wrapper would be reconciled ~50 times a frame for no gain here.
   TILE_IMG[name] = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -1492,8 +1469,6 @@ const COL_SEQ = [
 const CYC = COL_SEQ[0].length * PITCH;
 const wrapPos = (a: number) => (((a % CYC) + CYC) % CYC) - PITCH;
 
-/* Camera-locked, so the grid pushes with the shot; each tile is dimmed and
-   defocused by its distance from frame centre. */
 function Wall({ t, a, stagger }: { t: number; a: number; stagger?: boolean }) {
   if (a <= 0.002) return null;
   return (
@@ -1546,7 +1521,6 @@ function Void({ a }: { a: number }) {
   return <div style={{ position: "absolute", inset: 0, background: VOID, opacity: a }} />;
 }
 
-/* The `well` keeps the closing line off whatever tile happens to sit under it. */
 function Veil({ a, well }: { a: number; well: number }) {
   if (a <= 0.002) return null;
   const seams = COL_X.slice(1).map((x) => (
@@ -1589,13 +1563,10 @@ function Veil({ a, well }: { a: number; well: number }) {
   );
 }
 
-/* ══ SCENES ══════════════════════════════════════════════════════════ */
-
 function Wrap({ children }: { children?: ReactNode }) {
   return <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>{children}</div>;
 }
 
-/* the opening line, laid out at fixed x so the camera can frame one phrase at a time */
 const OPEN = [
   { text: "Some things", x: 194, at: 0.05 },
   { text: "only make sense", x: 722, at: 1.35 },
@@ -1632,8 +1603,6 @@ function OpenLine({ t, a }: { t: number; a: number }) {
   );
 }
 
-/* 01 - cold open: one continuous pull-back, drifting as it goes */
-/* the drift runs from frame one (dur 0) so nothing is ever locked off */
 const CAM_H: Shot[] = [
   { t: 0, z: 2.72, cx: 438, cy: 506, dur: 0, push: 0.055, dx: -32, dy: 22, span: 1.5 },
   { t: 1.15, z: 1.39, cx: 790, cy: 528, dur: 1.05, ease: EASE_SETTLE, push: 0.032, dx: 26, dy: -12, span: 1.2 },
@@ -1645,7 +1614,6 @@ function Hook({ localTime: t }: SceneProps) {
   const a = camAt(CAM_H, t - 0.05),
     b = camAt(CAM_H, t + 0.05);
   const vel = Math.abs(b.z - a.z) * 11.5 + Math.hypot(b.cx - a.cx, b.cy - a.cy) * 0.032;
-  /* rack focus: opens soft, resolves as the move settles, smears while it travels */
   const blur = clamp(vel * 1.25 + 4.2 * (1 - Easing.easeOutCubic(seg(t, 0.02, 0.95))), 0, 5.4);
   return (
     <Wrap>
@@ -1671,7 +1639,6 @@ function Hook({ localTime: t }: SceneProps) {
   );
 }
 
-/* 02 - the name, and what it is for */
 function Brand({ localTime: t }: SceneProps) {
   return (
     <Wrap>
@@ -1684,7 +1651,6 @@ function Brand({ localTime: t }: SceneProps) {
   );
 }
 
-/* 03 - describe it */
 const CUR_A: CursorKey[] = [
   { t: 0, x: 1560, y: 960 },
   { t: 2.05, x: 1000, y: 530 },
@@ -1692,7 +1658,6 @@ const CUR_A: CursorKey[] = [
   { t: 4.9, x: 1000, y: 530 },
   { t: 5.25, x: 1499, y: 530 },
 ];
-/* establish → tight on the input → onto send → into the file, panning down as it writes */
 const CAM_A: Shot[] = [
   { t: 0, z: 1.0, cx: 960, cy: 540, push: 0.05, span: 1.7 },
   { t: 1.6, z: 2.06, cx: 1050, cy: 545, dur: 0.8, push: 0.05, dx: 16, span: 3.0 },
@@ -1728,19 +1693,16 @@ function Describe({ localTime: t }: SceneProps) {
   );
 }
 
-/* 04 - watch it draw itself */
 const CUR_B: CursorKey[] = [
   { t: 0, x: 1499, y: 530 },
   { t: 3.0, x: 668, y: 757 },
   { t: 3.5, x: 668, y: 757 },
   { t: 5.2, x: 1310, y: 700 },
 ];
-/* pull out of scene 03's framing → onto the player + play button → tight on the render */
 const CAM_B: Shot[] = [
   { t: 0, z: 1.575, cx: 1090, cy: 560 },
   { t: 0.15, z: 1.0, cx: 960, cy: 540, dur: 0.85, push: 0.05 },
   { t: 2.55, z: F_MAIN.z, cx: F_MAIN.cx, cy: F_MAIN.cy, dur: 0.55 },
-  /* framed to clear the file label with headroom - never park the edge on it */
   { t: 3.9, z: 1.78, cx: 1090, cy: 486, dur: 0.6, push: 0.045 },
   { t: 8.95, z: 1.22, cx: 960, cy: 540, dur: 0.6, push: 0.03 },
 ];
@@ -1792,7 +1754,6 @@ function Watch({ localTime: t }: SceneProps) {
   );
 }
 
-/* 05 - ask for a change */
 const CUR_C: CursorKey[] = [
   { t: 0, x: 1310, y: 700 },
   { t: 3.0, x: 980, y: 773 },
@@ -1801,14 +1762,12 @@ const CUR_C: CursorKey[] = [
   { t: 5.42, x: 1499, y: 773 },
 ];
 const FOLLOW: Rect = { left: 640, top: 700, width: 900, height: 88 };
-/* pull out → re-establish → tight on the follow-up field → onto send → into the new render */
 const CAM_C: Shot[] = [
   { t: 0, z: 1.23, cx: 960, cy: 540 },
   { t: 0.2, z: 1.0, cx: 960, cy: 540, dur: 0.7, push: 0.04 },
   { t: 2.5, z: 1.2, cx: 960, cy: 560, dur: 0.45 },
   { t: 3.0, z: 2.05, cx: 1080, cy: 645, dur: 0.55, push: 0.05 },
   { t: 5.3, z: 1.85, cx: 1120, cy: 612, dur: 0.5 },
-  /* lands wide enough to hold the window's top edge, so the label bar reads whole */
   { t: 5.95, z: 1.75, cx: 1090, cy: 486, dur: 0.52, ease: EASE_SETTLE, push: 0.02, dy: 6, span: 3.0 },
 ];
 
@@ -1869,7 +1828,6 @@ function Refine({ localTime: t }: SceneProps) {
   );
 }
 
-/* 06 - the payoff: anything you can say */
 const CAM_D: Shot[] = [
   { t: 0, z: 1.775, cx: 1090, cy: 490 },
   { t: 0.1, z: 1.0, cx: 960, cy: 540, dur: 0.8, push: 0.035 },
@@ -1917,7 +1875,6 @@ function Anything({ localTime: t }: SceneProps) {
   );
 }
 
-/* 07 - end card */
 const CAM_E: Shot[] = [{ t: 0, z: 1.034, cx: 960, cy: 540, dur: 0, push: 0.02 }];
 
 function Close({ localTime: t }: SceneProps) {
@@ -1949,7 +1906,6 @@ function Close({ localTime: t }: SceneProps) {
   );
 }
 
-/* The scene list, verbatim from the page's window.OM_SCENES literal. */
 const SCENES: SceneDef[] = [
   { name: "Hook", dur: 4, nat: 3.8 },
   { name: "Brand", dur: 4.2 },

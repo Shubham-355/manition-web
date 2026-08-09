@@ -4,12 +4,9 @@ import { useEffect, useRef, useState, type ComponentType } from "react";
 import { clamp } from "./engine";
 
 /**
- * The site-side equivalent of animations-v2.jsx's <SceneStage>: scenes play in
- * authored order on one looping clock, exactly one mounted at a time.
- *
- * The design's engine also carries the Claude Design host contract (video
- * export attributes, timeline write-back, a playback bar). The page hides all
- * of that, so only the clock and the fitted stage are ported.
+ * Scenes play in authored order on one looping clock, exactly one mounted at a
+ * time. The design's engine also carries the Claude Design host contract (export
+ * attributes, timeline write-back, a playback bar); none of that is ported.
  */
 
 export type SceneProps = {
@@ -62,8 +59,6 @@ export default function SceneStage({
     return () => ro.disconnect();
   }, [width, height]);
 
-  // The clock only runs while the film is on screen, and not at all under
-  // reduced motion (the first frame is held).
   useEffect(() => {
     const el = hostRef.current;
     if (!el) return;

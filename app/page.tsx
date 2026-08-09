@@ -169,7 +169,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* product film - the same piece runs on the login page */}
           <div
             style={parseStyle(
               "position:relative; width:100%; aspect-ratio:16/9; border-radius:16px; overflow:hidden; border:1px solid #e6e2da; background:#f7f6f3; box-shadow:0 34px 64px -36px rgba(22,22,26,0.42);",
@@ -312,8 +311,7 @@ export default function Home() {
             Browse the gallery {arrowSmall}
           </Link>
         </div>
-        {/* The design nests the player inside the card's <a>; a <button> may not
-            live inside an anchor, so the card is a div and the caption links out. */}
+        {/* A <button> may not live inside an <a>, so the caption is the link. */}
         <div className="hh-3col" style={parseStyle("display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px;")}>
           {GALLERY_PREVIEW.map((card) => (
             <div key={card.scene} className="gl-card">
