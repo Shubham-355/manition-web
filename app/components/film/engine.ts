@@ -4,10 +4,9 @@ export const clamp = (v: number, min: number, max: number) =>
 export type Ease = (t: number) => number;
 
 export const Easing: Record<
-  "linear" | "easeOutCubic" | "easeInOutCubic" | "easeOutQuart" | "easeOutSine",
+  "easeOutCubic" | "easeInOutCubic" | "easeOutQuart" | "easeOutSine",
   Ease
 > = {
-  linear: (t) => t,
   easeOutCubic: (t) => {
     const u = t - 1;
     return u * u * u + 1;

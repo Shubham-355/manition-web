@@ -9,13 +9,7 @@ import { clamp } from "./engine";
  * attributes, timeline write-back, a playback bar); none of that is ported.
  */
 
-export type SceneProps = {
-  localTime: number;
-  progress: number;
-  dur: number;
-  index: number;
-  count: number;
-};
+export type SceneProps = { localTime: number };
 
 export type SceneDef = {
   name: string;
@@ -141,16 +135,7 @@ export default function SceneStage({
           visibility: scale ? "visible" : "hidden",
         }}
       >
-        {Comp ? (
-          <Comp
-            key={idx}
-            localTime={localTime}
-            progress={nat > 0 ? localTime / nat : 0}
-            dur={nat}
-            index={idx}
-            count={scenes.length}
-          />
-        ) : null}
+        {Comp ? <Comp key={idx} localTime={localTime} /> : null}
       </div>
     </div>
   );

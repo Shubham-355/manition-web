@@ -163,15 +163,11 @@ function Line({
   a,
   top,
   size,
-  color,
-  font,
 }: {
   text: string;
   a: number;
   top: number;
   size?: number;
-  color?: string;
-  font?: string;
 }) {
   if (a <= 0.001) return null;
   return (
@@ -183,9 +179,9 @@ function Line({
         top,
         textAlign: "center",
         opacity: a,
-        font: "400 " + (size || 38) + "px " + (font || BODY),
-        color: color || MUTE,
-        letterSpacing: font === MONO ? "0.06em" : "-0.01em",
+        font: "400 " + (size || 38) + "px " + BODY,
+        color: MUTE,
+        letterSpacing: "-0.01em",
       }}
     >
       {text}
@@ -554,15 +550,7 @@ function Ring({ size, color }: { size?: number; color?: string }) {
   );
 }
 
-function Chrome({
-  title,
-  swap,
-  children,
-}: {
-  title?: string;
-  swap?: number;
-  children?: ReactNode;
-}) {
+function Chrome({ swap, children }: { swap?: number; children?: ReactNode }) {
   return (
     <>
       <div
@@ -680,7 +668,7 @@ function Chrome({
           >
             <span style={{ opacity: 1 - (swap || 0) }}>New chat</span>
             <span style={{ position: "absolute", left: 0, top: 0, opacity: swap || 0 }}>
-              {title || "Lorenz attractor in 3D"}
+              Lorenz attractor in 3D
             </span>
           </div>
           <Icon d="M6 9l6 6 6-6" size={14} color={MUTE} w={2.2} />
@@ -693,14 +681,12 @@ function Chrome({
 
 function Composer({
   rect,
-  label,
   text,
   typed,
   sendOn,
   press,
 }: {
   rect: Rect;
-  label?: string;
   text: string;
   typed: number;
   sendOn: number;
@@ -709,27 +695,7 @@ function Composer({
   const n = Math.round(clamp(typed, 0, 1) * text.length);
   const lit = clamp(sendOn, 0, 1);
   return (
-    <div
-      style={{
-        position: "absolute",
-        left: rect.left,
-        top: rect.top + (label ? 0 : 30),
-        width: rect.width,
-      }}
-    >
-      {label ? (
-        <div
-          style={{
-            font: "400 22px " + BODY,
-            color: MUTE,
-            marginBottom: 16,
-            textAlign: "center",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          {label}
-        </div>
-      ) : null}
+    <div style={{ position: "absolute", left: rect.left, top: rect.top + 30, width: rect.width }}>
       <div
         style={{
           display: "flex",
@@ -1189,19 +1155,14 @@ function VideoCard({
 
 function AppWindow({
   a,
-  breath,
-  title,
   swap,
   children,
 }: {
   a: number;
-  breath?: number;
-  title?: string;
   swap?: number;
   children?: ReactNode;
 }) {
   if (a <= 0.002) return null;
-  const s = 1 + 0.016 * (breath || 0);
   return (
     <div
       style={{
@@ -1216,13 +1177,9 @@ function AppWindow({
         overflow: "hidden",
         boxShadow: "0 44px 90px -44px rgba(34,31,26,0.30)",
         opacity: a,
-        transform: "scale(" + s + ")",
-        transformOrigin: "50% 46%",
       }}
     >
-      <Chrome title={title} swap={swap}>
-        {children}
-      </Chrome>
+      <Chrome swap={swap}>{children}</Chrome>
     </div>
   );
 }
