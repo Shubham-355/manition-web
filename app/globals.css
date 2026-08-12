@@ -111,6 +111,5 @@ details[open] .pc-chev { transform:rotate(180deg); }
 
 /* ===== About (About.dc.html) ===== */
 @media (max-width:820px){
-  .ab-2{ grid-template-columns:1fr !important; }
   .ab-3{ grid-template-columns:1fr !important; }
 }
