@@ -3,6 +3,7 @@ import { parseStyle } from "./lib/css";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import ManitionDemo from "./components/film/ManitionDemo";
+import HeroPrompt from "./components/HeroPrompt";
 import GalleryVideo from "./components/GalleryVideo";
 import HowItWorks from "./components/HowItWorks";
 import UseCases from "./components/UseCases";
@@ -82,42 +83,35 @@ export default function Home() {
       <Nav active="home" />
 
       {/* ============ HERO ============ */}
-      <section id="demo" style={parseStyle("max-width:1200px; margin:0 auto; padding:70px 30px 40px;")}>
-        <div className="hh-hero" style={parseStyle("display:grid; grid-template-columns:1fr 1.02fr; gap:52px; align-items:center;")}>
-          <div style={parseStyle("min-width:0;")}>
-            <div
-              style={parseStyle(
-                "display:inline-flex; align-items:center; gap:9px; background:#fff; border:1px solid #e6e2da; border-radius:100px; padding:6px 13px 6px 8px; font-size:12px; color:#4b4b52; box-shadow:0 1px 2px rgba(24,24,27,0.04); margin-bottom:24px;",
-              )}
-            >
-              <span
-                style={parseStyle(
-                  "display:inline-flex; align-items:center; gap:6px; background:#eef2fd; color:#2f4fc0; border-radius:100px; padding:3px 9px; font-weight:600; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.02em;",
-                )}
-              >
-                NEW
-              </span>
-              From prompt to rendered animation in seconds
-            </div>
+      <section id="demo" style={parseStyle("padding:clamp(32px,4.6vw,60px) 0 clamp(46px,6vw,76px);")}>
+        <div
+          className="hh-hero"
+          style={parseStyle(
+            "display:grid; grid-template-columns:minmax(0,0.92fr) minmax(0,1.08fr); gap:54px; align-items:center; padding-left:max(clamp(18px,4vw,30px), calc((100% - 1200px) / 2));",
+          )}
+        >
+          <div className="hh-copy" style={parseStyle("min-width:0; max-width:540px;")}>
+            <HeroPrompt />
 
             <h1
               style={parseStyle(
-                "margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(40px,8.5vw,58px); line-height:1.02; letter-spacing:-0.035em; color:#16161a;",
+                "margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(42px,7vw,62px); line-height:1.0; letter-spacing:-0.038em; color:#16161a;",
               )}
             >
               Math,
               <br />
               animated.
             </h1>
-            <p style={parseStyle("margin:22px 0 0; font-size:18px; line-height:1.55; color:#54545c; max-width:440px;")}>
-              Describe a concept in plain language. Manition writes the animation, renders it in HD, and hands you a video you can drop into a lecture, a video, or a post - in minutes.
+            <p style={parseStyle("margin:24px 0 0; font-size:18px; line-height:1.55; color:#54545c; max-width:450px; text-wrap:pretty;")}>
+              Describe a concept in plain language. Manition writes the animation, renders it in HD, and hands you a video you can drop into a lecture, a video, or a post.
             </p>
 
             <div style={parseStyle("display:flex; flex-wrap:wrap; gap:12px; margin-top:32px;")}>
               <Hover
                 as="a"
                 href="#waitlist"
-                style="display:inline-flex; align-items:center; gap:8px; text-decoration:none; background:#16161a; color:#f7f6f3; font-size:15px; font-weight:600; padding:14px 22px; border-radius:12px; border:1px solid #16161a; transition:transform .15s,background .15s;"
+                className="hh-cta"
+                style="display:inline-flex; align-items:center; gap:8px; text-decoration:none; background:#16161a; color:#f7f6f3; font-size:15px; font-weight:600; padding:14px 22px; border-radius:12px; border:1px solid #16161a; transition:transform .15s, background .15s;"
                 hoverStyle={{ background: "#000", transform: "translateY(-1px)" }}
               >
                 Join the waitlist
@@ -129,6 +123,7 @@ export default function Home() {
               <Hover
                 as="a"
                 href="/gallery"
+                className="hh-cta"
                 style="display:inline-flex; align-items:center; gap:9px; text-decoration:none; background:#fff; color:#16161a; font-size:15px; font-weight:600; padding:14px 20px; border-radius:12px; border:1px solid #e0dcd2; transition:border-color .15s;"
                 hoverStyle={{ borderColor: "#c9c4b8" }}
               >
@@ -164,17 +159,21 @@ export default function Home() {
                 </div>
               </div>
               <p style={parseStyle("margin:0; font-size:13px; color:#6b6b73; line-height:1.4;")}>
-                Joined by <strong style={parseStyle("color:#16161a;")}>4,200+</strong> teachers, creators &amp; students on the list.
+                Joined by <strong style={parseStyle("color:#16161a;")}>4,200+</strong> teachers, creators and students.
               </p>
             </div>
           </div>
 
+          {/* The film is oversized and inset so it bleeds past the rounded frame. */}
           <div
+            className="hh-film"
             style={parseStyle(
-              "position:relative; width:100%; aspect-ratio:16/9; border-radius:16px; overflow:hidden; border:1px solid #e6e2da; background:#f7f6f3; box-shadow:0 34px 64px -36px rgba(22,22,26,0.42);",
+              "position:relative; width:100%; aspect-ratio:16/9; border-radius:18px 0 0 18px; overflow:hidden; background:#f7f6f3;",
             )}
           >
-            <ManitionDemo />
+            <div style={parseStyle("position:absolute; left:-4.8%; top:-4.8%; width:109.6%; height:109.6%;")}>
+              <ManitionDemo />
+            </div>
           </div>
         </div>
       </section>
