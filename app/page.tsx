@@ -4,13 +4,12 @@ import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import ManitionDemo from "./components/film/ManitionDemo";
 import HeroPrompt from "./components/HeroPrompt";
-import GalleryVideo from "./components/GalleryVideo";
-import HowItWorks from "./components/HowItWorks";
+import TrySentence from "./components/TrySentence";
 import UseCases from "./components/UseCases";
 import { Hover, WaitlistForm } from "./components/Interactive";
 
 const eyebrow =
-  "font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#3b62e0; margin:0 0 14px;";
+  "margin:0 0 14px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:0.14em; text-transform:uppercase; color:#3b62e0;";
 
 const arrowSmall = (
   <svg
@@ -28,29 +27,14 @@ const arrowSmall = (
   </svg>
 );
 
-const GALLERY_PREVIEW = [
-  {
-    scene: "fourier",
-    label: "Trigonometry",
-    title: "Square wave from circles",
-    prompt: "build a square wave by stacking spinning circles",
-  },
-  {
-    scene: "lorenz",
-    label: "Chaos",
-    title: "The Lorenz butterfly",
-    prompt: "trace the Lorenz attractor",
-  },
-  {
-    scene: "phyllo",
-    label: "Geometry",
-    title: "Sunflower spiral",
-    prompt: "grow a sunflower with the golden angle",
-  },
+const QUOTES = [
+  { quote: "“I described a Riemann sum and had a lecture-ready clip before my coffee was cold. This replaced an afternoon of fiddling with Manim.”", by: "Calculus lecturer · state university" },
+  { quote: "“My channel’s visuals used to take days. Now I prototype ten ideas in an hour and only render the ones that land.”", by: "Video creator · 240k subscribers" },
+  { quote: "“I finally understood eigenvectors because I could ask to see one rotate. Being able to change it in chat is the whole thing.”", by: "Physics undergraduate" },
 ];
 
 const chevron = (
-  <span className="faq-chevron" style={parseStyle("transition:transform .2s; color:#9a9aa2;")}>
+  <span className="faq-chevron" style={parseStyle("transition:transform .2s; color:#9a9aa2; display:flex;")}>
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
       <path d="M6 9l6 6 6-6"></path>
     </svg>
@@ -59,7 +43,7 @@ const chevron = (
 
 function Faq({ question, children }: { question: string; children: React.ReactNode }) {
   return (
-    <details style={parseStyle("background:#fff; border:1px solid #e6e2da; border-radius:13px; padding:4px 20px;")}>
+    <details style={parseStyle("background:#fff; border:1px solid #e6e2da; border-radius:13px; padding:2px 20px;")}>
       <summary
         style={parseStyle(
           "display:flex; align-items:center; justify-content:space-between; gap:16px; padding:17px 0; font-family:'Space Grotesk'; font-weight:600; font-size:16px;",
@@ -68,7 +52,7 @@ function Faq({ question, children }: { question: string; children: React.ReactNo
         {question}
         {chevron}
       </summary>
-      <p style={parseStyle("margin:0 0 18px; font-size:14px; line-height:1.65; color:#6b6b73;")}>{children}</p>
+      <p style={parseStyle("margin:0 0 18px; font-size:14px; line-height:1.65; color:#6b6b73; max-width:560px;")}>{children}</p>
     </details>
   );
 }
@@ -178,19 +162,29 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ============ HOW IT WORKS ============ */}
-      <HowItWorks />
+      {/* ============ 01 · TRY A SENTENCE ============ */}
+      <TrySentence />
 
-      {/* ============ FEATURES ============ */}
-      <section style={parseStyle("max-width:1200px; margin:0 auto; padding:82px 30px 40px;")}>
-        <div style={parseStyle("display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:44px;")}>
-          <div style={parseStyle("max-width:560px;")}>
-            <p style={parseStyle(eyebrow)}>Why Manition</p>
+      {/* ============ 02 · WHAT YOU GET ============ */}
+      <section
+        className="hh-wrap"
+        style={parseStyle("max-width:1200px; margin:0 auto; padding:clamp(51px,6.8vw,82px) clamp(18px,4vw,30px) clamp(25px,3.3vw,40px);")}
+      >
+        <div className="hh-secthead" style={parseStyle("display:grid; grid-template-columns:1fr auto; gap:28px; align-items:end; margin-bottom:40px;")}>
+          <div style={parseStyle("max-width:620px;")}>
+            <p style={parseStyle(eyebrow)}>
+              <span style={parseStyle("color:#b3ad9e;")}>02</span> &nbsp;What you get
+            </p>
             <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(27px,4.9vw,38px); letter-spacing:-0.03em; line-height:1.08;")}>
               The power of Manim, without the Python.
             </h2>
           </div>
-          <Link href="/features" style={parseStyle("display:inline-flex; align-items:center; gap:7px; text-decoration:none; font-size:14px; font-weight:600; color:#16161a;")}>
+          <Link
+            href="/features"
+            style={parseStyle(
+              "display:inline-flex; align-items:center; gap:7px; text-decoration:none; font-size:14px; font-weight:600; color:#16161a; white-space:nowrap;",
+            )}
+          >
             Explore all features {arrowSmall}
           </Link>
         </div>
@@ -297,180 +291,85 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ============ GALLERY PREVIEW ============ */}
-      <section style={parseStyle("max-width:1200px; margin:0 auto; padding:60px 30px 40px;")}>
-        <div style={parseStyle("display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:34px;")}>
-          <div style={parseStyle("max-width:560px;")}>
-            <p style={parseStyle(eyebrow)}>Made with Manition</p>
-            <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(27px,4.9vw,38px); letter-spacing:-0.03em; line-height:1.08;")}>
-              A gallery of one-sentence scenes.
-            </h2>
-          </div>
-          <Link href="/gallery" style={parseStyle("display:inline-flex; align-items:center; gap:7px; text-decoration:none; font-size:14px; font-weight:600; color:#16161a;")}>
-            Browse the gallery {arrowSmall}
-          </Link>
+      {/* ============ USE CASES ============ */}
+      <UseCases />
+
+      {/* ============ 04 · EARLY TESTERS ============ */}
+      <section
+        className="hh-wrap"
+        style={parseStyle("max-width:1200px; margin:0 auto; padding:clamp(50px,6.7vw,80px) clamp(18px,4vw,30px) 20px;")}
+      >
+        <div style={parseStyle("max-width:620px; margin-bottom:34px;")}>
+          <p style={parseStyle(eyebrow)}>
+            <span style={parseStyle("color:#b3ad9e;")}>04</span> &nbsp;Early testers
+          </p>
+          <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(27px,4.9vw,38px); letter-spacing:-0.03em; line-height:1.08;")}>
+            Making things they couldn&apos;t before.
+          </h2>
         </div>
-        {/* A <button> may not live inside an <a>, so the caption is the link. */}
-        <div className="hh-3col" style={parseStyle("display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px;")}>
-          {GALLERY_PREVIEW.map((card) => (
-            <div key={card.scene} className="gl-card">
-              <div style={parseStyle("position:relative; aspect-ratio:16/10; background:#0a0a0d;")}>
-                <GalleryVideo scene={card.scene} label={card.label} />
-              </div>
-              <Link href="/gallery" style={parseStyle("display:block; text-decoration:none; color:inherit; padding:15px 17px 16px;")}>
-                <p style={parseStyle("margin:0 0 6px; font-family:'Space Grotesk'; font-weight:600; font-size:15px; color:#f4f4f5; letter-spacing:-0.01em;")}>
-                  {card.title}
-                </p>
-                <p style={parseStyle("margin:0; font-size:12.5px; line-height:1.5; color:#8a8a92; font-style:italic;")}>
-                  &ldquo;{card.prompt}&rdquo;
-                </p>
-              </Link>
-            </div>
+        <div className="hh-quotes" style={parseStyle("display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:clamp(24px,3vw,36px);")}>
+          {QUOTES.map((q) => (
+            <figure key={q.by} style={parseStyle("margin:0; border-top:1px solid #e6e2da; padding-top:22px;")}>
+              <blockquote style={parseStyle("margin:0 0 16px; font-size:15.5px; line-height:1.6; color:#2a2a30; text-wrap:pretty;")}>
+                {q.quote}
+              </blockquote>
+              <figcaption style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:#8b8779;")}>
+                {q.by}
+              </figcaption>
+            </figure>
           ))}
         </div>
       </section>
 
-      {/* ============ USE CASES ============ */}
-      <UseCases />
-
-      {/* ============ TESTIMONIALS ============ */}
-      <section style={parseStyle("max-width:1200px; margin:0 auto; padding:82px 30px 50px;")}>
-        <div className="hh-quotes" style={parseStyle("display:grid; grid-template-columns:0.8fr 1.2fr; gap:60px; align-items:start;")}>
+      {/* ============ 05 · QUESTIONS ============ */}
+      <section
+        className="hh-wrap"
+        style={parseStyle("max-width:1200px; margin:0 auto; padding:clamp(50px,6.7vw,80px) clamp(18px,4vw,30px) clamp(19px,2.5vw,30px);")}
+      >
+        <div className="hh-split" style={parseStyle("display:grid; grid-template-columns:0.72fr 1.28fr; gap:56px; align-items:start;")}>
           <div>
-            <p style={parseStyle(eyebrow)}>Loved by explainers</p>
-            <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(27px,4.9vw,38px); letter-spacing:-0.03em; line-height:1.08;")}>
-              People are making things they couldn&apos;t before.
+            <p style={parseStyle(eyebrow)}>
+              <span style={parseStyle("color:#b3ad9e;")}>05</span> &nbsp;Questions
+            </p>
+            <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(26px,4.6vw,34px); letter-spacing:-0.03em; line-height:1.1;")}>
+              Before you join.
             </h2>
-            <p style={parseStyle("margin:18px 0 0; font-size:15px; line-height:1.6; color:#6b6b73; max-width:340px;")}>
-              Notes from early testers - lecture halls, editing bays and dorm desks.
+            <p style={parseStyle("margin:16px 0 0; font-size:14.5px; line-height:1.65; color:#6b6b73; max-width:280px; text-wrap:pretty;")}>
+              Everything else is in the <Link href="/docs" style={parseStyle("font-weight:500;")}>docs</Link>.
             </p>
           </div>
-          <div>
-            <figure style={parseStyle("margin:0; position:relative; padding:6px 0 32px;")}>
-              <span aria-hidden="true" style={parseStyle("position:absolute; top:-34px; left:-8px; font-family:'Space Grotesk'; font-weight:700; font-size:130px; line-height:1; color:#dfe6fb; user-select:none; pointer-events:none;")}>“</span>
-              <blockquote style={parseStyle("position:relative; margin:0 0 18px; font-family:'Space Grotesk'; font-weight:600; font-size:26px; line-height:1.4; letter-spacing:-0.015em; color:#16161a;")}>
-                I described a Riemann sum and had a lecture-ready clip before my coffee was cold. This replaced an afternoon of fiddling with Manim.
-              </blockquote>
-              <figcaption style={parseStyle("display:flex; align-items:center; gap:10px;")}>
-                <span style={parseStyle("width:30px; height:30px; border-radius:50%; background:#e7ddc9; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#8a6d2f; flex:none;")}>RK</span>
-                <span style={parseStyle("font-size:13px; color:#6b6b73;")}><strong style={parseStyle("color:#16161a; font-weight:600;")}>Calculus lecturer</strong> · state university</span>
-              </figcaption>
-            </figure>
-            <div className="hh-2col" style={parseStyle("display:grid; grid-template-columns:1fr 1fr; gap:40px; border-top:1px solid #e6e2da; padding-top:30px;")}>
-              <figure style={parseStyle("margin:0;")}>
-                <blockquote style={parseStyle("margin:0 0 14px; font-size:15px; line-height:1.65; color:#4b4b52;")}>“My channel&apos;s visuals used to take days. Now I prototype ten ideas in an hour and only render the ones that land.”</blockquote>
-                <figcaption style={parseStyle("display:flex; align-items:center; gap:10px;")}>
-                  <span style={parseStyle("width:28px; height:28px; border-radius:50%; background:#d9e2f7; display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:700; color:#3358c0; flex:none;")}>YT</span>
-                  <span style={parseStyle("font-size:12.5px; color:#8a8a92;")}>YouTube creator · 240k subs</span>
-                </figcaption>
-              </figure>
-              <figure style={parseStyle("margin:0;")}>
-                <blockquote style={parseStyle("margin:0 0 14px; font-size:15px; line-height:1.65; color:#4b4b52;")}>“I finally understood eigenvectors because I could ask to see one rotate. Being able to change it in chat is the whole thing.”</blockquote>
-                <figcaption style={parseStyle("display:flex; align-items:center; gap:10px;")}>
-                  <span style={parseStyle("width:28px; height:28px; border-radius:50%; background:#dcefe0; display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:700; color:#2f7a4a; flex:none;")}>PH</span>
-                  <span style={parseStyle("font-size:12.5px; color:#8a8a92;")}>Undergraduate, physics</span>
-                </figcaption>
-              </figure>
-            </div>
+          <div style={parseStyle("display:flex; flex-direction:column; gap:10px;")}>
+            <Faq question="Do I need to know Manim or Python?">
+              Not at all. You describe the scene in plain language and Manition writes the Manim for you. If you do know Python, the generated code is fully editable and exportable.
+            </Faq>
+            <Faq question="What can it actually animate?">
+              Graphs and functions, geometry, transformations, calculus visuals, vectors and matrices, number theory, and more. Anything the Manim engine supports, driven by your description.
+            </Faq>
+            <Faq question="How long does a render take?">
+              Most short scenes render in well under a minute on our cloud GPUs. You see a live preview as it works, and everything happens off your device.
+            </Faq>
+            <Faq question="What will it cost?">
+              There is a free tier for trying it, and paid plans are being shaped with our first cohort. Waitlist members help set
+              the price and keep founder rates. <Link href="/pricing">See where pricing stands</Link>.
+            </Faq>
           </div>
-        </div>
-      </section>
-
-      {/* ============ PRICING PREVIEW ============ */}
-      <section style={parseStyle("background:#efece7; border-top:1px solid #e6e2da; border-bottom:1px solid #e6e2da;")}>
-        <div style={parseStyle("max-width:1200px; margin:0 auto; padding:78px 30px;")}>
-          <div style={parseStyle("text-align:center; max-width:600px; margin:0 auto 20px;")}>
-            <p style={parseStyle(eyebrow)}>Pricing</p>
-            <h2 style={parseStyle("margin:0 0 10px; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(27px,4.9vw,38px); letter-spacing:-0.03em; line-height:1.08;")}>
-              Simple plans, still being shaped.
-            </h2>
-            <p style={parseStyle("margin:0; font-size:15px; color:#6b6b73; line-height:1.6;")}>
-              We&apos;re finalizing pricing with our early community. Join the waitlist and you&apos;ll help set it - and lock in founder rates.
-            </p>
-          </div>
-          <div className="hh-3col" style={parseStyle("display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:40px; align-items:start;")}>
-            <div style={parseStyle("background:#fff; border:1px solid #e6e2da; border-radius:16px; padding:28px;")}>
-              <h3 style={parseStyle("margin:0 0 4px; font-family:'Space Grotesk'; font-weight:600; font-size:18px;")}>Free</h3>
-              <p style={parseStyle("margin:0 0 18px; font-size:13px; color:#8a8a92;")}>Try it, no card needed</p>
-              <p style={parseStyle("margin:0 0 20px; font-family:'Space Grotesk'; font-weight:700; font-size:34px; letter-spacing:-0.02em;")}>$0</p>
-              <div style={parseStyle("display:flex; flex-direction:column; gap:10px; font-size:13.5px; color:#4b4b52;")}>
-                <span>A handful of renders / month</span>
-                <span>720p exports</span>
-                <span>Public library</span>
-              </div>
-            </div>
-            <div
-              style={parseStyle(
-                "background:#16161a; color:#f7f6f3; border:1px solid #16161a; border-radius:16px; padding:28px; position:relative; box-shadow:0 18px 40px -22px rgba(20,20,40,0.5);",
-              )}
-            >
-              <span
-                style={parseStyle(
-                  "position:absolute; top:18px; right:18px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; background:#3b62e0; color:#fff; padding:4px 9px; border-radius:100px;",
-                )}
-              >
-                Popular
-              </span>
-              <h3 style={parseStyle("margin:0 0 4px; font-family:'Space Grotesk'; font-weight:600; font-size:18px; color:#fff;")}>Pro</h3>
-              <p style={parseStyle("margin:0 0 18px; font-size:13px; color:#a1a1aa;")}>For regular explainers</p>
-              <p style={parseStyle("margin:0 0 20px; font-family:'Space Grotesk'; font-weight:700; font-size:34px; letter-spacing:-0.02em; color:#fff;")}>
-                TBD<span style={parseStyle("font-size:14px; color:#8a8a92; font-weight:500;")}> /mo</span>
-              </p>
-              <div style={parseStyle("display:flex; flex-direction:column; gap:10px; font-size:13.5px; color:#c8c8cc;")}>
-                <span>Unlimited renders</span>
-                <span>4K &amp; transparent exports</span>
-                <span>Priority GPU queue</span>
-                <span>Editable Manim source</span>
-              </div>
-            </div>
-            <div style={parseStyle("background:#fff; border:1px solid #e6e2da; border-radius:16px; padding:28px;")}>
-              <h3 style={parseStyle("margin:0 0 4px; font-family:'Space Grotesk'; font-weight:600; font-size:18px;")}>Team</h3>
-              <p style={parseStyle("margin:0 0 18px; font-size:13px; color:#8a8a92;")}>Departments &amp; studios</p>
-              <p style={parseStyle("margin:0 0 20px; font-family:'Space Grotesk'; font-weight:700; font-size:34px; letter-spacing:-0.02em;")}>TBD</p>
-              <div style={parseStyle("display:flex; flex-direction:column; gap:10px; font-size:13.5px; color:#4b4b52;")}>
-                <span>Shared workspaces</span>
-                <span>Brand kits &amp; templates</span>
-                <span>SSO &amp; admin controls</span>
-              </div>
-            </div>
-          </div>
-          <p style={parseStyle("text-align:center; margin:26px 0 0;")}>
-            <Link href="/pricing" style={parseStyle("font-size:14px; font-weight:600; text-decoration:none;")}>See the full pricing page →</Link>
-          </p>
-        </div>
-      </section>
-
-      {/* ============ FAQ ============ */}
-      <section style={parseStyle("max-width:820px; margin:0 auto; padding:82px 30px 40px;")}>
-        <h2 style={parseStyle("margin:0 0 36px; text-align:center; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(26px,4.6vw,34px); letter-spacing:-0.03em;")}>
-          Questions, answered.
-        </h2>
-        <div style={parseStyle("display:flex; flex-direction:column; gap:12px;")}>
-          <Faq question="Do I need to know Manim or Python?">
-            Not at all. You describe the scene in plain language and Manition writes the Manim for you. If you do know Python, the generated code is fully editable and exportable.
-          </Faq>
-          <Faq question="What can it actually animate?">
-            Graphs and functions, geometry, transformations, calculus visuals, vectors and matrices, number theory, and more - anything the Manim engine supports, driven by your description.
-          </Faq>
-          <Faq question="How long does a render take?">
-            Most short scenes render in well under a minute on our cloud GPUs. You&apos;ll see a live preview as it works, and everything happens off your device.
-          </Faq>
-          <Faq question="When does it launch?">
-            We&apos;re rolling out access in waves right now. Join the waitlist and we&apos;ll bring you in as capacity opens - early members get founder pricing.
-          </Faq>
         </div>
       </section>
 
       {/* ============ WAITLIST CTA ============ */}
-      <section id="waitlist" style={parseStyle("max-width:1200px; margin:0 auto; padding:40px 30px 90px;")}>
-        <div style={parseStyle("position:relative; background:#0c0c0f; border-radius:24px; overflow:hidden; padding:64px 40px; text-align:center;")}>
+      <section
+        id="waitlist"
+        className="hh-wrap"
+        style={parseStyle("max-width:1200px; margin:0 auto; padding:clamp(31px,4.2vw,50px) clamp(18px,4vw,30px) clamp(56px,7.5vw,90px);")}
+      >
+        <div style={parseStyle("position:relative; background:#0c0c0f; border-radius:24px; overflow:hidden; padding:clamp(40px,6vw,66px) clamp(20px,4.4vw,40px); text-align:center;")}>
           <div style={parseStyle("position:absolute; inset:0; opacity:0.5; background:radial-gradient(600px 300px at 50% -10%, rgba(59,98,224,0.22), transparent);")}></div>
           <div style={parseStyle("position:relative;")}>
             <h2 style={parseStyle("margin:0 0 14px; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(29px,5.6vw,42px); letter-spacing:-0.035em; line-height:1.05; color:#f7f6f3;")}>
               Get early access to Manition.
             </h2>
-            <p style={parseStyle("margin:0 auto 30px; max-width:480px; font-size:16px; line-height:1.6; color:#a1a1aa;")}>
-              Be first in line, help shape pricing, and lock in founder rates. No spam - just one email when it&apos;s your turn.
+            <p style={parseStyle("margin:0 auto 30px; max-width:470px; font-size:16px; line-height:1.6; color:#a1a1aa; text-wrap:pretty;")}>
+              Be first in line, help shape pricing, and lock in founder rates. No spam, just one email when it is your turn.
             </p>
 
             <WaitlistForm />
