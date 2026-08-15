@@ -98,6 +98,8 @@ details[open] .pc-chev { transform:rotate(180deg); }
 .gv-knob { position:absolute; top:3.5px; width:9px; height:9px; border-radius:50%; background:#fff; margin-left:-4.5px; pointer-events:none; opacity:0; transition:opacity .12s; }
 .gv-track:hover .gv-knob, .gv-wrap.scrub .gv-knob { opacity:1; }
 .gv-time { font:500 9.5px/1 "IBM Plex Mono",monospace; color:#c8c8cc; letter-spacing:.03em; flex:none; }
+.gv-wrap.mini .gv-bar, .gv-wrap.mini .gv-big { display:none; }
+.gv-wrap.mini .gv-tag { font-size:8.5px; padding:3px 6px; letter-spacing:.04em; }
 
 /* ===== Blog (Blog.dc.html) ===== */
 @media (max-width:820px){

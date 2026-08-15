@@ -20,9 +20,15 @@ const ICON = {
 export default function GalleryVideo({
   scene: sceneName,
   label,
+  autoplay,
+  mini,
 }: {
   scene: string;
   label?: string;
+  /** Start playing on mount, on scene change, and on scrolling into view. */
+  autoplay?: boolean;
+  /** Chrome-less thumbnail: plays while the pointer is over it. */
+  mini?: boolean;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -142,6 +148,14 @@ export default function GalleryVideo({
     const toggle = () => (playing ? pause() : play());
 
     const onCanvasClick = () => toggle();
+    const onEnter = () => play();
+    const onLeave = () => {
+      pause();
+      t = 0;
+      started = false;
+      ended = false;
+      draw();
+    };
     const onBig = (e: Event) => {
       e.stopPropagation();
       toggle();
@@ -193,7 +207,12 @@ export default function GalleryVideo({
       }
     };
 
-    cv.addEventListener("click", onCanvasClick);
+    if (mini) {
+      wrap.addEventListener("pointerenter", onEnter);
+      wrap.addEventListener("pointerleave", onLeave);
+    } else {
+      cv.addEventListener("click", onCanvasClick);
+    }
     big.addEventListener("click", onBig);
     pp.addEventListener("click", onPp);
     track.addEventListener("pointerdown", onTrackDown);
@@ -207,7 +226,9 @@ export default function GalleryVideo({
       io = new IntersectionObserver(
         (en) =>
           en.forEach((x) => {
-            if (!x.isIntersecting && playing) pause();
+            if (!x.isIntersecting) {
+              if (playing) pause();
+            } else if (!started && !mini && autoplay) play();
           }),
         { threshold: 0.08 },
       );
@@ -216,9 +237,14 @@ export default function GalleryVideo({
 
     size();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => draw());
+    let kick = 0;
+    if (!mini && autoplay) kick = window.setTimeout(play, 70);
 
     return () => {
       cancelAnimationFrame(raf);
+      clearTimeout(kick);
+      wrap.removeEventListener("pointerenter", onEnter);
+      wrap.removeEventListener("pointerleave", onLeave);
       cv.removeEventListener("click", onCanvasClick);
       big.removeEventListener("click", onBig);
       pp.removeEventListener("click", onPp);
@@ -227,10 +253,10 @@ export default function GalleryVideo({
       ro.disconnect();
       if (io) io.disconnect();
     };
-  }, [sceneName]);
+  }, [sceneName, autoplay, mini]);
 
   return (
-    <div ref={wrapRef} className="gv-wrap paused" tabIndex={0}>
+    <div ref={wrapRef} className={"gv-wrap paused" + (mini ? " mini" : "")} tabIndex={mini ? -1 : 0}>
       <canvas ref={canvasRef} className="gv-canvas"></canvas>
       {label ? <span className="gv-tag">{label}</span> : null}
       <button ref={bigRef} className="gv-big" aria-label="Play"></button>
