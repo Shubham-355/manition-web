@@ -197,9 +197,183 @@ export interface Scene {
     s2: number;
     warm?: boolean;
   };
+  _bh?: {
+    D: { r: number; th: number; b: number; w: number }[];
+    S: { x: number; y: number; m: number }[];
+    P: string[][];
+  };
 }
 
 export const SCENES: Record<string, Scene> = {
+  /* 0 · starlight lensed around a black hole, seen edge on */
+  blackhole: {
+    T: 20,
+    poster: 12,
+    draw(g, t) {
+      const cx = 160,
+        cy = 100;
+      let i: number;
+      if (!this._bh) {
+        const R0 = rng(77),
+          DP: { r: number; th: number; b: number; w: number }[] = [],
+          S: { x: number; y: number; m: number }[] = [],
+          P: string[][] = [];
+        for (i = 0; i < 1700; i++)
+          DP.push({ r: 1.33 + 2.95 * Math.pow(R0(), 0.62), th: R0() * TAU, b: 0.4 + 0.6 * R0(), w: 0.62 + 0.7 * R0() });
+        for (i = 0; i < 230; i++) S.push({ x: -60 + R0() * 440, y: -50 + R0() * 300, m: 0.18 + 0.82 * R0() * R0() });
+        for (let ri = 0; ri < 8; ri++) {
+          P.push([]);
+          for (let bi = 0; bi < 16; bi++) {
+            const rad = ri / 7,
+              be = bi / 15;
+            const c = HSV(
+              lp(0.088, 0.021, rad) + be * 0.016,
+              cl(lp(0.99, 0.13, be * be)),
+              cl(lp(0.4, 1, be) * lp(1, 0.64, rad) + 0.17),
+            );
+            P[ri].push("rgb(" + c[0] + "," + c[1] + "," + c[2] + ")");
+          }
+        }
+        this._bh = { D: DP, S, P };
+      }
+      const B = this._bh,
+        zm = lp(0.84, 1.12, ss(ln(t, 0, 20))),
+        R = 20.5 * zm;
+      const inc = lp(0.6, 1.37, sg(t, 5.4, 11.6)),
+        sI = Math.sin(inc),
+        cI = Math.cos(inc);
+      const lens = sg(t, 0.5, 3.2),
+        dA = sg(t, 1.4, 4.8),
+        hA = dA * (0.32 + 0.46 * sI),
+        Re = R * 1.6 * lens;
+      const hotW = sg(t, 11.3, 12.7) - sg(t, 15.2, 16.8),
+        hth = -t * 2.05,
+        pal = B.P;
+
+      /* lensed starfield: primary image pushed out, secondary ghost inside */
+      const fade = sg(t, 0, 1.3);
+      for (i = 0; i < B.S.length; i++) {
+        const s = B.S[i],
+          dx = s.x - cx,
+          dy = s.y - cy,
+          rr = Math.hypot(dx, dy);
+        if (rr < 0.8) continue;
+        const q = Math.sqrt(rr * rr + 4 * Re * Re),
+          rp = (rr + q) / 2,
+          k = rp / rr,
+          sz = s.m > 0.72 ? 1.35 : 0.95;
+        g.globalAlpha = cl(s.m * fade * cl(0.42 + (0.95 * Re) / Math.max(rp, 1)));
+        g.fillStyle = "#e9edf7";
+        g.fillRect(cx + dx * k, cy + dy * k, sz, sz);
+        const rm = (rr - q) / 2,
+          r2 = -rm;
+        if (r2 > R * 1.03) {
+          g.globalAlpha = cl(((s.m * fade * 2.6 * Re * Re) / (rr * rr + Re * Re)) * 0.45);
+          g.fillRect(cx + dx * (rm / rr), cy + dy * (rm / rr), 0.95, 0.95);
+        }
+      }
+
+      /* warm bloom */
+      const gr = g.createRadialGradient(cx, cy, R * 0.85, cx, cy, R * 5.4);
+      gr.addColorStop(0, "rgba(255,171,92," + (0.21 * dA).toFixed(3) + ")");
+      gr.addColorStop(0.34, "rgba(228,120,44," + (0.1 * dA).toFixed(3) + ")");
+      gr.addColorStop(1, "rgba(150,54,8,0)");
+      g.globalAlpha = 1;
+      g.fillStyle = gr;
+      g.fillRect(-30, -30, 380, 260);
+      g.globalCompositeOperation = "lighter";
+
+      /* mode 0 = far half behind the hole · 1 = near half in front · 2 = light bent into a halo */
+      const pass = (mode: number) => {
+        for (let j = 0; j < B.D.length; j++) {
+          const p = B.D[j];
+          const th = p.th + (2.2 * t) / Math.pow(p.r, 1.5),
+            ct = Math.cos(th),
+            st = Math.sin(th);
+          if (mode === 0 && st <= 0) continue;
+          if (mode === 1 && st > 0) continue;
+          const be = cl(0.5 - (0.36 + 0.36 * sI) * ct * 1.5);
+          let bo = 0;
+          if (hotW > 0) {
+            const da = (((th - hth) % TAU) + TAU + Math.PI) % TAU - Math.PI;
+            bo = hotW * Math.exp(-da * da * 7) * 0.95;
+          }
+          const rad = cl((p.r - 1.33) / 2.95),
+            rr2 = p.r * R;
+          let x: number, y: number, al: number, sz: number;
+          if (mode === 2) {
+            const rg = R * (1.02 + (p.r - 1.33) * 0.3);
+            x = cx + rg * ct;
+            y = cy - rg * st * 0.78;
+            al = cl(p.b * (0.45 + 0.75 * be) * (1 + bo) * hA) * 0.72;
+            sz = p.w * 0.85;
+          } else {
+            x = cx + rr2 * ct;
+            y = cy - rr2 * st * cI;
+            al = cl(p.b * (0.46 + 0.74 * be) * (1 + bo * 1.7) * dA) * 0.66;
+            sz = p.w * (0.85 + 0.55 * (1 - rad));
+          }
+          if (al <= 0.004) continue;
+          g.globalAlpha = al;
+          g.fillStyle = pal[Math.min(7, (rad * 7.99) | 0)][Math.min(15, (be * 15.99) | 0)];
+          g.fillRect(x, y, sz, sz);
+        }
+      };
+
+      pass(0);
+      g.globalCompositeOperation = "source-over";
+      g.globalAlpha = 1;
+      D(g, cx, cy, R, "#000000");
+      g.globalCompositeOperation = "lighter";
+      pass(2);
+
+      /* photon ring, brightest where the plasma runs toward us */
+      g.globalAlpha = dA * 0.45;
+      g.strokeStyle = "rgba(255,188,116,.5)";
+      g.lineWidth = 4.4;
+      g.beginPath();
+      g.arc(cx, cy, R * 1.06, 0, TAU);
+      g.stroke();
+      g.globalAlpha = dA * 0.8;
+      g.strokeStyle = "rgba(255,234,198,.62)";
+      g.lineWidth = 1.5;
+      g.beginPath();
+      g.arc(cx, cy, R * 1.042, 0, TAU);
+      g.stroke();
+      g.globalAlpha = dA;
+      g.strokeStyle = "rgba(255,250,236,.95)";
+      g.lineWidth = 2.1;
+      g.beginPath();
+      g.arc(cx, cy, R * 1.042, Math.PI * 0.56, Math.PI * 1.44);
+      g.stroke();
+      pass(1);
+      g.globalCompositeOperation = "source-over";
+
+      const lab = (txt: string, a: number, lx: number, ly: number, tx: number, ty: number, al2: CanvasTextAlign) => {
+        if (a <= 0.01) return;
+        g.globalAlpha = a * 0.55;
+        L(g, lx, ly, cx + (lx - cx) * 0.3, cy + (ly - cy) * 0.3, K.grid2, 0.7);
+        g.globalAlpha = a;
+        TX(g, txt, tx, ty, 7, K.dim, al2);
+      };
+      const a1 = sg(t, 3.4, 4.2) - sg(t, 8.2, 8.9),
+        a2 = sg(t, 4.6, 5.4) - sg(t, 9.1, 9.8);
+      lab("event horizon", a1, cx + R * 1.16, cy + R * 1.16, cx + R * 1.3, cy + R * 1.5, "left");
+      lab("photon ring", a2, cx - R * 1.2, cy - R * 1.2, cx - R * 1.34, cy - R * 1.52, "right");
+      const a3 = sg(t, 10.2, 11) - sg(t, 14.4, 15.2);
+      if (a3 > 0.01) {
+        g.globalAlpha = a3;
+        TX(g, "light from the far side bends over the top", cx, 188, 7, K.dim, "center");
+      }
+      const a4 = sg(t, 15.6, 16.4) - sg(t, 19.2, 19.9);
+      if (a4 > 0.01) {
+        g.globalAlpha = a4;
+        TX(g, "approaching → beamed brighter", 26, cy - R * 2.75, 7, "#e7d7bd", "left");
+      }
+      g.globalAlpha = 1;
+    },
+  },
+
   /* 1 · sine traced from a rotating circle */
   sine: {
     T: 12,
