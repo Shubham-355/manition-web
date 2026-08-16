@@ -3,7 +3,6 @@ import { parseStyle } from "./lib/css";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import ManitionDemo from "./components/film/ManitionDemo";
-import HeroPrompt from "./components/HeroPrompt";
 import TrySentence from "./components/TrySentence";
 import UseCases from "./components/UseCases";
 import { Hover, WaitlistForm } from "./components/Interactive";
@@ -75,8 +74,6 @@ export default function Home() {
           )}
         >
           <div className="hh-copy" style={parseStyle("min-width:0; max-width:540px;")}>
-            <HeroPrompt />
-
             <h1
               style={parseStyle(
                 "margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(42px,7vw,62px); line-height:1.0; letter-spacing:-0.038em; color:#16161a;",
