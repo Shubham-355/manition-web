@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { parseStyle } from "../lib/css";
 import GalleryVideo from "./GalleryVideo";
-import { Hover } from "./Interactive";
 
 type Item = {
   text: string;
@@ -33,7 +32,7 @@ const AUDIENCES: { name: string; tag: string; items: Item[] }[] = [
     name: "For video",
     tag: "broadcast-quality, no animator",
     items: [
-      { text: "bend starlight around a black hole, edge on", scene: "blackhole", label: "Light bending around a black hole", cls: "LensedBlackHole", mob: 1480, anim: 7, lines: 164, mb: 8.2, secs: 137, dur: "0:20" },
+      { text: "start with a cloud of dust and end with a world someone could stand on", scene: "origin", label: "A world from dust", cls: "WorldFromDust", mob: 1443, anim: 9, lines: 212, mb: 14.6, secs: 268, dur: "0:46" },
       { text: "fall into the Mandelbrot set, scanline by scanline", scene: "mandel", label: "Mandelbrot render", cls: "MandelScan", mob: 9, anim: 3, lines: 118, mb: 5.6, secs: 71, dur: "0:16" },
       { text: "flock 200 birds, then send in a hawk", scene: "boids", label: "Flocking, then a hawk", cls: "BoidsHawk", mob: 201, anim: 4, lines: 143, mb: 6.4, secs: 88, dur: "0:20" },
     ],
@@ -59,14 +58,14 @@ const AUDIENCES: { name: string; tag: string; items: Item[] }[] = [
 ];
 
 const WALL: (Item & { short: string })[] = [
-  { scene: "pendulum", short: "Chaos", text: "run two double pendulums 0.001 rad apart", label: "Double pendulum divergence", cls: "PendulumSplit", mob: 8, anim: 3, lines: 84, mb: 4.3, secs: 47, dur: "0:16" },
-  { scene: "phyllo", short: "Bloom", text: "pack seeds at the golden angle", label: "Phyllotaxis bloom", cls: "GoldenBloom", mob: 430, anim: 2, lines: 61, mb: 3.6, secs: 39, dur: "0:14" },
-  { scene: "waves", short: "Waves", text: "interfere two point sources in a ripple tank", label: "Two-source interference", cls: "RippleTank", mob: 3, anim: 4, lines: 77, mb: 4.1, secs: 43, dur: "0:14" },
-  { scene: "montecarlo", short: "Monte Carlo", text: "estimate pi by throwing 4000 darts", label: "Monte Carlo pi", cls: "DartsPi", mob: 4002, anim: 3, lines: 66, mb: 3.9, secs: 41, dur: "0:16" },
-  { scene: "koch", short: "Koch", text: "iterate a Koch snowflake five times", label: "Koch snowflake", cls: "KochFlake", mob: 6, anim: 5, lines: 54, mb: 3.3, secs: 35, dur: "0:15" },
-  { scene: "hilbert", short: "Hilbert", text: "fill a square with a Hilbert curve", label: "Hilbert curve", cls: "HilbertFill", mob: 5, anim: 4, lines: 69, mb: 3.7, secs: 42, dur: "0:16" },
-  { scene: "primes", short: "Primes", text: "spiral the integers and light up the primes", label: "Ulam spiral", cls: "UlamSpiral", mob: 529, anim: 3, lines: 74, mb: 4.5, secs: 53, dur: "0:22" },
-  { scene: "modular", short: "Cardioid", text: "draw times-table chords from 2 up to 5", label: "Times-table chords", cls: "TimesChords", mob: 180, anim: 4, lines: 63, mb: 4.0, secs: 45, dur: "0:16" },
+  { scene: "tree", short: "Seasons", text: "grow a tree from one seed and run it through four seasons", label: "A year in one tree", cls: "SeasonTree", mob: 340, anim: 7, lines: 176, mb: 10.2, secs: 198, dur: "0:34" },
+  { scene: "aurora", short: "Aurora", text: "put the aurora over a frozen lake and let it drift", label: "Aurora over a frozen lake", cls: "AuroraCurtains", mob: 146, anim: 6, lines: 158, mb: 9.4, secs: 174, dur: "0:30" },
+  { scene: "nebula", short: "Nebula", text: "grow an emission nebula out of the dark and light it up", label: "Nebula, condensing", cls: "NebulaGrow", mob: 4000, anim: 4, lines: 121, mb: 7.8, secs: 104, dur: "0:16" },
+  { scene: "blackhole", short: "Black hole", text: "bend starlight around a black hole, edge on", label: "Light bending around a black hole", cls: "LensedBlackHole", mob: 1480, anim: 7, lines: 164, mb: 8.2, secs: 137, dur: "0:20" },
+  { scene: "curl", short: "Dye", text: "pour dye into a swirling field and let it draw", label: "Dye in a curl field", cls: "CurlDye", mob: 150, anim: 3, lines: 104, mb: 6.1, secs: 83, dur: "0:16" },
+  { scene: "dejong", short: "Attractor", text: "morph a de Jong attractor through its parameters", label: "de Jong attractor", cls: "DeJongMorph", mob: 60000, anim: 3, lines: 88, mb: 6.9, secs: 92, dur: "0:18" },
+  { scene: "galaxy", short: "Galaxies", text: "collide two galaxies and keep the tidal tails", label: "Galaxy collision", cls: "GalaxyPass", mob: 1400, anim: 3, lines: 134, mb: 7.1, secs: 112, dur: "0:20" },
+  { scene: "turing", short: "Turing", text: "grow Turing patterns from reaction-diffusion", label: "Gray-Scott patterns", cls: "GrayScott", mob: 4, anim: 2, lines: 126, mb: 5.9, secs: 96, dur: "0:18" },
 ];
 
 const START = AUDIENCES[1].items[0];
@@ -86,88 +85,89 @@ function logFor(p: Item): LogLine[] {
   ];
 }
 
-const metaOf = (p: Item) => p.dur + " · 1080p · MP4 · 60 fps";
+// The design types the sentence out character by character before rendering.
+// This layout dropped the prompt bar, so only the delay is still observable;
+// it is summed once here rather than run as one timer per character.
+function typeDelay(text: string) {
+  let ms = 110;
+  for (let i = 1; i < text.length; i++) ms += 16 + Math.random() * 22;
+  return ms;
+}
+
+type Ctl = {
+  timers: ReturnType<typeof setTimeout>[];
+  tick: ReturnType<typeof setInterval> | null;
+  setBusy: (v: boolean) => void;
+  setPct: (v: number) => void;
+  setLog: (v: LogLine[]) => void;
+  setScene: (v: string) => void;
+  setLabel: (v: string) => void;
+};
+
+function clearRun(c: Ctl) {
+  c.timers.forEach(clearTimeout);
+  c.timers = [];
+  if (c.tick) clearInterval(c.tick);
+}
+
+function render(c: Ctl, p: Item) {
+  const lines = logFor(p);
+  c.setBusy(true);
+  c.setPct(0);
+  c.setLog([lines[0]]);
+  c.timers.push(...LOG_AT.map((ms, i) => setTimeout(() => c.setLog(lines.slice(0, i + 1)), ms)));
+  const t0 = Date.now();
+  c.tick = setInterval(() => c.setPct(Math.min(1, (Date.now() - t0) / LOG_TOTAL)), 50);
+  c.timers.push(
+    setTimeout(() => {
+      if (c.tick) clearInterval(c.tick);
+      c.setBusy(false);
+      c.setPct(1);
+      c.setScene(p.scene);
+      c.setLabel(p.label);
+    }, LOG_TOTAL),
+  );
+}
+
+function run(c: Ctl, p: Item) {
+  clearRun(c);
+  c.setBusy(false);
+  c.setLog([]);
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+    render(c, p);
+    return;
+  }
+  c.timers.push(setTimeout(() => render(c, p), typeDelay(p.text)));
+}
 
 export default function TrySentence() {
   const [aud, setAud] = useState(1);
   const [scene, setScene] = useState(START.scene);
   const [label, setLabel] = useState(START.label);
-  const [meta, setMeta] = useState(metaOf(START));
-  const [stageText, setStageText] = useState(START.text);
-  const [typing, setTyping] = useState(false);
   const [busy, setBusy] = useState(false);
   const [pct, setPct] = useState(0);
   const [log, setLog] = useState<LogLine[]>([]);
-  const [blink, setBlink] = useState(true);
 
+  const ctl = useRef<Ctl>({
+    timers: [],
+    tick: null,
+    setBusy,
+    setPct,
+    setLog,
+    setScene,
+    setLabel,
+  });
   const cur = useRef<Item>(START);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const tick = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const clearRun = () => {
-    timers.current.forEach(clearTimeout);
-    timers.current = [];
-    if (tick.current) clearInterval(tick.current);
-  };
 
   useEffect(() => {
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-    const b = setInterval(() => setBlink((v) => !v), 530);
-    return () => clearInterval(b);
+    const c = ctl.current;
+    return () => clearRun(c);
   }, []);
 
-  useEffect(() => clearRun, []);
-
-  const render = (p: Item) => {
-    const lines = logFor(p);
-    setBusy(true);
-    setPct(0);
-    setLog([lines[0]]);
-    timers.current.push(
-      ...LOG_AT.map((ms, i) => setTimeout(() => setLog(lines.slice(0, i + 1)), ms)),
-    );
-    const t0 = Date.now();
-    tick.current = setInterval(() => setPct(Math.min(1, (Date.now() - t0) / LOG_TOTAL)), 50);
-    timers.current.push(
-      setTimeout(() => {
-        if (tick.current) clearInterval(tick.current);
-        setBusy(false);
-        setPct(1);
-        setScene(p.scene);
-        setLabel(p.label);
-        setMeta(metaOf(p));
-      }, LOG_TOTAL),
-    );
-  };
-
-  const run = (p: Item) => {
-    clearRun();
+  const pick = (p: Item) => {
     cur.current = p;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-      setStageText(p.text);
-      setTyping(false);
-      render(p);
-      return;
-    }
-    let at = 0;
-    setStageText("");
-    setTyping(true);
-    setBusy(false);
-    setLog([]);
-    const step = () => {
-      at += 1;
-      setStageText(p.text.slice(0, at));
-      if (at >= p.text.length) {
-        setTyping(false);
-        render(p);
-        return;
-      }
-      timers.current.push(setTimeout(step, 16 + Math.random() * 22));
-    };
-    timers.current.push(setTimeout(step, 110));
+    run(ctl.current, p);
   };
-
-  const caret = typing ? (blink ? 1 : 0.25) : 0;
 
   return (
     <section style={parseStyle("background:#efece7; border-top:1px solid #e6e2da; border-bottom:1px solid #e6e2da;")}>
@@ -184,7 +184,7 @@ export default function TrySentence() {
               One sentence in. A finished scene out.
             </h2>
             <p style={parseStyle("margin:16px 0 0; font-size:15px; line-height:1.7; color:#6b6b73; max-width:520px; text-wrap:pretty;")}>
-              Say who you are, pick a sentence, and watch Manition write the Manim and render it. Every scene below is
+              Say who you are and watch Manition write the Manim and render it. Every scene below is
               drawn live on the spot, not a clip, and nothing was tidied up afterwards.
             </p>
           </div>
@@ -228,59 +228,7 @@ export default function TrySentence() {
               "background:#0d0d12; border:1px solid #23232c; border-radius:20px; padding:clamp(12px,1.7vw,18px); box-shadow:0 30px 70px -36px rgba(10,10,16,0.55);",
             )}
           >
-            <div style={parseStyle("display:flex; align-items:center; justify-content:space-between; gap:12px; padding:2px 5px 12px;")}>
-              <span style={parseStyle("display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.13em; text-transform:uppercase; color:#5b5f6e;")}>
-                <span style={parseStyle("display:block; width:6px; height:6px; border-radius:50%; background:#3b62e0;")}></span>
-                manition studio
-              </span>
-              <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#5b5f6e; white-space:nowrap;")}>{meta}</span>
-            </div>
-
-            <div
-              className="hh-prompt"
-              style={parseStyle("display:flex; align-items:center; gap:12px; background:#15151b; border:1px solid #272730; border-radius:13px; padding:10px 10px 10px 16px;")}
-            >
-              <span style={parseStyle("flex:none; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#3b62e0;")}>&gt;</span>
-              <span
-                className="hh-prompt-text"
-                style={parseStyle("flex:1; min-width:0; font-family:'IBM Plex Mono',monospace; font-size:13.5px; color:#eceef4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;")}
-              >
-                {stageText}
-                <span style={{ color: "#3b62e0", opacity: caret }}>▌</span>
-              </span>
-              <Hover
-                as="button"
-                type="button"
-                onClick={() => run(cur.current)}
-                style="flex:none; appearance:none; cursor:pointer; display:inline-flex; align-items:center; gap:7px; background:#3b62e0; color:#fff; border:0; border-radius:10px; font-family:inherit; font-size:13px; font-weight:600; padding:10px 16px; transition:background .15s;"
-                hoverStyle={{ background: "#2f4fc0" }}
-              >
-                Animate
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14"></path>
-                  <path d="M13 6l6 6-6 6"></path>
-                </svg>
-              </Hover>
-            </div>
-
-            <div style={parseStyle("display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;")}>
-              {AUDIENCES[aud].items.map((p) => {
-                const on = scene === p.scene;
-                return (
-                  <button
-                    key={p.scene}
-                    onClick={() => run(p)}
-                    style={parseStyle(
-                      `appearance:none; cursor:pointer; text-align:left; font-family:'IBM Plex Mono',monospace; font-size:11.5px; line-height:1.3; padding:9px 14px; border-radius:100px; background:${on ? "#22222c" : "#15151b"}; border:1px solid ${on ? "#3b62e0" : "#272730"}; color:${on ? "#eceef4" : "#969aa8"}; transition:background .18s, border-color .18s, color .18s;`,
-                    )}
-                  >
-                    {p.text}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div style={parseStyle("position:relative; aspect-ratio:16/9; border-radius:14px; overflow:hidden; background:#0a0a0d; border:1px solid #1f1f26; margin-top:12px;")}>
+            <div style={parseStyle("position:relative; aspect-ratio:16/9; border-radius:14px; overflow:hidden; background:#0a0a0d; border:1px solid #1f1f26;")}>
               <GalleryVideo scene={scene} label={label} autoplay />
               {busy ? (
                 <div
@@ -309,24 +257,13 @@ export default function TrySentence() {
               ) : null}
             </div>
 
-            <div style={parseStyle("display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:10px; margin:16px 3px 9px;")}>
-              <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.11em; text-transform:uppercase; color:#5b5f6e;")}>
-                Hover to preview · click to render
-              </span>
-              <span style={parseStyle("font-size:12.5px; color:#787d8c;")}>
-                Every scene ships with its{" "}
-                <Link href="/features" style={parseStyle("color:#a8b5e4; font-weight:500;")}>
-                  Manim source
-                </Link>
-                .
-              </span>
-            </div>
+            <div style={parseStyle("margin:16px 0 9px;")}></div>
 
             <div style={parseStyle("display:grid; grid-template-columns:repeat(auto-fill,minmax(102px,1fr)); gap:8px;")}>
               {WALL.map((w) => (
                 <button
                   key={w.scene}
-                  onClick={() => run(w)}
+                  onClick={() => pick(w)}
                   style={parseStyle(
                     `appearance:none; padding:0; cursor:pointer; position:relative; aspect-ratio:16/9; border-radius:9px; overflow:hidden; background:#0a0a0d; border:1px solid ${scene === w.scene ? "#3b62e0" : "#23232c"}; transition:border-color .18s;`,
                   )}
