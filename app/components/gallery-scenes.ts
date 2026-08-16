@@ -151,6 +151,56 @@ function ACC(o: Scene, w: number, h: number): Acc {
   return o._ac;
 }
 
+/* value noise + fBm - shared by the nebula, curl and origin scenes */
+const NH = new Float32Array(4096);
+(function () {
+  const r = rng(1337);
+  for (let i = 0; i < 4096; i++) NH[i] = r();
+})();
+function NHV(a: number, b: number) {
+  return NH[((Math.imul(a, 73856093) ^ Math.imul(b, 19349663)) >>> 0) & 4095];
+}
+function VN(x: number, y: number) {
+  const xi = Math.floor(x),
+    yi = Math.floor(y),
+    xf = x - xi,
+    yf = y - yi;
+  const u = xf * xf * (3 - 2 * xf),
+    v = yf * yf * (3 - 2 * yf);
+  const a = NHV(xi, yi),
+    b = NHV(xi + 1, yi),
+    c = NHV(xi, yi + 1),
+    d = NHV(xi + 1, yi + 1);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+function FBM(x: number, y: number, o: number) {
+  let s = 0,
+    am = 0.5,
+    f = 1,
+    n = 0;
+  for (let i = 0; i < o; i++) {
+    s += am * VN(x * f, y * f);
+    n += am;
+    am *= 0.5;
+    f *= 2.03;
+  }
+  return s / n;
+}
+
+type TreeNode = {
+  a: number;
+  l: number;
+  w: number;
+  d: number;
+  t0: number;
+  t1: number;
+  ph: number;
+  sw: number;
+  ch: TreeNode[];
+  lv: Leaf[];
+};
+type Leaf = { ox: number; oy: number; s: number; b: number; h: number; ph: number; dt: number; fx: number };
+
 export interface Scene {
   T: number;
   poster: number;
@@ -202,9 +252,905 @@ export interface Scene {
     S: { x: number; y: number; m: number }[];
     P: string[][];
   };
+  _neb?: { x: number; y: number; m: number; p: number; c: number }[];
+  _dj?: Float32Array;
+  _curl?: { p: number[][]; h: number }[];
+  _orig?: {
+    P: { r0: number; a0: number; z: number; rt: number; s: number; keep: boolean; sw: number }[];
+    A: number[];
+    ST: { x: number; y: number; m: number; p: number }[];
+    SPK: { r: number; a: number; t: number; s: number }[];
+  };
+  _planet?: Img;
+  _tree?: TreeNode;
+  _snow?: { x: number; y: number; s: number; v: number; p: number }[];
+  _aur?: {
+    S: { x: number; y: number; m: number; p: number }[];
+    C: { y: number; amp: number; fr: number; sp: number; t0: number; w: number; ph: number; vi: number; ns: number }[];
+    RG: number[];
+  };
 }
 
 export const SCENES: Record<string, Scene> = {
+  /* an emission nebula condensing out of the dark */
+  nebula: {
+    T: 16,
+    poster: 11,
+    draw(g, t) {
+      const W = 80,
+        H = 50,
+        im = IMG(this, W, H),
+        d = im.d.data;
+      let x: number, y: number, i: number;
+      if (!this._neb) {
+        const R = rng(91),
+          S: { x: number; y: number; m: number; p: number; c: number }[] = [];
+        for (i = 0; i < 150; i++)
+          S.push({ x: R() * 320, y: R() * 200, m: Math.pow(R(), 3.2), p: R() * TAU, c: R() });
+        this._neb = S;
+      }
+      const dr = t * 0.03,
+        em = ss(ln(t, 0.3, 8.5)),
+        gl = sg(t, 0.2, 3);
+      for (y = 0; y < H; y++)
+        for (x = 0; x < W; x++) {
+          const u = (x / W) * 5.2 + dr,
+            v = (y / H) * 3.3;
+          const wx = FBM(u + 1.7, v + 9.2, 4),
+            wy = FBM(u + 5.3, v + 2.8, 4);
+          let de = FBM(u + 3.2 * wx, v + 3.2 * wy, 5);
+          const nx = x / W,
+            ny = y / H;
+          const r1 = Math.hypot((nx - 0.44) * 1.05, (ny - 0.46) * 1.4),
+            r2 = Math.hypot((nx - 0.72) * 1.25, (ny - 0.62) * 1.5);
+          de *= Math.min(1.2, Math.max(0, 1 - r1 * 1.02) * 0.9 + Math.max(0, 1 - r2 * 1.6) * 0.55);
+          de = Math.max(0, de - 0.06) * 2 * em;
+          const co = Math.max(0, 1 - r1 * 2.55) + Math.max(0, 1 - r2 * 3.6) * 0.7,
+            e = Math.pow(de, 1.45),
+            ht = Math.pow(co, 1.5);
+          const rr = e * (0.3 + 0.34 * ht) + Math.pow(de, 2.3) * 1.5 * ht + Math.pow(de, 3) * 0.5;
+          let gg = e * (0.19 + 0.2 * ht) + Math.pow(de, 2.5) * 1.0 * ht + Math.pow(de, 3.4) * 0.34;
+          let bb = e * (0.58 + 0.1 * ht) + Math.pow(de, 1.9) * 0.42;
+          const tl = Math.pow(Math.max(0, de - 0.03), 2) * Math.max(0, 1 - co * 1.9);
+          gg += tl * 0.34;
+          bb += tl * 0.2;
+          const o = (y * W + x) * 4;
+          d[o] = Math.min(255, (0.02 + rr) * 255);
+          d[o + 1] = Math.min(255, (0.022 + gg) * 255);
+          d[o + 2] = Math.min(255, (0.04 + bb) * 255);
+          d[o + 3] = 255;
+        }
+      im.g.putImageData(im.d, 0, 0);
+      g.imageSmoothingEnabled = true;
+      g.drawImage(im.c, 0, 0, 320, 200);
+      const S = this._neb;
+      g.globalCompositeOperation = "lighter";
+      for (i = 0; i < S.length; i++) {
+        const s = S[i],
+          tw = 0.55 + 0.45 * Math.sin(t * 1.5 + s.p),
+          a = gl * (0.22 + s.m * 0.78) * tw;
+        if (a <= 0.01) continue;
+        const rad = 0.5 + s.m * 1.7;
+        g.globalAlpha = a;
+        D(g, s.x, s.y, rad, s.c > 0.85 ? "#ffd6a0" : s.c < 0.22 ? "#accaff" : "#eef2ff");
+        if (s.m > 0.72) {
+          g.globalAlpha = a * 0.5;
+          L(g, s.x - rad * 4, s.y, s.x + rad * 4, s.y, "#fff", 0.6);
+          L(g, s.x, s.y - rad * 4, s.x, s.y + rad * 4, "#fff", 0.6);
+        }
+      }
+      g.globalCompositeOperation = "source-over";
+      g.globalAlpha = 1;
+      const la = sg(t, 1.2, 2.2);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "H II region · 4.2 ly", 16, 50, 10, "rgba(255,217,138,.82)");
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 13.2, 14.4);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "a nursery for stars", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* de Jong attractor, parameters morphing */
+  dejong: {
+    T: 18,
+    poster: 8,
+    draw(g, t) {
+      const W = 160,
+        H = 100,
+        im = IMG(this, W, H),
+        d = im.d.data;
+      let i: number, n: number;
+      if (!this._dj) this._dj = new Float32Array(W * H);
+      const C = this._dj;
+      for (i = 0; i < C.length; i++) C[i] = 0;
+      /* a slow orbit around one known-good parameter set, so it never goes sparse */
+      const w = ln(t, 0.3, 17.5) * TAU * 0.62;
+      const a = 1.641 + 0.17 * Math.sin(w),
+        b = 1.902 + 0.15 * Math.cos(w * 0.8);
+      const c = 0.316 + 0.19 * Math.sin(w * 1.3),
+        dj = 1.525 + 0.13 * Math.cos(w);
+      let x = 0.1,
+        y = 0.1;
+      const sc = Math.min(W, H) / 4.35,
+        ox = W / 2,
+        oy = H / 2;
+      const NP = Math.floor(lp(2500, 26000, ss(ln(t, 0.2, 6))));
+      for (i = 0; i < NP; i++) {
+        const nx = Math.sin(a * y) - Math.cos(b * x),
+          ny = Math.sin(c * x) - Math.cos(dj * y);
+        x = nx;
+        y = ny;
+        if (i < 20) continue;
+        const px = (x * sc + ox) | 0,
+          py = (y * sc + oy) | 0;
+        if (px < 0 || py < 0 || px >= W || py >= H) continue;
+        C[py * W + px] += 1;
+      }
+      let mx = 0;
+      for (i = 0; i < C.length; i++) if (C[i] > mx) mx = C[i];
+      const lm = Math.log(mx + 1) || 1;
+      for (i = 0, n = 0; i < C.length; i++, n += 4) {
+        if (C[i] <= 0) {
+          d[n] = 5;
+          d[n + 1] = 7;
+          d[n + 2] = 17;
+          d[n + 3] = 255;
+          continue;
+        }
+        const u = Math.pow(Math.log(C[i] + 1) / lm, 0.72);
+        const cc =
+          u < 0.5 ? MN([13, 26, 80], [54, 140, 235], u * 2) : MN([54, 140, 235], [255, 232, 190], (u - 0.5) * 2);
+        d[n] = cc[0];
+        d[n + 1] = cc[1];
+        d[n + 2] = cc[2];
+        d[n + 3] = 255;
+      }
+      im.g.putImageData(im.d, 0, 0);
+      g.imageSmoothingEnabled = true;
+      g.drawImage(im.c, 0, 0, 320, 200);
+      const la = sg(t, 1, 2);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "x ← sin(ay) − cos(bx)", 16, 50, 10, "rgba(255,255,255,.85)");
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 15.2, 16.4);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "four numbers, one shape", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* dye tracers through a curl-noise field */
+  curl: {
+    T: 16,
+    poster: 11,
+    draw(g, t) {
+      let i: number, j: number;
+      if (!this._curl) {
+        const R = rng(7),
+          P: { p: number[][]; h: number }[] = [],
+          e = 1.4;
+        for (let k = 0; k < 150; k++) {
+          let x = -20 + R() * 360,
+            y = -20 + R() * 240;
+          const hu = cl((FBM(x * 0.021 + 41.3, y * 0.021 + 18.9, 3) - 0.4) * 4.2),
+            pts = [[x, y]];
+          for (j = 0; j < 70; j++) {
+            const px =
+              (FBM((x + e) * 0.012 + 3.1, y * 0.012 + 7.7, 4) - FBM((x - e) * 0.012 + 3.1, y * 0.012 + 7.7, 4)) /
+              (2 * e);
+            const py =
+              (FBM(x * 0.012 + 3.1, (y + e) * 0.012 + 7.7, 4) - FBM(x * 0.012 + 3.1, (y - e) * 0.012 + 7.7, 4)) /
+              (2 * e);
+            const vx = py * 9000,
+              vy = -px * 9000,
+              m = Math.hypot(vx, vy) || 1;
+            x += (vx / m) * 3.2;
+            y += (vy / m) * 3.2;
+            if (x < -40 || x > 360 || y < -40 || y > 240) break;
+            pts.push([x, y]);
+          }
+          if (pts.length > 6) P.push({ p: pts, h: hu });
+        }
+        this._curl = P;
+      }
+      const P = this._curl,
+        rv = ss(ln(t, 0.2, 7.5));
+      g.globalCompositeOperation = "lighter";
+      g.lineCap = "round";
+      for (i = 0; i < P.length; i++) {
+        const tr = P[i],
+          pts = tr.p,
+          np = Math.max(2, Math.floor(pts.length * rv));
+        const c =
+          tr.h < 0.5 ? MN([26, 199, 230], [46, 112, 250], tr.h * 2) : MN([46, 112, 250], [255, 199, 92], (tr.h - 0.5) * 2);
+        g.strokeStyle = "rgba(" + c[0] + "," + c[1] + "," + c[2] + ",.5)";
+        g.lineWidth = 0.85;
+        g.beginPath();
+        g.moveTo(pts[0][0], pts[0][1]);
+        for (j = 1; j < np; j++) g.lineTo(pts[j][0], pts[j][1]);
+        g.stroke();
+        const hp = ((t * 0.16 + i * 0.037) % 1) * (np - 1),
+          hi = hp | 0;
+        if (hi > 0 && hi < np - 1) {
+          g.globalAlpha = 0.9;
+          D(g, pts[hi][0], pts[hi][1], 1.15, "rgb(" + c[0] + "," + c[1] + "," + c[2] + ")");
+          g.globalAlpha = 1;
+        }
+      }
+      g.globalCompositeOperation = "source-over";
+      const la = sg(t, 1, 2);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "curl field · 150 tracers", 16, 50, 10, "rgba(255,217,138,.8)");
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 13.4, 14.6);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "divergence-free, so nothing piles up", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* long-form: a cloud of dust becomes a world someone could stand on */
+  origin: {
+    T: 46,
+    poster: 26,
+    draw(g, t) {
+      let i: number;
+      const cx = 160,
+        cy = 100,
+        RING = [36, 60, 86, 116, 150],
+        PS = [1.5, 2.1, 2.8, 2.3, 1.8];
+      const PC = [
+        [216, 170, 124],
+        [198, 144, 106],
+        [122, 166, 198],
+        [178, 122, 98],
+        [152, 168, 192],
+      ];
+      if (!this._orig) {
+        const R = rng(23),
+          P: { r0: number; a0: number; z: number; rt: number; s: number; keep: boolean; sw: number }[] = [];
+        for (i = 0; i < 1400; i++) {
+          const ri = (R() * 5) | 0;
+          P.push({
+            r0: 46 + 208 * Math.pow(R(), 0.55),
+            a0: R() * TAU,
+            z: (R() - 0.5) * Math.pow(R(), 0.55),
+            rt: RING[ri] + (R() - 0.5) * 15,
+            s: 0.35 + 0.8 * Math.pow(R(), 1.8),
+            keep: R() < 0.34,
+            sw: R(),
+          });
+        }
+        const A: number[] = [],
+          ST: { x: number; y: number; m: number; p: number }[] = [],
+          SPK: { r: number; a: number; t: number; s: number }[] = [];
+        for (i = 0; i < 5; i++) A.push(R() * TAU);
+        for (i = 0; i < 90; i++) ST.push({ x: R() * 320, y: R() * 200, m: Math.pow(R(), 2.4), p: R() * TAU });
+        for (i = 0; i < 32; i++)
+          SPK.push({ r: RING[(R() * 5) | 0] + (R() - 0.5) * 11, a: R() * TAU, t: 17.5 + R() * 12.5, s: 0.55 + R() * 0.9 });
+        this._orig = { P, A, ST, SPK };
+      }
+      const O = this._orig,
+        P = O.P,
+        ST = O.ST,
+        SPK = O.SPK;
+      const WV = (r: number) => 118 / Math.pow(r, 1.35);
+      const col = ss(ln(t, 0.8, 15)),
+        fl = ss(ln(t, 2.5, 14)),
+        ig = sg(t, 10.5, 15.5);
+      const tilt = lp(0.95, 0.3, fl),
+        zs = lp(46, 3, fl);
+      const pz = ss(ln(t, 34, 44.5)),
+        Z = Math.pow(31, pz),
+        dust = 1 - sg(t, 35.5, 40.5);
+      const ta = O.A[2] + WV(RING[2]) * t;
+      const tx = cx + Math.cos(ta) * RING[2],
+        ty = cy + Math.sin(ta) * RING[2] * tilt;
+      g.fillStyle = "#04050a";
+      g.fillRect(0, 0, 320, 200);
+      for (i = 0; i < ST.length; i++) {
+        const s0 = ST[i];
+        g.globalAlpha = (0.1 + s0.m * 0.5) * (0.6 + 0.4 * Math.sin(t * 1.1 + s0.p)) * (1 - pz * 0.8);
+        D(g, s0.x, s0.y, 0.4 + s0.m * 0.7, "#dfe6ff");
+      }
+      g.globalAlpha = 1;
+      if (col < 0.98) {
+        const hz = g.createRadialGradient(148, 92, 10, 160, 100, 190);
+        hz.addColorStop(0, "rgba(96,86,132," + (0.34 * (1 - col)).toFixed(3) + ")");
+        hz.addColorStop(0.55, "rgba(58,52,88," + (0.19 * (1 - col)).toFixed(3) + ")");
+        hz.addColorStop(1, "rgba(20,18,34,0)");
+        g.fillStyle = hz;
+        g.fillRect(0, 0, 320, 200);
+      }
+      g.save();
+      g.translate(cx - 22 * ss(pz), cy + 6 * ss(pz));
+      g.scale(Z, Z);
+      g.translate(-lp(cx, tx, pz), -lp(cy, ty, pz));
+      const ro = sg(t, 19, 26) * (1 - sg(t, 34, 37));
+      if (ro > 0.01) {
+        g.strokeStyle = "rgba(150,168,214," + (0.14 * ro).toFixed(3) + ")";
+        g.lineWidth = 0.35 / Math.sqrt(Z);
+        for (i = 0; i < 5; i++) {
+          g.beginPath();
+          g.ellipse(cx, cy, RING[i], RING[i] * tilt, 0, 0, TAU);
+          g.stroke();
+        }
+      }
+      const haze = sg(t, 13, 21) * cl(1 - pz * 1.6);
+      if (haze > 0.01) {
+        g.globalCompositeOperation = "lighter";
+        g.save();
+        g.translate(cx, cy);
+        g.scale(1, tilt);
+        const dg = g.createRadialGradient(0, 0, 6, 0, 0, 168);
+        dg.addColorStop(0, "rgba(255,216,162," + (0.17 * haze).toFixed(3) + ")");
+        dg.addColorStop(0.42, "rgba(198,160,126," + (0.1 * haze).toFixed(3) + ")");
+        dg.addColorStop(1, "rgba(120,100,90,0)");
+        g.fillStyle = dg;
+        g.beginPath();
+        g.arc(0, 0, 168, 0, TAU);
+        g.fill();
+        g.restore();
+      }
+      g.globalCompositeOperation = "lighter";
+      if (dust > 0.012) {
+        for (i = 0; i < P.length; i++) {
+          const p = P[i];
+          const vis = (p.keep ? 1 - 0.45 * sg(t, 24, 33) : 1 - sg(t, 17 + p.sw * 7, 22 + p.sw * 8)) * dust;
+          if (vis <= 0.012) continue;
+          const r = lp(p.r0, p.rt, col),
+            a = p.a0 + WV(r) * t;
+          const x = cx + Math.cos(a) * r,
+            y = cy + Math.sin(a) * r * tilt + p.z * zs;
+          const lit = ig * Math.pow(1 - cl(r / 205), 1.6);
+          const c = MN(MN([108, 114, 142], [176, 150, 124], col * 0.85), [255, 230, 186], lit);
+          const al = (0.17 + 0.48 * p.s) * vis * (0.72 + 0.28 * Math.sin(t * 0.7 + p.sw * 9));
+          g.fillStyle = "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + al.toFixed(3) + ")";
+          g.beginPath();
+          g.arc(x, y, p.s * (0.55 + lit * 0.5), 0, TAU);
+          g.fill();
+        }
+      }
+      const core = (1 - ig) * col * 0.55,
+        sr = lp(2.4, 15, ss(ln(t, 9, 21)));
+      if (core > 0.01) {
+        const kg = g.createRadialGradient(cx, cy, 0, cx, cy, 26);
+        kg.addColorStop(0, "rgba(198,138,96," + (0.5 * core).toFixed(3) + ")");
+        kg.addColorStop(1, "rgba(120,80,60,0)");
+        g.fillStyle = kg;
+        g.beginPath();
+        g.arc(cx, cy, 26, 0, TAU);
+        g.fill();
+      }
+      if (ig > 0.01 && dust > 0.01) {
+        const sgl = g.createRadialGradient(cx, cy, 0, cx, cy, sr * 6.5);
+        sgl.addColorStop(0, "rgba(255,252,238," + (0.95 * ig * dust).toFixed(3) + ")");
+        sgl.addColorStop(0.11, "rgba(255,232,178," + (0.62 * ig * dust).toFixed(3) + ")");
+        sgl.addColorStop(0.34, "rgba(255,178,104," + (0.2 * ig * dust).toFixed(3) + ")");
+        sgl.addColorStop(1, "rgba(255,150,80,0)");
+        g.fillStyle = sgl;
+        g.beginPath();
+        g.arc(cx, cy, sr * 6.5, 0, TAU);
+        g.fill();
+      }
+      g.globalCompositeOperation = "source-over";
+      for (i = 0; i < SPK.length; i++) {
+        const sk = SPK[i],
+          dk = t - sk.t;
+        if (dk < 0 || dk > 1.2 || dust < 0.05) continue;
+        const ka = (1 - dk / 1.2) * dust,
+          sa2 = sk.a + WV(sk.r) * t;
+        const ax = cx + Math.cos(sa2) * sk.r,
+          ay = cy + Math.sin(sa2) * sk.r * tilt;
+        g.globalCompositeOperation = "lighter";
+        D(g, ax, ay, sk.s * (1 + dk * 0.7), "rgba(255,238,200," + (0.9 * ka).toFixed(3) + ")");
+        g.strokeStyle = "rgba(255,192,116," + (0.45 * ka * (1 - dk)).toFixed(3) + ")";
+        g.lineWidth = 0.4;
+        g.beginPath();
+        g.arc(ax, ay, 1.4 + dk * 7, 0, TAU);
+        g.stroke();
+        g.globalCompositeOperation = "source-over";
+      }
+      const fla = Math.exp(-Math.pow(t - 13.3, 2) / 0.55),
+        fp = cl((t - 12.95) / 2.9);
+      if (fp > 0 && fp < 1) {
+        g.globalCompositeOperation = "lighter";
+        g.save();
+        g.translate(cx, cy);
+        g.scale(1, tilt);
+        g.strokeStyle = "rgba(255,240,208," + (0.5 * (1 - fp) * (1 - fp)).toFixed(3) + ")";
+        g.lineWidth = 1.8;
+        g.beginPath();
+        g.arc(0, 0, 6 + fp * 196, 0, TAU);
+        g.stroke();
+        g.restore();
+        g.globalCompositeOperation = "source-over";
+      }
+      for (i = 0; i < 5; i++) {
+        const gp = ss(ln(t, 16 + i * 1.3, 29 + i * 0.9));
+        if (gp <= 0.002) continue;
+        const pr = PS[i] * gp,
+          pa = O.A[i] + WV(RING[i]) * t;
+        const px = cx + Math.cos(pa) * RING[i],
+          py = cy + Math.sin(pa) * RING[i] * tilt;
+        if (i === 2 && Z * pr > 4) {
+          const S = 144;
+          if (!this._planet) {
+            const oc = document.createElement("canvas");
+            oc.width = S;
+            oc.height = S;
+            const og = oc.getContext("2d") as Ctx;
+            this._planet = { c: oc, g: og, d: og.createImageData(S, S) };
+          }
+          const SP = this._planet,
+            d = SP.d.data,
+            cool = ss(ln(t, 35.5, 43.5)),
+            lite = ss(ln(t, 41.5, 45.6)),
+            rot = t * 0.085;
+          for (let yy = 0; yy < S; yy++) {
+            const ny = ((yy + 0.5) / S) * 2 - 1;
+            for (let xx = 0; xx < S; xx++) {
+              const nx = ((xx + 0.5) / S) * 2 - 1,
+                q = nx * nx + ny * ny,
+                o = (yy * S + xx) * 4;
+              if (q > 1) {
+                d[o + 3] = 0;
+                continue;
+              }
+              const nz = Math.sqrt(1 - q),
+                ca = Math.cos(rot),
+                sa = Math.sin(rot);
+              const wx = nx * ca + nz * sa,
+                wz = nz * ca - nx * sa;
+              const aw = Math.abs(wx),
+                az = Math.abs(wz),
+                bw = aw / (aw + az + 1e-4);
+              const h = lp(FBM(wz * 3.1 + 31.2, ny * 3.1 + 19.4, 3), FBM(wx * 3.1 + 11.3, ny * 3.1 + 5.2, 3), bw),
+                lam = Math.max(0, nx * -0.52 + ny * -0.42 + nz * 0.745);
+              const ice = cl((Math.abs(ny) - 0.7) / 0.3),
+                shd = 0.09 + lam;
+              let lc =
+                h < 0.505
+                  ? MN([10, 34, 74], [36, 98, 152], cl((h - 0.33) / 0.175))
+                  : MN([58, 94, 58], [158, 140, 100], cl((h - 0.505) / 0.28));
+              if (ice > 0) lc = MN(lc, [226, 234, 242], Math.min(1, ice * 1.5));
+              const mo = cl((h - 0.44) / 0.36),
+                base = MN(MN([32, 17, 14], [92, 48, 34], mo), lc, cool);
+              const em = (1 - cool) * Math.pow(mo, 1.7);
+              let rr = base[0] * shd + em * 255,
+                gg = base[1] * shd + em * 104,
+                bb = base[2] * shd + em * 26;
+              const cw = lp(
+                  FBM(wz * 4.6 + 7.1 + t * 0.03, ny * 4.6 + 3.3, 2),
+                  FBM(wx * 4.6 + 41.7 + t * 0.03, ny * 4.6 + 27.9, 2),
+                  bw,
+                ),
+                cm = cl((cw - 0.53) / 0.19) * cool * 0.85 * (0.18 + lam);
+              rr = lp(rr, 236, cm);
+              gg = lp(gg, 240, cm);
+              bb = lp(bb, 246, cm);
+              const rim = Math.pow(q, 3.4) * Math.pow(lam, 0.6) * cool;
+              rr += rim * 40;
+              gg += rim * 92;
+              bb += rim * 152;
+              if (lite > 0 && lam < 0.13 && h > 0.505) {
+                const nl = cl((0.13 - lam) / 0.13) * lite;
+                const lv = VN(wx * 23 + 13, ny * 23 + 7) * VN(wz * 19 + 3.4, ny * 19 + 29);
+                if (lv > 0.33) {
+                  const lb2 = (lv - 0.33) * 3.2 * nl;
+                  rr += lb2 * 230;
+                  gg += lb2 * 152;
+                  bb += lb2 * 66;
+                }
+              }
+              d[o] = rr > 255 ? 255 : rr | 0;
+              d[o + 1] = gg > 255 ? 255 : gg | 0;
+              d[o + 2] = bb > 255 ? 255 : bb | 0;
+              d[o + 3] = q > 0.986 ? (1 - (q - 0.986) / 0.014) * 255 : 255;
+            }
+          }
+          SP.g.putImageData(SP.d, 0, 0);
+          g.imageSmoothingEnabled = true;
+          g.drawImage(SP.c, px - pr, py - pr, pr * 2, pr * 2);
+          const ag = g.createRadialGradient(px, py, pr * 0.95, px, py, pr * 1.17);
+          ag.addColorStop(0, "rgba(122,182,255," + (0.34 * cool).toFixed(3) + ")");
+          ag.addColorStop(1, "rgba(122,182,255,0)");
+          g.fillStyle = ag;
+          g.beginPath();
+          g.arc(px, py, pr * 1.17, 0, TAU);
+          g.fill();
+          const mp = sg(t, 37.5, 41.5);
+          if (mp > 0) {
+            const ma = t * 0.34 + 1.1,
+              mr = pr * 0.118 * mp;
+            const mx2 = px + Math.cos(ma) * pr * 2.5,
+              my2 = py + Math.sin(ma) * pr * 0.72;
+            D(g, mx2, my2, mr, "#33333a");
+            g.save();
+            g.beginPath();
+            g.arc(mx2, my2, mr, 0, TAU);
+            g.clip();
+            D(g, mx2 - mr * 0.4, my2 - mr * 0.32, mr * 0.94, "#b4b0a8");
+            g.restore();
+          }
+          continue;
+        }
+        const pc = PC[i];
+        D(g, px, py, pr, "rgb(" + ((pc[0] * 0.3) | 0) + "," + ((pc[1] * 0.3) | 0) + "," + ((pc[2] * 0.3) | 0) + ")");
+        const ux = cx - px,
+          uy = cy - py,
+          ul = Math.hypot(ux, uy) || 1;
+        g.save();
+        g.beginPath();
+        g.arc(px, py, pr, 0, TAU);
+        g.clip();
+        D(g, px + (ux / ul) * pr * 0.5, py + (uy / ul) * pr * 0.5, pr * 0.9, "rgb(" + pc.join(",") + ")");
+        g.restore();
+      }
+      g.restore();
+      if (fla > 0.004) {
+        g.fillStyle = "rgba(255,244,224," + (0.4 * fla).toFixed(3) + ")";
+        g.fillRect(0, 0, 320, 200);
+      }
+      const CH: [number, number, string][] = [
+        [1.2, 5.4, "one cold cloud, 1400 grains"],
+        [11.4, 15.6, "the core lights"],
+        [20, 24.4, "gaps open where planets sweep"],
+        [30, 33.6, "five orbits, settled"],
+      ];
+      for (i = 0; i < CH.length; i++) {
+        const ch = CH[i],
+          cal = sg(t, ch[0], ch[0] + 1) * (1 - sg(t, ch[1], ch[1] + 1));
+        if (cal > 0.01) {
+          g.globalAlpha = cal;
+          TX(g, ch[2], 16, 50, 10, "rgba(255,224,176,.85)");
+          g.globalAlpha = 1;
+        }
+      }
+      const ob = sg(t, 42.4, 44) * (1 - sg(t, 45.4, 46));
+      if (ob > 0.01) {
+        g.globalAlpha = ob;
+        TX(g, "and one of them stays warm", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* long-form: one seed, one year */
+  tree: {
+    T: 34,
+    poster: 17,
+    draw(g, t) {
+      let i: number;
+      if (!this._tree) {
+        const R = rng(41);
+        const mk = (len: number, w: number, dep: number, t0: number, rel: number): TreeNode => {
+          const n: TreeNode = {
+            a: rel,
+            l: len,
+            w,
+            d: dep,
+            t0,
+            t1: t0 + len * 0.04 + 0.16,
+            ph: R() * TAU,
+            sw: 0.006 + dep * 0.0055,
+            ch: [],
+            lv: [],
+          };
+          if (dep >= 11 || len < 3) {
+            const m = 1 + ((R() * 3) | 0);
+            for (let k = 0; k < m; k++) {
+              n.lv.push({
+                ox: (R() - 0.5) * 8,
+                oy: (R() - 0.5) * 8,
+                s: 1.5 + R() * 1.5,
+                b: n.t1 + 0.3 + R() * 2.4,
+                h: R(),
+                ph: R() * TAU,
+                dt: 21.5 + R() * 5,
+                fx: (R() - 0.5) * 1.7,
+              });
+            }
+            return n;
+          }
+          const br = dep < 2 ? 2 : R() < 0.58 ? 2 : 1;
+          for (let j = 0; j < br; j++)
+            n.ch.push(mk(len * (0.74 + R() * 0.1), w * 0.72, dep + 1, n.t1, ((j - (br - 1) / 2) * (0.48 + R() * 0.28)) + (R() - 0.5) * 0.18));
+          return n;
+        };
+        this._tree = mk(30, 5.2, 0, 1.1, 0);
+      }
+      const s1 = sg(t, 11, 15),
+        s2 = sg(t, 18, 23),
+        s3 = sg(t, 25.5, 29.5),
+        snow = sg(t, 27.5, 32);
+      const top = MN(MN(MN([13, 26, 32], [16, 32, 28], s1), [32, 23, 14], s2), [11, 18, 32], s3);
+      const bot = MN(MN(MN([19, 35, 28], [26, 42, 24], s1), [42, 28, 16], s2), [20, 26, 38], s3);
+      const sky = g.createLinearGradient(0, 0, 0, 184);
+      sky.addColorStop(0, "rgb(" + top.join(",") + ")");
+      sky.addColorStop(1, "rgb(" + bot.join(",") + ")");
+      g.fillStyle = sky;
+      g.fillRect(0, 0, 320, 200);
+      g.fillStyle = "#12100c";
+      g.fillRect(0, 178, 320, 22);
+      if (snow > 0) {
+        g.fillStyle = "rgba(226,234,244," + (0.85 * snow).toFixed(3) + ")";
+        g.fillRect(0, 177.5, 320, 2.4 + snow * 2.6);
+      }
+      const wind = 0.55 + 0.45 * Math.sin(t * 0.37) + 0.3 * Math.sin(t * 0.13 + 1.7);
+      const gust = 1 + 0.9 * sg(t, 26, 29) * (1 - sg(t, 31.5, 33.6));
+      const bark = MN([58, 46, 38], [52, 48, 52], s3);
+      const barkC = "rgb(" + bark.join(",") + ")";
+      const leaf = (lf: Leaf, lx: number, ly: number) => {
+        if (t < lf.b) return;
+        const gr = cl((t - lf.b) / 0.9),
+          fal = t - lf.dt;
+        let land = 0,
+          fx = lx + lf.ox,
+          fy = ly + lf.oy,
+          rt = Math.sin(t * 0.9 + lf.ph) * 0.35;
+        if (fal > 0) {
+          const dd = Math.max(4, 178 - fy),
+            tl = (-9 + Math.sqrt(81 + 12.8 * dd)) / 6.4,
+            ft = Math.min(fal, tl);
+          fy += 9 * ft + 3.2 * ft * ft;
+          fx += Math.sin(ft * 1.9 + lf.ph) * 7.5 + lf.fx * ft * 5;
+          land = cl((fal - tl) / 2.2);
+          rt = ft * 1.7 + lf.ph;
+        }
+        let c = MN(
+          MN([120, 174, 90], [64, 132, 70], sg(t, 11, 17)),
+          lf.h < 0.42 ? [210, 146, 50] : lf.h < 0.78 ? [188, 84, 42] : [216, 180, 68],
+          sg(t, 18.5, 25),
+        );
+        c = MN(c, [86, 60, 38], land);
+        const al = gr * (1 - 0.4 * land) * (1 - 0.8 * snow * land);
+        if (al < 0.02) return;
+        g.fillStyle = "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + al.toFixed(3) + ")";
+        g.beginPath();
+        g.ellipse(fx, fy, lf.s * 1.45 * gr, lf.s * 0.8 * gr, rt, 0, TAU);
+        g.fill();
+      };
+      const walk = (n: TreeNode, x: number, y: number, base: number) => {
+        const p = cl((t - n.t0) / (n.t1 - n.t0));
+        if (p <= 0) return;
+        const ang = base + n.a + Math.sin(t * 1.05 + n.ph) * n.sw * wind * gust;
+        const x2 = x + Math.cos(ang) * n.l * p,
+          y2 = y + Math.sin(ang) * n.l * p;
+        g.strokeStyle = barkC;
+        g.lineCap = "round";
+        g.lineWidth = Math.max(0.5, n.w * (0.4 + 0.6 * p));
+        g.beginPath();
+        g.moveTo(x, y);
+        g.lineTo(x2, y2);
+        g.stroke();
+        if (snow > 0.02 && n.d < 7) {
+          g.strokeStyle = "rgba(230,238,248," + (0.5 * snow).toFixed(3) + ")";
+          g.lineWidth = Math.max(0.4, n.w * 0.42);
+          g.beginPath();
+          g.moveTo(x, y - n.w * 0.34);
+          g.lineTo(x2, y2 - n.w * 0.34);
+          g.stroke();
+        }
+        if (p < 1) return;
+        for (let k = 0; k < n.ch.length; k++) walk(n.ch[k], x2, y2, ang);
+        for (let k = 0; k < n.lv.length; k++) leaf(n.lv[k], x2, y2);
+      };
+      walk(this._tree, 160, 178, -Math.PI / 2);
+      if (snow > 0) {
+        if (!this._snow) {
+          const R2 = rng(5),
+            SN: { x: number; y: number; s: number; v: number; p: number }[] = [];
+          for (i = 0; i < 120; i++)
+            SN.push({ x: R2() * 330, y: R2() * 206, s: 0.4 + R2() * 1.1, v: 7 + R2() * 15, p: R2() * TAU });
+          this._snow = SN;
+        }
+        const SNa = this._snow,
+          dt2 = t - 27.5;
+        for (i = 0; i < SNa.length; i++) {
+          const f = SNa[i];
+          const fy2 = ((f.y + dt2 * f.v) % 206) - 6,
+            fx2 = ((f.x + Math.sin(t * 0.7 + f.p) * 9 + dt2 * 5) % 330) - 5;
+          D(g, fx2, fy2, f.s, "rgba(234,242,252," + ((0.3 + f.s * 0.32) * snow).toFixed(3) + ")");
+        }
+      }
+      const day = Math.max(1, Math.min(365, Math.round(ln(t, 1, 33.2) * 365)));
+      const seas = t < 11 ? "spring" : t < 18.5 ? "summer" : t < 26 ? "autumn" : "winter";
+      const la = sg(t, 0.8, 1.8);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "day " + day + " · " + seas, 16, 50, 10, "rgba(228,224,210,.72)");
+        g.globalAlpha = 1;
+      }
+      const lb2 = sg(t, 30.6, 32) * (1 - sg(t, 33.4, 34));
+      if (lb2 > 0.01) {
+        g.globalAlpha = lb2;
+        TX(g, "one rule, run all the way down", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* long-form: aurora over a frozen lake */
+  aurora: {
+    T: 30,
+    poster: 16,
+    draw(g, t) {
+      let i: number, x: number;
+      const HZ = 150;
+      const sky = g.createLinearGradient(0, 0, 0, HZ);
+      sky.addColorStop(0, "#04060e");
+      sky.addColorStop(0.55, "#061019");
+      sky.addColorStop(1, "#0a1a22");
+      g.fillStyle = sky;
+      g.fillRect(0, 0, 320, 200);
+      if (!this._aur) {
+        const R = rng(83),
+          S: { x: number; y: number; m: number; p: number }[] = [],
+          C: { y: number; amp: number; fr: number; sp: number; t0: number; w: number; ph: number; vi: number; ns: number }[] = [],
+          RG: number[] = [];
+        for (i = 0; i < 140; i++) S.push({ x: R() * 320, y: R() * 142, m: Math.pow(R(), 2.3), p: R() * TAU });
+        for (i = 0; i < 6; i++)
+          C.push({
+            y: 86 + R() * 24 - i * 2.5,
+            amp: 9 + R() * 15,
+            fr: 0.006 + R() * 0.013,
+            sp: 0.09 + R() * 0.15,
+            t0: 2.2 + i * 1.9,
+            w: 44 + R() * 36,
+            ph: R() * TAU,
+            vi: 0.55 + R() * 0.45,
+            ns: R() * 40,
+          });
+        for (x = -4; x <= 324; x += 3) {
+          let hh = 0,
+            am = 0.5,
+            ff = 1,
+            nn = 0;
+          for (let o2 = 0; o2 < 4; o2++) {
+            let wv = 1 - Math.abs(VN(x * 0.011 * ff + 3.3, 7.7) * 2 - 1);
+            wv *= wv;
+            hh += am * wv;
+            nn += am;
+            am *= 0.5;
+            ff *= 2.07;
+          }
+          RG.push(x, HZ - 3 - Math.pow(hh / nn, 1.7) * 30);
+        }
+        this._aur = { S, C, RG };
+      }
+      const AU = this._aur,
+        S = AU.S,
+        C = AU.C,
+        RG = AU.RG;
+      const env = sg(t, 1.5, 6) * (1 - sg(t, 24, 29.2)),
+        surge = Math.exp(-Math.pow(t - 17, 2) / 26) * 0.85;
+      for (i = 0; i < S.length; i++) {
+        const s0 = S[i];
+        g.globalAlpha = (0.14 + s0.m * 0.66) * (0.62 + 0.38 * Math.sin(t * 1.5 + s0.p)) * (1 - env * 0.22);
+        D(g, s0.x, s0.y, 0.45 + s0.m * 0.85, "#e6eeff");
+      }
+      g.globalAlpha = 1;
+      const band = (mir: number) => {
+        g.globalCompositeOperation = "lighter";
+        for (let k = 0; k < C.length; k++) {
+          const cc = C[k];
+          const on = sg(t, cc.t0, cc.t0 + 2.6);
+          if (on <= 0) continue;
+          const amp2 = cc.amp * (1 + surge * 0.4),
+            vio = 0.35 + surge * 0.55;
+          const grd = g.createLinearGradient(0, cc.y - cc.w - 6, 0, cc.y + 18);
+          grd.addColorStop(0, "rgba(152,92,222,0)");
+          grd.addColorStop(0.18, "rgba(148,98,226," + (0.36 * vio).toFixed(3) + ")");
+          grd.addColorStop(0.46, "rgba(74,196,192,.32)");
+          grd.addColorStop(0.78, "rgba(88,232,154,.44)");
+          grd.addColorStop(1, "rgba(126,255,196,0)");
+          g.fillStyle = grd;
+          for (x = -4; x < 324; x += 2.4) {
+            const by = cc.y + Math.sin(x * cc.fr + t * cc.sp + cc.ph) * amp2 + (VN(x * 0.035 + t * 0.13, cc.ns) * 2 - 1) * 9;
+            const ray = VN(x * 0.1 - t * 0.34, cc.ns + 11) * 0.72 + VN(x * 0.26 + t * 0.11, cc.ns + 29) * 0.28;
+            const ed = Math.pow(Math.sin(cl((x + 4) / 328) * Math.PI), 0.65);
+            const al = Math.pow(cl(ray * 1.28), 1.7) * on * env * cc.vi * (0.5 + surge) * ed;
+            if (al < 0.012) continue;
+            g.globalAlpha = Math.min(1, al) * (mir ? 0.32 : 1);
+            g.fillRect(x, by - cc.w, 2.6, cc.w + 16);
+          }
+        }
+        g.globalAlpha = 1;
+        g.globalCompositeOperation = "source-over";
+      };
+      band(0);
+      const sh = t - 20.4;
+      if (sh > 0 && sh < 0.75) {
+        const sp2 = sh / 0.75;
+        g.globalCompositeOperation = "lighter";
+        g.strokeStyle = "rgba(255,246,224," + (0.85 * (1 - sp2)).toFixed(3) + ")";
+        g.lineWidth = 1;
+        g.beginPath();
+        g.moveTo(226 + sp2 * 44, 14 + sp2 * 30);
+        g.lineTo(226 + sp2 * 44 + 13, 14 + sp2 * 30 + 9);
+        g.stroke();
+        g.globalCompositeOperation = "source-over";
+      }
+      g.fillStyle = "#050910";
+      g.fillRect(0, HZ, 320, 50);
+      g.save();
+      g.beginPath();
+      g.rect(0, HZ, 320, 50);
+      g.clip();
+      g.translate(0, HZ * 1.52);
+      g.scale(1, -0.52);
+      band(1);
+      g.restore();
+      g.fillStyle = "rgba(6,12,20,.55)";
+      g.fillRect(0, HZ, 320, 50);
+      for (i = 0; i < 7; i++) {
+        const iy = HZ + 5 + i * 6.5;
+        g.globalAlpha = 0.1 + 0.05 * Math.sin(t * 0.5 + i);
+        L(g, 20 + i * 13, iy, 300 - i * 9, iy + 1.2, "#8fb6c6", 0.5);
+      }
+      g.globalAlpha = 1;
+      g.fillStyle = "#04060b";
+      g.beginPath();
+      g.moveTo(-4, HZ + 3);
+      for (i = 0; i < RG.length; i += 2) g.lineTo(RG[i], RG[i + 1]);
+      g.lineTo(324, HZ + 3);
+      g.closePath();
+      g.fill();
+      g.fillStyle = "#05070d";
+      g.beginPath();
+      g.moveTo(228, HZ);
+      g.lineTo(228, HZ - 7);
+      g.lineTo(234, HZ - 12);
+      g.lineTo(240, HZ - 7);
+      g.lineTo(240, HZ);
+      g.closePath();
+      g.fill();
+      const wg = 0.7 + 0.3 * Math.sin(t * 1.7);
+      g.fillStyle = "rgba(255,186,104," + (0.92 * wg).toFixed(3) + ")";
+      g.fillRect(232.4, HZ - 6, 3, 3);
+      g.globalCompositeOperation = "lighter";
+      const lg = g.createRadialGradient(233.9, HZ - 4.5, 0, 233.9, HZ - 4.5, 9);
+      lg.addColorStop(0, "rgba(255,176,88," + (0.36 * wg).toFixed(3) + ")");
+      lg.addColorStop(1, "rgba(255,176,88,0)");
+      g.fillStyle = lg;
+      g.beginPath();
+      g.arc(233.9, HZ - 4.5, 9, 0, TAU);
+      g.fill();
+      g.globalAlpha = 0.3 * wg;
+      g.fillStyle = "rgba(255,176,88,.5)";
+      g.fillRect(233, HZ + 1, 1.6, 26);
+      g.globalAlpha = 1;
+      g.globalCompositeOperation = "source-over";
+      const la = sg(t, 1.4, 2.4) * (1 - sg(t, 7, 8.4));
+      if (la > 0.01) {
+        g.globalAlpha = la;
+        TX(g, "six curtains · noise driven", 16, 50, 10, "rgba(160,226,192,.82)");
+        g.globalAlpha = 1;
+      }
+      const lb3 = sg(t, 25.6, 27) * (1 - sg(t, 29.4, 30));
+      if (lb3 > 0.01) {
+        g.globalAlpha = lb3;
+        TX(g, "charged particles, meeting air", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
   /* 0 · starlight lensed around a black hole, seen edge on */
   blackhole: {
     T: 20,
