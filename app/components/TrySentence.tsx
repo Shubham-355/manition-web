@@ -18,44 +18,8 @@ type Item = {
   dur: string;
 };
 
-const AUDIENCES: { name: string; tag: string; items: Item[] }[] = [
-  {
-    name: "For teaching",
-    tag: "lecture-ready in minutes",
-    items: [
-      { text: "unroll sin(x) from the unit circle, slowly", scene: "sine", label: "Sine from the unit circle", cls: "SineFromCircle", mob: 7, anim: 4, lines: 64, mb: 3.1, secs: 34, dur: "0:12" },
-      { text: "show why eigenvectors do not rotate", scene: "eigen", label: "Eigenvectors on their span", cls: "EigenSpan", mob: 11, anim: 6, lines: 96, mb: 4.8, secs: 51, dur: "0:20" },
-      { text: "refine Riemann sums until the area lands", scene: "riemann", label: "Riemann sums refining", cls: "RiemannRefine", mob: 34, anim: 7, lines: 88, mb: 4.2, secs: 46, dur: "0:18" },
-    ],
-  },
-  {
-    name: "For video",
-    tag: "broadcast-quality, no animator",
-    items: [
-      { text: "start with a cloud of dust and end with a world someone could stand on", scene: "origin", label: "A world from dust", cls: "WorldFromDust", mob: 1443, anim: 9, lines: 212, mb: 14.6, secs: 268, dur: "0:46" },
-      { text: "fall into the Mandelbrot set, scanline by scanline", scene: "mandel", label: "Mandelbrot render", cls: "MandelScan", mob: 9, anim: 3, lines: 118, mb: 5.6, secs: 71, dur: "0:16" },
-      { text: "flock 200 birds, then send in a hawk", scene: "boids", label: "Flocking, then a hawk", cls: "BoidsHawk", mob: 201, anim: 4, lines: 143, mb: 6.4, secs: 88, dur: "0:20" },
-    ],
-  },
-  {
-    name: "For research",
-    tag: "figures your paper is missing",
-    items: [
-      { text: "trace the Lorenz attractor in 3D", scene: "lorenz", label: "Lorenz attractor", cls: "LorenzTrace", mob: 6, anim: 3, lines: 79, mb: 4.4, secs: 49, dur: "0:18" },
-      { text: "grow Turing patterns from reaction-diffusion", scene: "turing", label: "Gray-Scott patterns", cls: "GrayScott", mob: 4, anim: 2, lines: 126, mb: 5.9, secs: 96, dur: "0:18" },
-      { text: "collide two galaxies and keep the tidal tails", scene: "galaxy", label: "Galaxy collision", cls: "GalaxyPass", mob: 1400, anim: 3, lines: 134, mb: 7.1, secs: 112, dur: "0:20" },
-    ],
-  },
-  {
-    name: "Just curious",
-    tag: "one sentence, no setup",
-    items: [
-      { text: "grow a Barnsley fern with the chaos game", scene: "chaosgame", label: "Barnsley fern", cls: "ChaosFern", mob: 5, anim: 2, lines: 58, mb: 3.8, secs: 40, dur: "0:17" },
-      { text: "walk e^(iθ) around the circle until it hits -1", scene: "euler", label: "Euler's identity", cls: "EulerWalk", mob: 10, anim: 5, lines: 72, mb: 3.5, secs: 37, dur: "0:14" },
-      { text: "unfold a square into a cube into a tesseract", scene: "tesseract", label: "Square to tesseract", cls: "Tesseract", mob: 16, anim: 6, lines: 91, mb: 4.6, secs: 58, dur: "0:18" },
-    ],
-  },
-];
+// The scene the panel opens on; the design still lists it under "For video".
+const START: Item = { text: "start with a cloud of dust and end with a world someone could stand on", scene: "origin", label: "A world from dust", cls: "WorldFromDust", mob: 1443, anim: 9, lines: 212, mb: 14.6, secs: 268, dur: "0:46" };
 
 const WALL: (Item & { short: string })[] = [
   { scene: "tree", short: "Seasons", text: "grow a tree from one seed and run it through four seasons", label: "A year in one tree", cls: "SeasonTree", mob: 340, anim: 7, lines: 176, mb: 10.2, secs: 198, dur: "0:34" },
@@ -68,7 +32,6 @@ const WALL: (Item & { short: string })[] = [
   { scene: "turing", short: "Turing", text: "grow Turing patterns from reaction-diffusion", label: "Gray-Scott patterns", cls: "GrayScott", mob: 4, anim: 2, lines: 126, mb: 5.9, secs: 96, dur: "0:18" },
 ];
 
-const START = AUDIENCES[1].items[0];
 const LOG_AT = [0, 250, 510, 810, 1180, 1620];
 const LOG_TOTAL = 1870;
 
@@ -141,7 +104,6 @@ function run(c: Ctl, p: Item) {
 }
 
 export default function TrySentence() {
-  const [aud, setAud] = useState(1);
   const [scene, setScene] = useState(START.scene);
   const [label, setLabel] = useState(START.label);
   const [busy, setBusy] = useState(false);
@@ -184,8 +146,8 @@ export default function TrySentence() {
               One sentence in. A finished scene out.
             </h2>
             <p style={parseStyle("margin:16px 0 0; font-size:15px; line-height:1.7; color:#6b6b73; max-width:520px; text-wrap:pretty;")}>
-              Say who you are and watch Manition write the Manim and render it. Every scene below is
-              drawn live on the spot, not a clip, and nothing was tidied up afterwards.
+              Watch Manition write the Manim and render it. Every scene below is drawn live on the spot, not a clip, and
+              nothing was tidied up afterwards.
             </p>
           </div>
           <Link
@@ -201,28 +163,6 @@ export default function TrySentence() {
         </div>
 
         <div style={parseStyle("max-width:1060px; margin:0 auto; display:flex; flex-direction:column; gap:15px;")}>
-          <div style={parseStyle("display:flex; flex-wrap:wrap; gap:12px; align-items:baseline; justify-content:space-between;")}>
-            <div style={parseStyle("display:flex; flex-wrap:wrap; gap:7px;")}>
-              {AUDIENCES.map((a, i) => {
-                const on = i === aud;
-                return (
-                  <button
-                    key={a.name}
-                    onClick={() => setAud(i)}
-                    style={parseStyle(
-                      `appearance:none; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.07em; text-transform:uppercase; line-height:1.3; padding:9px 15px; border-radius:100px; background:${on ? "#16161a" : "#ffffff"}; border:1px solid ${on ? "#16161a" : "#e0dcd2"}; color:${on ? "#f7f6f3" : "#54545c"}; transition:background .18s, border-color .18s, color .18s;`,
-                    )}
-                  >
-                    {a.name}
-                  </button>
-                );
-              })}
-            </div>
-            <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#8b8779; white-space:nowrap;")}>
-              {AUDIENCES[aud].tag}
-            </span>
-          </div>
-
           <div
             style={parseStyle(
               "background:#0d0d12; border:1px solid #23232c; border-radius:20px; padding:clamp(12px,1.7vw,18px); box-shadow:0 30px 70px -36px rgba(10,10,16,0.55);",
