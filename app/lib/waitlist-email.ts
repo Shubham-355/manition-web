@@ -1,34 +1,24 @@
 import "server-only";
 
-/**
- * The welcome email for a new waitlist signup, kept as the table based markup
- * the design ships with. Every style is inline and every layout is a table:
- * Outlook, Gmail and Apple Mail all strip or ignore anything else.
- */
+const PREHEADER =
+  "You're on the list. Your invite lands in this inbox as soon as a seat opens.";
 
-/** Absolute origin used for links inside the email. No trailing slash. */
-export function siteUrl(): string {
+const SUBJECT = "You're on the Manition waitlist";
+
+function siteUrl(): string {
   const raw = process.env.NEXT_PUBLIC_SITE_URL ?? "https://manition.pro";
   return raw.replace(/\/+$/, "");
 }
 
-/** Bare host for the prose in the footer, so it cannot drift from the links. */
-export function siteHost(): string {
+function siteHost(): string {
   return siteUrl().replace(/^https?:\/\//, "");
 }
 
-export function unsubscribeUrl(token: string): string {
+function unsubscribeUrl(token: string): string {
   return `${siteUrl()}/unsubscribe?token=${encodeURIComponent(token)}`;
 }
 
-const PREHEADER =
-  "You're on the list. Your invite lands in this inbox as soon as a seat opens.";
-
-export function waitlistEmailSubject(): string {
-  return "You're on the Manition waitlist";
-}
-
-export function waitlistEmailText(unsubscribe: string): string {
+function waitlistEmailText(unsubscribe: string): string {
   const site = siteUrl();
   return [
     "You're on the list.",
@@ -47,7 +37,7 @@ export function waitlistEmailText(unsubscribe: string): string {
   ].join("\n");
 }
 
-export function waitlistEmailHtml(unsubscribe: string): string {
+function waitlistEmailHtml(unsubscribe: string): string {
   const site = siteUrl();
   return `<!DOCTYPE html>
 <html lang="en">
@@ -57,7 +47,7 @@ export function waitlistEmailHtml(unsubscribe: string): string {
 <meta name="x-apple-disable-message-reformatting">
 <meta name="color-scheme" content="light dark">
 <meta name="supported-color-schemes" content="light dark">
-<title>${waitlistEmailSubject()}</title>
+<title>${SUBJECT}</title>
 <!--[if mso]>
 <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
 <![endif]-->
@@ -196,15 +186,13 @@ export function waitlistEmailHtml(unsubscribe: string): string {
 `;
 }
 
-/** Everything needed to hand a welcome email to the transport. */
 export function renderWaitlistEmail(token: string) {
   const unsubscribe = unsubscribeUrl(token);
   return {
-    subject: waitlistEmailSubject(),
+    subject: SUBJECT,
     html: waitlistEmailHtml(unsubscribe),
     text: waitlistEmailText(unsubscribe),
     headers: {
-      // One click list management in Gmail and Apple Mail.
       "List-Unsubscribe": `<${unsubscribe}>`,
     },
   };

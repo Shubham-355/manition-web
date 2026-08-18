@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -16,22 +13,15 @@ enum WaitlistStatus {
   UNSUBSCRIBED
 }
 
-/// One person who asked for early access from the site.
 model WaitlistSignup {
-  id    String  @id @default(cuid())
-  /// Always stored trimmed and lowercased so the unique index is meaningful.
-  email String  @unique
-  name  String?
-
+  id     String         @id @default(cuid())
+  email  String         @unique
+  name   String?
   status WaitlistStatus @default(PENDING)
+  source String         @default("/")
 
-  /// Where the signup came from, e.g. the path of the page holding the form.
-  source String @default("/")
-
-  /// Opaque secret behind the "Leave the waitlist" link in the welcome email.
   unsubscribeToken String @unique
 
-  /// Set once the welcome email is actually accepted by the SMTP server.
   welcomeEmailSentAt DateTime?
   invitedAt          DateTime?
   unsubscribedAt     DateTime?

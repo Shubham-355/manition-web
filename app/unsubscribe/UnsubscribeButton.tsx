@@ -4,11 +4,6 @@ import { useState, useTransition } from "react";
 import { parseStyle } from "../lib/css";
 import { leaveWaitlist } from "../actions/waitlist";
 
-/**
- * The unsubscribe itself is a POST, never the click of the link in the email:
- * inbox scanners and link previewers fetch every URL they see, and a GET that
- * mutates would drop people off the list before they read the page.
- */
 export default function UnsubscribeButton({ token }: { token: string }) {
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<"none" | "done" | "failed">("none");

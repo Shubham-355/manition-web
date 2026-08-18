@@ -10,7 +10,6 @@ export type WaitlistState =
   | { status: "error"; message: string }
   | { status: "joined"; email: string; alreadyOn: boolean };
 
-// Deliberately loose: the only real proof an address works is the email landing.
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 function newToken() {
@@ -26,11 +25,6 @@ function isUniqueViolation(error: unknown) {
   );
 }
 
-/**
- * Deliver the welcome email without letting a mail outage lose the signup: the
- * row is already committed, so a failure here is logged and swallowed and
- * `welcomeEmailSentAt` simply stays null for a later resend.
- */
 async function sendWelcome(id: string, email: string, token: string) {
   try {
     await sendMail({ to: email, ...renderWaitlistEmail(token) });
@@ -51,7 +45,6 @@ export async function joinWaitlist(
     .trim()
     .toLowerCase();
 
-  // Hidden field no human ever sees; bots fill every input they find.
   if (String(formData.get("company") ?? "").length > 0) {
     return { status: "joined", email, alreadyOn: false };
   }
@@ -70,7 +63,6 @@ export async function joinWaitlist(
     }
 
     if (existing) {
-      // Rejoining after an unsubscribe: fresh token, fresh welcome.
       const token = newToken();
       const signup = await prisma.waitlistSignup.update({
         where: { id: existing.id },
@@ -93,7 +85,6 @@ export async function joinWaitlist(
     await sendWelcome(signup.id, email, token);
     return { status: "joined", email, alreadyOn: false };
   } catch (error) {
-    // Two submissions racing on the same address: the loser is already on.
     if (isUniqueViolation(error)) {
       return { status: "joined", email, alreadyOn: true };
     }
@@ -105,7 +96,6 @@ export async function joinWaitlist(
   }
 }
 
-/** Backing the confirm button on /unsubscribe. */
 export async function leaveWaitlist(token: string): Promise<{ ok: boolean }> {
   if (!token) return { ok: false };
   try {

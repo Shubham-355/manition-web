@@ -150,7 +150,6 @@ export function WaitlistForm({ source = "/" }: { source?: string }) {
         )}
       >
         <input type="hidden" name="source" value={source} />
-        {/* Honeypot: off-screen, never tabbed to, never autofilled. */}
         <input
           type="text"
           name="company"
