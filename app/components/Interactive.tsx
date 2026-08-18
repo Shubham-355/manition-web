@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useActionState,
   useState,
   type CSSProperties,
   type ElementType,
@@ -8,6 +9,7 @@ import {
 } from "react";
 import Link from "next/link";
 import { parseStyle } from "../lib/css";
+import { joinWaitlist, type WaitlistState } from "../actions/waitlist";
 
 /**
  * A single element that merges a hover style over its base style while the
@@ -96,14 +98,15 @@ const arrowIcon = (
  * Waitlist form with the design's join → confirmed states (the `sc-if`
  * joined / notJoined branches).
  */
-export function WaitlistForm() {
-  const [email, setEmail] = useState("");
-  const [joined, setJoined] = useState(false);
-  const [joinedEmail, setJoinedEmail] = useState("");
+export function WaitlistForm({ source = "/" }: { source?: string }) {
+  const [state, formAction, pending] = useActionState<WaitlistState, FormData>(
+    joinWaitlist,
+    { status: "idle" },
+  );
   const [focused, setFocused] = useState(false);
   const [btnHover, setBtnHover] = useState(false);
 
-  if (joined) {
+  if (state.status === "joined") {
     return (
       <div
         style={parseStyle(
@@ -117,62 +120,95 @@ export function WaitlistForm() {
         >
           ✓
         </span>
-        You&apos;re on the list! We&apos;ll email{" "}
-        <strong style={parseStyle("color:#f7f6f3; font-weight:600;")}>
-          {joinedEmail}
-        </strong>{" "}
-        soon.
+        {state.alreadyOn ? (
+          <>
+            You&apos;re already on the list. We&apos;ll email{" "}
+            <strong style={parseStyle("color:#f7f6f3; font-weight:600;")}>
+              {state.email}
+            </strong>{" "}
+            when it&apos;s your turn.
+          </>
+        ) : (
+          <>
+            You&apos;re on the list! We&apos;ll email{" "}
+            <strong style={parseStyle("color:#f7f6f3; font-weight:600;")}>
+              {state.email}
+            </strong>{" "}
+            soon.
+          </>
+        )}
       </div>
     );
   }
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        const em = email.trim();
-        if (!em) return;
-        setJoined(true);
-        setJoinedEmail(em);
-      }}
-      style={parseStyle(
-        "display:flex; flex-wrap:wrap; gap:11px; justify-content:center; max-width:520px; margin:0 auto;",
-      )}
-    >
-      <input
-        type="email"
-        required
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        placeholder="you@example.com"
-        style={{
-          ...parseStyle(
-            "flex:1; min-width:240px; box-sizing:border-box; background:#17171c; border:1px solid #2c2c33; border-radius:12px; color:#f4f4f5; font-family:inherit; font-size:15px; padding:15px 17px; outline:none;",
-          ),
-          ...(focused
-            ? {
-                borderColor: "#3b62e0",
-                boxShadow: "0 0 0 3px rgba(59,98,224,0.2)",
-              }
-            : {}),
-        }}
-      />
-      <button
-        type="submit"
-        onMouseEnter={() => setBtnHover(true)}
-        onMouseLeave={() => setBtnHover(false)}
-        style={{
-          ...parseStyle(
-            "flex:0 0 auto; background:#3b62e0; color:#fff; border:0; border-radius:12px; font-family:inherit; font-size:15px; font-weight:600; padding:15px 26px; cursor:pointer; transition:background .15s;",
-          ),
-          ...(btnHover ? { background: "#2f4fc0" } : {}),
-        }}
+    <>
+      <form
+        action={formAction}
+        style={parseStyle(
+          "display:flex; flex-wrap:wrap; gap:11px; justify-content:center; max-width:520px; margin:0 auto;",
+        )}
       >
-        Join the waitlist
-      </button>
-    </form>
+        <input type="hidden" name="source" value={source} />
+        {/* Honeypot: off-screen, never tabbed to, never autofilled. */}
+        <input
+          type="text"
+          name="company"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          style={parseStyle(
+            "position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;",
+          )}
+        />
+        <input
+          type="email"
+          name="email"
+          required
+          autoComplete="email"
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder="you@example.com"
+          aria-label="Email address"
+          style={{
+            ...parseStyle(
+              "flex:1; min-width:240px; box-sizing:border-box; background:#17171c; border:1px solid #2c2c33; border-radius:12px; color:#f4f4f5; font-family:inherit; font-size:15px; padding:15px 17px; outline:none;",
+            ),
+            ...(focused
+              ? {
+                  borderColor: "#3b62e0",
+                  boxShadow: "0 0 0 3px rgba(59,98,224,0.2)",
+                }
+              : {}),
+          }}
+        />
+        <button
+          type="submit"
+          disabled={pending}
+          onMouseEnter={() => setBtnHover(true)}
+          onMouseLeave={() => setBtnHover(false)}
+          style={{
+            ...parseStyle(
+              "flex:0 0 auto; background:#3b62e0; color:#fff; border:0; border-radius:12px; font-family:inherit; font-size:15px; font-weight:600; padding:15px 26px; cursor:pointer; transition:background .15s;",
+            ),
+            ...(btnHover && !pending ? { background: "#2f4fc0" } : {}),
+            ...(pending ? { opacity: 0.6, cursor: "progress" } : {}),
+          }}
+        >
+          {pending ? "Joining…" : "Join the waitlist"}
+        </button>
+      </form>
+      {state.status === "error" && (
+        <p
+          role="alert"
+          style={parseStyle(
+            "margin:14px 0 0; font-size:13.5px; color:#e0918a;",
+          )}
+        >
+          {state.message}
+        </p>
+      )}
+    </>
   );
 }
 
