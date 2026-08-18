@@ -66,10 +66,30 @@ details[open] .pc-chev { transform:rotate(180deg); }
 }
 
 /* ===== Gallery (Gallery.dc.html) ===== */
-.gl-card { text-decoration:none; color:inherit; background:#0c0c0f; border:1px solid #1f1f26; border-radius:16px; overflow:hidden; display:block; transition:transform .16s, border-color .16s; }
-.gl-card:hover { transform:translateY(-4px); border-color:#33333d; }
-@media (max-width:900px){ .gl-grid{ grid-template-columns:1fr 1fr !important; } }
-@media (max-width:560px){ .gl-grid{ grid-template-columns:1fr !important; } }
+.gl-card { color:inherit; background:#0c0c0f; border:1px solid #1f1f26; border-radius:16px; overflow:hidden; display:block; transition:transform .16s, border-color .16s; }
+.gl-card:hover { transform:translateY(-4px); border-color:#3b62e0; box-shadow:0 24px 48px -30px rgba(10,10,16,0.62); }
+
+.gl-cell { background:#f7f6f3; color:#16161a; transition:background .16s; }
+.gl-cell:hover { background:#fff; }
+.gl-cell-dark { background:#16161a; color:#f7f6f3; }
+.gl-cell-dark:hover { background:#000; }
+.gl-arrow { display:flex; opacity:0; transform:translateX(-4px); transition:opacity .16s, transform .16s; color:#3b62e0; }
+.gl-cell-dark .gl-arrow { color:inherit; }
+.gl-cell:hover .gl-arrow { opacity:1; transform:translateX(0); }
+
+.gl-sheet { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:clamp(12px,1.7vw,18px); }
+.gl-sheet-lead > .gl-card:first-child { grid-column:span 3; }
+
+@media (max-width:980px){ .gl-hero{ grid-template-columns:1fr !important; gap:22px !important; align-items:start !important; } }
+@media (max-width:900px){
+  .gl-sets{ grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .gl-sheet{ grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .gl-sheet-lead > .gl-card:first-child{ grid-column:span 2 !important; }
+}
+@media (max-width:760px){ .gl-cta{ grid-template-columns:1fr !important; } .gl-cta a{ justify-self:start !important; } }
+@media (max-width:620px){ .gl-sheet{ grid-template-columns:1fr !important; } .gl-sheet-lead > .gl-card:first-child{ grid-column:auto !important; } }
+@media (max-width:420px){ .gl-sets{ grid-template-columns:1fr !important; } }
+@media (min-width:1700px){ .gl-wrap{ max-width:1400px !important; } }
 
 /* ===== Gallery video player (gallery-player.js) ===== */
 .gv-wrap { position:relative; width:100%; height:100%; overflow:hidden; outline:none; }

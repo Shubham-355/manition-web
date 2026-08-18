@@ -200,6 +200,8 @@ type TreeNode = {
   lv: Leaf[];
 };
 type Leaf = { ox: number; oy: number; s: number; b: number; h: number; ph: number; dt: number; fx: number };
+type NetNode = { x: number; y: number; b: number; l: number };
+type NetEdge = { a: NetNode; b: NetNode; w: number; l: number };
 
 export interface Scene {
   T: number;
@@ -269,6 +271,9 @@ export interface Scene {
     C: { y: number; amp: number; fr: number; sp: number; t0: number; w: number; ph: number; vi: number; ns: number }[];
     RG: number[];
   };
+  _E?: { a: number; s: number; l: number; w: number; j: number; lob: number }[];
+  _terS?: { x: number; y: number; m: number; p: number }[];
+  _N?: { n: NetNode[][]; e: NetEdge[]; L: number };
 }
 
 export const SCENES: Record<string, Scene> = {
@@ -4054,6 +4059,343 @@ export const SCENES: Record<string, Scene> = {
       if (lb > 0) {
         g.globalAlpha = lb;
         TX(g, "tidal tails, then one galaxy", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* supernova: shockwave and ejecta */
+  supernova: {
+    T: 15,
+    poster: 9,
+    draw(g, t) {
+      let i: number;
+      const cx = 160,
+        cy = 100;
+      if (!this._E) {
+        const R = rng(53),
+          E: { a: number; s: number; l: number; w: number; j: number; lob: number }[] = [];
+        for (i = 0; i < 1400; i++) {
+          const th = R() * TAU;
+          E.push({
+            a: th,
+            s: Math.pow(R(), 1.9),
+            l: 0.5 + R() * 0.9,
+            w: R(),
+            j: (R() - 0.5) * 0.06,
+            lob: 0.72 + 0.46 * Math.pow(Math.abs(Math.sin(th * 1.5 + 0.6)), 0.7),
+          });
+        }
+        this._E = E;
+      }
+      const E = this._E,
+        ig = sg(t, 0, 0.5),
+        ex = ss(ln(t, 0.28, 12)),
+        fd = 1 - sg(t, 11, 14.6);
+      g.globalCompositeOperation = "lighter";
+      g.lineCap = "round";
+      for (i = 0; i < E.length; i++) {
+        const p = E[i];
+        const r1 = (14 + p.s * 112) * p.lob * ex * (0.75 + p.w * 0.5);
+        const len = (4 + p.s * 30) * p.l * Math.min(1, ex * 2.2),
+          r0 = Math.max(3, r1 - len);
+        const c = p.s < 0.5 ? MN([255, 62, 30], [255, 184, 76], p.s * 2) : MN([255, 184, 76], [196, 224, 255], (p.s - 0.5) * 2);
+        const fade = Math.pow(1 - Math.min(1, r1 / 150), 0.85) * fd;
+        if (fade <= 0.01) continue;
+        g.strokeStyle = "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + (0.1 + fade * 0.5).toFixed(3) + ")";
+        g.lineWidth = 0.45 + p.w * 1.3 * fade;
+        g.beginPath();
+        g.moveTo(cx + Math.cos(p.a) * r0, cy + Math.sin(p.a) * r0 * 0.94);
+        g.lineTo(cx + Math.cos(p.a + p.j) * r1, cy + Math.sin(p.a + p.j) * r1 * 0.94);
+        g.stroke();
+      }
+      const sr = ex * 126;
+      if (sr > 4 && fd > 0) {
+        const rg = g.createRadialGradient(cx, cy, sr * 0.78, cx, cy, sr * 1.2);
+        rg.addColorStop(0, "rgba(120,170,255,0)");
+        rg.addColorStop(0.56, "rgba(150,196,255," + (0.2 * fd).toFixed(3) + ")");
+        rg.addColorStop(0.8, "rgba(226,240,255," + (0.3 * fd).toFixed(3) + ")");
+        rg.addColorStop(1, "rgba(120,170,255,0)");
+        g.fillStyle = rg;
+        g.beginPath();
+        g.arc(cx, cy, sr * 1.2, 0, TAU);
+        g.fill();
+      }
+      const cr = (1 - ss(ln(t, 0.3, 9))) * 0.75 + 0.25,
+        rad = 60 * cr + 8;
+      const cg = g.createRadialGradient(cx, cy, 0, cx, cy, rad);
+      cg.addColorStop(0, "rgba(255,252,244," + (0.95 * ig * fd).toFixed(3) + ")");
+      cg.addColorStop(0.12, "rgba(255,232,186," + (0.6 * ig * fd).toFixed(3) + ")");
+      cg.addColorStop(0.34, "rgba(255,166,96," + (0.22 * ig * fd).toFixed(3) + ")");
+      cg.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = cg;
+      g.beginPath();
+      g.arc(cx, cy, rad, 0, TAU);
+      g.fill();
+      g.globalCompositeOperation = "source-over";
+      g.globalAlpha = 1;
+      const la = sg(t, 1.4, 2.4);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "1400 ejecta · t+0.8s", 16, 50, 10, "rgba(255,217,138,.82)");
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 12.4, 13.6);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "everything heavier than iron", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* parallax flight over ridged-fBm mountains */
+  terrain: {
+    T: 20,
+    poster: 8,
+    draw(g, t) {
+      let i: number, k: number, x: number, o: number;
+      const sky = g.createLinearGradient(0, 0, 0, 156);
+      sky.addColorStop(0, "#05060f");
+      sky.addColorStop(0.42, "#101832");
+      sky.addColorStop(0.78, "#2b2a44");
+      sky.addColorStop(1, "#5c4552");
+      g.fillStyle = sky;
+      g.fillRect(0, 0, 320, 200);
+      if (!this._terS) {
+        const R = rng(64),
+          S: { x: number; y: number; m: number; p: number }[] = [];
+        for (i = 0; i < 70; i++) S.push({ x: R() * 320, y: R() * 88, m: Math.pow(R(), 2.6), p: R() * TAU });
+        this._terS = S;
+      }
+      const S = this._terS,
+        sf = sg(t, 0.2, 2.4);
+      for (i = 0; i < S.length; i++) {
+        const s = S[i];
+        g.globalAlpha = sf * (0.12 + s.m * 0.62) * (0.6 + 0.4 * Math.sin(t * 1.4 + s.p));
+        D(g, s.x, s.y, 0.5 + s.m * 0.9, "#e8eeff");
+      }
+      g.globalAlpha = 1;
+      const sun = g.createRadialGradient(232, 76, 0, 232, 76, 78);
+      sun.addColorStop(0, "rgba(255,224,172,.95)");
+      sun.addColorStop(0.1, "rgba(255,190,122,.58)");
+      sun.addColorStop(0.42, "rgba(255,152,98,.15)");
+      sun.addColorStop(1, "rgba(255,140,90,0)");
+      g.fillStyle = sun;
+      g.fillRect(130, 0, 190, 158);
+      D(g, 232, 76, 7, "rgba(255,242,218,.95)");
+      const LN = 7;
+      for (k = 0; k < LN; k++) {
+        const u = k / (LN - 1);
+        const base = lp(100, 252, Math.pow(u, 1.25));
+        const amp = lp(20, 96, Math.pow(u, 1.5));
+        const frq = lp(0.03, 0.009, u);
+        const off = (k * 57.3 + t * lp(3.5, 42, Math.pow(u, 1.7))) * frq;
+        const pts: number[] = [];
+        for (x = -4; x <= 324; x += 2) {
+          const v = x * frq + off;
+          let h = 0,
+            am = 0.5,
+            f = 1,
+            nn = 0;
+          for (o = 0; o < 4; o++) {
+            let w = 1 - Math.abs(VN(v * f, k * 13.7) * 2 - 1);
+            w *= w;
+            h += am * w;
+            nn += am;
+            am *= 0.5;
+            f *= 2.11;
+          }
+          pts.push(x, base - Math.pow(h / nn, 1.85) * amp);
+        }
+        const col = MN([46, 56, 90], [7, 8, 15], Math.pow(u, 0.78));
+        g.fillStyle = "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
+        g.beginPath();
+        g.moveTo(-4, 222);
+        for (i = 0; i < pts.length; i += 2) g.lineTo(pts[i], pts[i + 1]);
+        g.lineTo(324, 222);
+        g.closePath();
+        g.fill();
+        g.strokeStyle = "rgba(196,214,255," + lp(0.34, 0.05, u).toFixed(3) + ")";
+        g.lineWidth = 0.7;
+        g.beginPath();
+        g.moveTo(pts[0], pts[1]);
+        for (i = 2; i < pts.length; i += 2) g.lineTo(pts[i], pts[i + 1]);
+        g.stroke();
+      }
+      const la = sg(t, 1.2, 2.2);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "ridged fBm · 7 ranges", 16, 50, 10, "rgba(214,226,255,.8)");
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 16.8, 18);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "no heightmap, just noise", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* continuous Mandelbrot zoom into a seahorse valley */
+  deepzoom: {
+    T: 18,
+    poster: 12,
+    draw(g, t) {
+      const W = 112,
+        H = 70,
+        im = IMG(this, W, H),
+        d = im.d.data;
+      let x: number, y: number;
+      const cx0 = -0.743643887037151,
+        cy0 = 0.13182590420533,
+        L2 = Math.log(2);
+      const zp = ss(ln(t, 0.3, 16.5)),
+        span = 3.2 * Math.pow(1e-5 / 3.2, zp);
+      const IT = Math.floor(lp(90, 320, zp));
+      for (y = 0; y < H; y++) {
+        const y0 = cy0 + (y / H - 0.5) * span * (H / W);
+        for (x = 0; x < W; x++) {
+          const x0 = cx0 + (x / W - 0.5) * span;
+          let zr = 0,
+            zi = 0,
+            r2 = 0,
+            i2 = 0,
+            k = 0;
+          while (r2 + i2 <= 256 && k < IT) {
+            zi = 2 * zr * zi + y0;
+            zr = r2 - i2 + x0;
+            r2 = zr * zr;
+            i2 = zi * zi;
+            k++;
+          }
+          const o = (y * W + x) * 4;
+          if (k >= IT) {
+            d[o] = 4;
+            d[o + 1] = 5;
+            d[o + 2] = 12;
+            d[o + 3] = 255;
+            continue;
+          }
+          const nu = k + 1 - Math.log(Math.log(Math.sqrt(r2 + i2))) / L2;
+          const u = (Math.pow(Math.max(0, nu) * 0.021, 0.92)) % 1;
+          const c =
+            u < 0.34
+              ? MN([8, 12, 36], [34, 102, 204], u / 0.34)
+              : u < 0.62
+                ? MN([34, 102, 204], [108, 200, 244], (u - 0.34) / 0.28)
+                : u < 0.84
+                  ? MN([108, 200, 244], [245, 222, 133], (u - 0.62) / 0.22)
+                  : MN([245, 222, 133], [8, 12, 36], (u - 0.84) / 0.16);
+          d[o] = c[0];
+          d[o + 1] = c[1];
+          d[o + 2] = c[2];
+          d[o + 3] = 255;
+        }
+      }
+      im.g.putImageData(im.d, 0, 0);
+      g.imageSmoothingEnabled = true;
+      g.drawImage(im.c, 0, 0, 320, 200);
+      const la = sg(t, 1, 2);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "×" + (3.2 / span).toExponential(1).replace("e+", "e"), 16, 50, 10, "rgba(255,217,138,.85)");
+        TX(g, IT + " iterations", 16, 64, 9.5, K.dim);
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 15.4, 16.6);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "the detail never runs out", 304, 186, 9.5, K.dim, "right");
+        g.globalAlpha = 1;
+      }
+    },
+  },
+
+  /* a signal crossing a small network */
+  neural: {
+    T: 16,
+    poster: 10,
+    draw(g, t) {
+      let i: number, j: number, li: number;
+      if (!this._N) {
+        const R = rng(17),
+          LAY = [4, 8, 11, 8, 3],
+          nodes: NetNode[][] = [],
+          E: NetEdge[] = [],
+          x0 = 44,
+          x1 = 276;
+        for (li = 0; li < LAY.length; li++) {
+          const n = LAY[li],
+            xx = x0 + ((x1 - x0) * li) / (LAY.length - 1);
+          const gap = Math.min(15.5, 148 / Math.max(1, n - 1)),
+            yy = 100 - (gap * (n - 1)) / 2,
+            row: NetNode[] = [];
+          for (i = 0; i < n; i++) row.push({ x: xx, y: yy + gap * i, b: R(), l: li });
+          nodes.push(row);
+        }
+        for (li = 0; li < nodes.length - 1; li++) {
+          const A = nodes[li],
+            B = nodes[li + 1];
+          for (i = 0; i < A.length; i++)
+            for (j = 0; j < B.length; j++) {
+              const w = R() * 2 - 1;
+              if (Math.abs(w) < 0.24) continue;
+              E.push({ a: A[i], b: B[j], w, l: li });
+            }
+        }
+        this._N = { n: nodes, e: E, L: LAY.length };
+      }
+      const N = this._N,
+        E = N.e,
+        nodes = N.n,
+        LN = N.L;
+      const bd = sg(t, 0.2, 2.6),
+        front = ((t * 0.5) % 1.28) * (LN + 0.4) - 0.5;
+      g.globalCompositeOperation = "lighter";
+      for (i = 0; i < E.length; i++) {
+        const e = E[i],
+          mag = Math.abs(e.w);
+        const pulse = Math.exp(-Math.pow(front - (e.l + 0.5), 2) / 0.09);
+        const al = bd * mag * (0.1 + pulse * 0.75);
+        if (al <= 0.012) continue;
+        const c = e.w > 0 ? "92,150,255" : "255,196,104";
+        g.strokeStyle = "rgba(" + c + "," + al.toFixed(3) + ")";
+        g.lineWidth = 0.3 + mag * (0.5 + pulse * 1.1);
+        g.beginPath();
+        g.moveTo(e.a.x, e.a.y);
+        const mx = (e.a.x + e.b.x) / 2;
+        g.bezierCurveTo(mx, e.a.y, mx, e.b.y, e.b.x, e.b.y);
+        g.stroke();
+      }
+      for (li = 0; li < nodes.length; li++)
+        for (i = 0; i < nodes[li].length; i++) {
+          const nd = nodes[li][i],
+            act = bd * (0.32 + 0.68 * Math.exp(-Math.pow(front - li, 2) / 0.1)) * (0.55 + 0.45 * nd.b);
+          const rad = 1.7 + act * 1.5,
+            col = li === nodes.length - 1 ? "255,214,138" : "130,182,255";
+          const rg = g.createRadialGradient(nd.x, nd.y, 0, nd.x, nd.y, rad * 4.6);
+          rg.addColorStop(0, "rgba(255,255,255," + (0.5 * act + 0.12).toFixed(3) + ")");
+          rg.addColorStop(0.2, "rgba(" + col + "," + (0.42 * act + 0.1).toFixed(3) + ")");
+          rg.addColorStop(1, "rgba(" + col + ",0)");
+          g.fillStyle = rg;
+          g.beginPath();
+          g.arc(nd.x, nd.y, rad * 4.6, 0, TAU);
+          g.fill();
+        }
+      g.globalCompositeOperation = "source-over";
+      g.globalAlpha = 1;
+      const la = sg(t, 1.2, 2.2);
+      if (la > 0) {
+        g.globalAlpha = la;
+        TX(g, "5 layers · 214 weights", 16, 50, 10, "rgba(126,166,217,.85)");
+        g.globalAlpha = 1;
+      }
+      const lb = sg(t, 13.4, 14.6);
+      if (lb > 0) {
+        g.globalAlpha = lb;
+        TX(g, "blue excites, gold inhibits", 304, 186, 9.5, K.dim, "right");
         g.globalAlpha = 1;
       }
     },
