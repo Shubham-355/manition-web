@@ -74,8 +74,11 @@ export default function UseCases() {
             One tool, every kind of explainer.
           </h2>
         </div>
-        <div className="hh-who" style={parseStyle("display:grid; grid-template-columns:0.95fr 1.05fr; gap:56px; align-items:start;")}>
-          <div style={parseStyle("display:flex; flex-direction:column;")}>
+        <div className="hh-who" style={parseStyle("display:flex; flex-direction:column; gap:clamp(22px,2.8vw,32px);")}>
+          <div
+            className="hh-perrow"
+            style={parseStyle("display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); column-gap:clamp(14px,2vw,26px); border-bottom:1px solid #26262c;")}
+          >
             {PERSONAS.map((p, i) => {
               const on = i === sel;
               return (
@@ -84,13 +87,13 @@ export default function UseCases() {
                   key={p.name}
                   className="hh-persona"
                   onClick={() => setSel(i)}
-                  style="appearance:none; background:none; border:0; border-top:1px solid #26262c; text-align:left; width:100%; padding:24px 6px; cursor:pointer; display:flex; align-items:center; gap:18px; transition:opacity .15s;"
+                  style="appearance:none; background:none; border:0; border-top:1px solid #26262c; text-align:left; width:100%; padding:20px 2px 22px; cursor:pointer; display:flex; align-items:baseline; gap:12px; transition:opacity .15s;"
                   hoverStyle={{ opacity: 0.82 }}
                 >
                   <span style={parseStyle(`font-family:'IBM Plex Mono',monospace; font-size:12px; width:26px; flex:none; color:${on ? p.accent : "#3a3a42"}; transition:color .2s;`)}>
                     {"0" + (i + 1)}
                   </span>
-                  <span style={parseStyle(`font-family:'Space Grotesk'; font-weight:700; font-size:clamp(24px,4.4vw,31px); letter-spacing:-0.02em; line-height:1.1; color:${on ? "#f7f6f3" : "#55555d"}; transition:color .2s;`)}>
+                  <span style={parseStyle(`font-family:'Space Grotesk'; font-weight:700; font-size:clamp(20px,2.5vw,27px); letter-spacing:-0.024em; line-height:1.1; color:${on ? "#f7f6f3" : "#55555d"}; transition:color .2s;`)}>
                     {p.name}
                   </span>
                   <span style={parseStyle(`margin-left:auto; flex:none; display:flex; opacity:${on ? 1 : 0}; transition:opacity .2s; color:#7f97e8;`)}>
@@ -99,23 +102,28 @@ export default function UseCases() {
                 </Hover>
               );
             })}
-            <div style={parseStyle("border-top:1px solid #26262c; padding:20px 6px 0; font-size:13px; color:#5b5b63; line-height:1.6;")}>
-              Same engine underneath. Pick a lane or wander between them.
-            </div>
           </div>
-          <div style={parseStyle("background:#17171c; border:1px solid #26262c; border-radius:18px; padding:clamp(22px,3.2vw,28px) clamp(20px,3.4vw,30px) clamp(22px,3.4vw,30px); min-height:300px; box-sizing:border-box;")}>
-            <span style={parseStyle(`display:inline-flex; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:${cur.accent}; background:${cur.bg}; border-radius:100px; padding:5px 11px; margin-bottom:16px;`)}>
+          <div
+            className="hh-pdetail"
+            style={parseStyle(
+              "background:#17171c; border:1px solid #26262c; border-radius:18px; padding:clamp(24px,3.2vw,32px) clamp(22px,3.4vw,34px) clamp(26px,3.4vw,34px); box-sizing:border-box; display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,0.9fr); column-gap:clamp(26px,3.6vw,52px); align-items:start;",
+            )}
+          >
+            <span style={parseStyle(`grid-column:1 / -1; justify-self:start; display:inline-flex; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:${cur.accent}; background:${cur.bg}; border-radius:100px; padding:5px 11px; margin-bottom:18px;`)}>
               {cur.tag}
             </span>
-            <p style={parseStyle("margin:0 0 22px; font-size:15.5px; line-height:1.65; color:#c8c8cc; text-wrap:pretty;")}>{cur.desc}</p>
-            <div style={parseStyle("display:flex; align-items:center; gap:10px; background:#0f1117; border:1px solid #26262c; border-radius:12px; padding:12px 14px; margin-bottom:22px;")}>
+            <p style={parseStyle("grid-column:1; margin:0 0 20px; font-size:16px; line-height:1.65; color:#c8c8cc; text-wrap:pretty;")}>{cur.desc}</p>
+            <div style={parseStyle("grid-column:1; display:flex; align-items:center; gap:10px; background:#0f1117; border:1px solid #26262c; border-radius:12px; padding:12px 14px; margin-bottom:0;")}>
               <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#5b5b63; flex:none;")}>Try</span>
-              <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#e8e8ea; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;")}>{cur.prompt}</span>
+              <span style={parseStyle("min-width:0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#e8e8ea; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;")}>{cur.prompt}</span>
               <span style={parseStyle("flex:none; margin-left:auto; width:26px; height:26px; border-radius:8px; background:#3b62e0; display:flex; align-items:center; justify-content:center;")}>
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5"></path><path d="M6 11l6-6 6 6"></path></svg>
               </span>
             </div>
-            <div style={parseStyle("display:flex; flex-direction:column; gap:11px;")}>
+            <div
+              className="hh-ppoints"
+              style={parseStyle("grid-column:2; grid-row:2 / span 2; display:flex; flex-direction:column; gap:13px; border-top:1px solid #26262c; padding-top:16px;")}
+            >
               {cur.points.map((pt, i) => (
                 <div key={i} style={parseStyle("display:flex; align-items:flex-start; gap:10px; font-size:14px; line-height:1.55; color:#a1a1aa;")}>
                   <span style={parseStyle(`flex:none; margin-top:6px; width:5px; height:5px; border-radius:50%; background:${cur.accent};`)}></span>

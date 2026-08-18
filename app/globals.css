@@ -34,24 +34,17 @@ details[open] .faq-chevron { transform: rotate(180deg); }
   .hh-hero{ padding-left:max(30px, calc((100% - 1360px) / 2)) !important; gap:72px !important; }
   .hh-copy{ max-width:600px !important; }
 }
-@media (max-width:1180px){
-  .hh-bento > div{ grid-column:span 6 !important; }
-  .hh-bento > div:first-child{ grid-column:span 12 !important; }
-}
 @media (max-width:980px){
   .hh-hero{ grid-template-columns:1fr !important; gap:36px !important; padding-right:clamp(18px,4vw,30px) !important; padding-left:clamp(18px,4vw,30px) !important; }
   .hh-film{ border-radius:16px !important; }
-  .hh-bento > div, .hh-bento > div:first-child{ grid-column:span 12 !important; }
-  .hh-flow{ grid-template-columns:1fr !important; }
-  .hh-flow .hh-arrow svg{ transform:rotate(90deg); }
-  .hh-who{ grid-template-columns:1fr !important; gap:36px !important; }
+  .hh-spec{ grid-template-columns:1fr !important; gap:18px !important; }
+  .hh-perrow{ grid-template-columns:1fr !important; }
+  .hh-pdetail{ grid-template-columns:1fr !important; }
+  .hh-ppoints{ grid-column:1 !important; grid-row:auto !important; margin-top:22px !important; }
   .hh-split{ grid-template-columns:1fr !important; gap:26px !important; }
   .hh-secthead{ grid-template-columns:1fr !important; gap:16px !important; align-items:start !important; }
 }
 @media (max-width:640px){
-  .hh-prompt{ flex-wrap:wrap !important; padding:14px !important; }
-  .hh-prompt-text{ white-space:normal !important; font-size:12.5px !important; }
-  .hh-prompt button{ flex:1 1 100% !important; justify-content:center !important; }
   .hh-persona{ padding:18px 4px !important; gap:12px !important; }
   .hh-cta{ flex:1 1 100% !important; justify-content:center !important; }
 }
