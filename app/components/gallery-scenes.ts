@@ -276,7 +276,947 @@ export interface Scene {
   _N?: { n: NetNode[][]; e: NetEdge[]; L: number };
 }
 
+/* ---------- chalkboard explainer kit (stick-figure scenes) ---------- */
+
+const CH = { ink: "#efebe3", ink2: "#a5a29b", blue: "#8fb3e6", gold: "#e0a94a", red: "#e0705c" };
+
+function AL(g: Ctx, A: number, v?: number) {
+  g.globalAlpha = cl(A * (v === undefined ? 1 : v));
+}
+
+function CQ(g: Ctx, x1: number, y1: number, cx: number, cy: number, x2: number, y2: number, c: string, w: number) {
+  g.strokeStyle = c;
+  g.lineWidth = w;
+  g.lineCap = "round";
+  g.beginPath();
+  g.moveTo(x1, y1);
+  g.quadraticCurveTo(cx, cy, x2, y2);
+  g.stroke();
+}
+
+function SFH(s: number, st?: number) {
+  return (6.5 + 27 * (st === undefined ? 1 : st)) * (s || 1);
+}
+
+function OSH(p: number) {
+  p = cl(p);
+  return 1 - Math.exp(-6.2 * p) * Math.cos(6.6 * p);
+}
+
+/* keyframe track: rows of [t, v1, v2, ...], smoothstep between rows */
+function KFR(t: number, ks: number[][]): number[] {
+  if (t <= ks[0][0]) return ks[0].slice();
+  for (let i = 0; i < ks.length - 1; i++) {
+    const a = ks[i],
+      b = ks[i + 1];
+    if (t <= b[0]) {
+      const p = ss(cl((t - a[0]) / (b[0] - a[0]))),
+        o = [t];
+      for (let j = 1; j < a.length; j++) o.push(lp(a[j], b[j], p));
+      return o;
+    }
+  }
+  return ks[ks.length - 1].slice();
+}
+
+/* camera: world point (fx,fy) sits at frame centre, scaled z x zy */
+type CamV = { fx: number; fy: number; z: number; zy: number };
+let CV: CamV = { fx: 160, fy: 100, z: 1, zy: 1 };
+function CPUSH(g: Ctx, c: CamV) {
+  CV = c;
+  g.save();
+  g.translate(160, 100);
+  g.scale(c.z, c.zy);
+  g.translate(-c.fx, -c.fy);
+}
+function PJ(x: number, y: number) {
+  return [160 + (x - CV.fx) * CV.z, 100 + (y - CV.fy) * CV.zy];
+}
+
+/* kinetic type: whole words rise + fade with a stagger, never clipped mid-glyph */
+type KTOpt = {
+  txt?: string;
+  x: number;
+  y: number;
+  sz: number;
+  c: string;
+  wt?: number;
+  al?: CanvasTextAlign;
+  u?: number;
+  stag?: number;
+  dur?: number;
+  A?: number;
+  op?: number;
+  d?: number;
+};
+
+function KT(g: Ctx, o: KTOpt) {
+  const w = (o.txt || "").split(" "),
+    n = w.length,
+    adv: number[] = [];
+  let tot = 0;
+  g.font = o.wt ? o.wt + ' ' + o.sz + 'px "Space Grotesk",system-ui,sans-serif' : "500 " + o.sz + "px " + MONO;
+  g.textAlign = "left";
+  g.textBaseline = "middle";
+  const sp = g.measureText(" ").width;
+  for (let i = 0; i < n; i++) {
+    adv[i] = g.measureText(w[i]).width;
+    tot += adv[i] + (i < n - 1 ? sp : 0);
+  }
+  let x = o.al === "center" ? o.x - tot / 2 : o.al === "right" ? o.x - tot : o.x;
+  const st = o.stag === undefined ? 0.042 : o.stag,
+    dur = o.dur || 0.44;
+  for (let i = 0; i < n; i++) {
+    const p = ss(cl(((o.u || 0) - i * st) / dur));
+    if (p > 0) {
+      g.globalAlpha = cl((o.A === undefined ? 1 : o.A) * p * (o.op === undefined ? 1 : o.op));
+      g.fillStyle = o.c;
+      g.fillText(w[i], x, o.y + (1 - p) * 5.5);
+    }
+    x += adv[i] + sp;
+  }
+  g.globalAlpha = 1;
+  return tot;
+}
+
+/* stick figure, built downward from the head centre (hx,hy) */
+type SFOpt = {
+  hx: number;
+  hy: number;
+  s?: number;
+  c?: string;
+  st?: number;
+  lw?: number;
+  nd?: number;
+  ph?: number;
+  lean?: number;
+  legs?: number[];
+  arms?: number[];
+  fist?: boolean;
+  eye?: string;
+  mouth?: number | "o" | "O";
+  beard?: number;
+};
+
+function SF(g: Ctx, o: SFOpt) {
+  const s = o.s || 1,
+    c = o.c || CH.ink,
+    st = o.st === undefined ? 1 : o.st,
+    lw = (o.lw || 2.2) * Math.max(0.5, s);
+  const nd = o.nd || 0,
+    ph = o.ph || 0,
+    hx = o.hx,
+    hy = o.hy,
+    hr = 4.9 * s;
+  const shY = hy + hr + 1.6 * s,
+    hipY = shY + 11 * s * st,
+    ftY = hipY + 16 * s * st,
+    bx = hx + (o.lean || 0) * 6 * s;
+  let i: number;
+  g.lineCap = "round";
+  g.lineJoin = "round";
+  g.strokeStyle = c;
+  g.lineWidth = lw;
+  g.beginPath();
+  g.moveTo(hx, shY);
+  g.quadraticCurveTo(hx + (bx - hx) * 0.55 + Math.sin(ph * 1.3) * nd * 5 * s, (shY + hipY) / 2, bx, hipY);
+  g.stroke();
+  const lg = o.legs || [-1, 1];
+  for (i = 0; i < 2; i++) {
+    g.beginPath();
+    g.moveTo(bx, hipY);
+    g.quadraticCurveTo(
+      bx + lg[i] * 3.4 * s + Math.sin(ph * 1.9 + i * 2.3) * nd * 9 * s,
+      (hipY + ftY) / 2,
+      bx + lg[i] * 5.8 * s,
+      ftY,
+    );
+    g.stroke();
+  }
+  const ar = o.arms || [212, -32],
+    AR0 = 12.5 * s;
+  for (i = 0; i < 2; i++) {
+    const a = (ar[i] * Math.PI) / 180,
+      ex = hx + Math.cos(a) * AR0,
+      ey = shY - Math.sin(a) * AR0;
+    g.lineWidth = lw;
+    g.beginPath();
+    g.moveTo(hx, shY + 1.2 * s);
+    g.quadraticCurveTo(
+      hx + Math.cos(a) * AR0 * 0.55 + Math.sin(ph * 2.1 + i) * nd * 5 * s,
+      shY - Math.sin(a) * AR0 * 0.5,
+      ex,
+      ey,
+    );
+    g.stroke();
+    if (o.fist && i === 1) {
+      g.lineWidth = lw * 0.85;
+      g.beginPath();
+      g.arc(ex, ey, 1.9 * s, 0, TAU);
+      g.stroke();
+    }
+  }
+  g.lineWidth = lw;
+  g.beginPath();
+  g.arc(hx, hy, hr, 0, TAU);
+  g.stroke();
+  const e1 = hx - 2.05 * s,
+    e2 = hx + 2.05 * s,
+    ey0 = hy - 0.75 * s,
+    eye = o.eye || "dot";
+  if (eye === "back") {
+    for (i = 0; i < 3; i++) L(g, hx - 2.4 * s + i * 2.4 * s, hy - hr * 0.55, hx - 2.4 * s + i * 2.4 * s, hy + hr * 0.15, c, lw * 0.65);
+  } else if (eye === "wide") {
+    g.lineWidth = lw * 0.7;
+    g.beginPath();
+    g.arc(e1, ey0, 1.9 * s, 0, TAU);
+    g.stroke();
+    g.beginPath();
+    g.arc(e2, ey0, 1.9 * s, 0, TAU);
+    g.stroke();
+    D(g, e1, ey0 + 0.45 * s, 0.8 * s, c);
+    D(g, e2, ey0 + 0.45 * s, 0.8 * s, c);
+  } else if (eye === "x") {
+    const q = 1.6 * s;
+    L(g, e1 - q, ey0 - q, e1 + q, ey0 + q, c, lw * 0.8);
+    L(g, e1 - q, ey0 + q, e1 + q, ey0 - q, c, lw * 0.8);
+    L(g, e2 - q, ey0 - q, e2 + q, ey0 + q, c, lw * 0.8);
+    L(g, e2 - q, ey0 + q, e2 + q, ey0 - q, c, lw * 0.8);
+  } else if (eye === "shut") {
+    L(g, e1 - 1.7 * s, ey0, e1 + 1.7 * s, ey0, c, lw * 0.85);
+    L(g, e2 - 1.7 * s, ey0, e2 + 1.7 * s, ey0, c, lw * 0.85);
+  } else {
+    D(g, e1, ey0, 1.05 * s, c);
+    D(g, e2, ey0, 1.05 * s, c);
+  }
+  if (eye !== "back") {
+    const m = o.mouth === undefined ? 0.5 : o.mouth,
+      my = hy + 1.95 * s;
+    g.lineWidth = lw * 0.85;
+    g.strokeStyle = c;
+    if (m === "o") {
+      g.beginPath();
+      g.arc(hx, my + 0.3 * s, 1.7 * s, 0, TAU);
+      g.stroke();
+    } else if (m === "O") {
+      g.beginPath();
+      g.ellipse(hx, my + 0.5 * s, 1.9 * s, 2.6 * s, 0, 0, TAU);
+      g.stroke();
+    } else if (Math.abs(m) < 0.08) {
+      L(g, hx - 1.8 * s, my, hx + 1.8 * s, my, c, lw * 0.85);
+    } else if (m > 0) {
+      g.beginPath();
+      g.arc(hx, my - 1.6 * s, 2.4 * s, 0.26 * Math.PI, 0.74 * Math.PI);
+      g.stroke();
+    } else {
+      g.beginPath();
+      g.arc(hx, my + 2.2 * s, 2.4 * s, 1.26 * Math.PI, 1.74 * Math.PI);
+      g.stroke();
+    }
+  }
+  if (o.beard && o.beard > 0) {
+    const bd = o.beard;
+    g.lineWidth = lw * 0.66;
+    for (let k = 0; k < 7; k++) {
+      const t0 = -1 + (2 * k) / 6,
+        bxx = hx + t0 * hr * 0.8;
+      const by = hy + Math.sqrt(Math.max(0, hr * hr - Math.pow(t0 * hr * 0.8, 2))) * 0.86;
+      CQ(
+        g,
+        bxx,
+        by,
+        bxx + Math.sin(k * 2.1) * 3 * s,
+        by + bd * (11 + (k % 3) * 4) * s,
+        bxx + Math.sin(k * 1.3) * 3.6 * s,
+        by + bd * (20 + (k % 3) * 7) * s,
+        c,
+        lw * 0.66,
+      );
+    }
+  }
+}
+
+function BH(g: Ctx, x: number, y: number, r: number, t: number, glow: number, A?: number) {
+  if (r <= 0.2) return;
+  A = A === undefined ? 1 : A;
+  if (glow) {
+    const gr = g.createRadialGradient(x, y, r * 0.8, x, y, r * 3.6);
+    gr.addColorStop(0, "rgba(224,169,74," + (0.3 * glow).toFixed(3) + ")");
+    gr.addColorStop(0.5, "rgba(184,124,58," + (0.1 * glow).toFixed(3) + ")");
+    gr.addColorStop(1, "rgba(224,169,74,0)");
+    g.globalAlpha = A;
+    g.fillStyle = gr;
+    g.beginPath();
+    g.arc(x, y, r * 3.6, 0, TAU);
+    g.fill();
+  }
+  g.globalAlpha = A;
+  g.fillStyle = "#04040a";
+  g.beginPath();
+  g.arc(x, y, r, 0, TAU);
+  g.fill();
+  g.strokeStyle = "rgba(224,169,74,.9)";
+  g.lineWidth = 1.15;
+  g.beginPath();
+  g.arc(x, y, r + 0.9 + 0.5 * Math.sin(t * 1.5), 0, TAU);
+  g.stroke();
+  for (let i = 0; i < 3; i++) {
+    g.globalAlpha = A * (0.44 - i * 0.11) * (1 + 0.14 * Math.sin(t * 1.3 - i));
+    g.strokeStyle = i % 2 ? "#e8bb63" : "#c2913a";
+    g.lineWidth = 1;
+    const a0 = -t * (1.25 + i * 0.5) + i * 2.1;
+    g.beginPath();
+    g.arc(x, y, r + 3.4 + i * 2.9, a0, a0 + 1.4 + i * 0.35);
+    g.stroke();
+  }
+  g.globalAlpha = 1;
+}
+
+/* ---- the explainer -------------------------------------------------------
+   ONE focal point per moment. Every element declares three times: when it
+   ARRIVES (it becomes the only hot thing on the board), when it HANDS FOCUS
+   ON (it drops to context ink - settled, quiet, still readable) and when it
+   LEAVES. FS() returns that state, so each beat is authored as a chain of
+   handoffs instead of a pile of simultaneous labels. Three objects - the
+   hole, its horizon, the figure - are keyframed across the whole take and
+   never rebuilt, so it reads as one continuous shot.                     */
+const SHT = 127,
+  HX = 146,
+  HY = 118;
+function CLP(v: number, a: number, b: number) {
+  return v < a ? a : v > b ? b : v;
+}
+const INK = [239, 235, 227],
+  INK2 = [124, 122, 117],
+  BLU = [143, 179, 230],
+  BLU2 = [92, 113, 143],
+  GLD = [224, 169, 74],
+  GLD2 = [131, 102, 50],
+  RED = [224, 112, 92],
+  RED2 = [133, 72, 60];
+
+/* focus state: a = the ink it may claim (settled elements keep .32) */
+type Focus = { A: number; f: number; a: number; u: number; on: boolean };
+function FS(t: number, tin: number, toff?: number, tout?: number, lo?: number): Focus {
+  let A = sg(t, tin, tin + 0.5);
+  if (tout !== undefined) A *= 1 - sg(t, tout, tout + 0.42);
+  const f = toff === undefined ? 1 : 1 - sg(t, toff, toff + 0.55);
+  return { A: A, f: f, a: A * lp(lo === undefined ? 0.32 : lo, 1, f), u: t - tin, on: A > 0.004 };
+}
+function FC(fs: Focus, hot: number[], cold: number[]) {
+  return MX(hot, cold, 1 - fs.f);
+}
+function FT(g: Ctx, fs: Focus, o: KTOpt) {
+  if (!fs.on) return;
+  KT(g, { ...o, A: fs.a, u: fs.u - (o.d || 0) });
+}
+function SCR(g: Ctx, A: number, cx: number, cy: number, w: number, h: number) {
+  if (A <= 0.004) return;
+  g.save();
+  for (let i = 0; i < 5; i++) {
+    g.globalAlpha = A * 0.2;
+    g.fillStyle = "#08080c";
+    g.beginPath();
+    g.roundRect(cx - w / 2 - i * 1.7, cy - h / 2 - i * 1.2, w + i * 3.4, h + i * 2.4, 9 + i);
+    g.fill();
+  }
+  g.restore();
+  g.globalAlpha = 1;
+}
+function VIG(g: Ctx, a: number) {
+  if (a <= 0.004) return;
+  const gr = g.createRadialGradient(160, 100, 58, 160, 100, 206);
+  gr.addColorStop(0, "rgba(0,0,0,0)");
+  gr.addColorStop(1, "rgba(0,0,0," + cl(a).toFixed(3) + ")");
+  g.globalAlpha = 1;
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 320, 200);
+}
+/* chapter header: writes, then settles to context for the rest of its beat */
+function HDR(g: Ctx, t: number, n: string, ti: string, tin: number, toff?: number, tout?: number) {
+  const fs = FS(t, tin, toff, tout);
+  if (!fs.on) return;
+  const gr = g.createRadialGradient(8, 20, 8, 8, 20, 224);
+  gr.addColorStop(0, "rgba(6,6,10,.88)");
+  gr.addColorStop(0.58, "rgba(6,6,10,.42)");
+  gr.addColorStop(1, "rgba(6,6,10,0)");
+  g.globalAlpha = fs.A * 0.94 * ss(cl(fs.u / 0.5));
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 320, 118);
+  g.globalAlpha = 1;
+  AL(g, fs.a, 0.9);
+  TX(g, n, 18, 40, 8, FC(fs, BLU, BLU2));
+  g.globalAlpha = 1;
+  FT(g, fs, { txt: ti, x: 18, y: 55, sz: 13.5, c: FC(fs, INK, INK2), wt: 600, stag: 0.05, d: 0.12 });
+  AL(g, fs.a, 0.5);
+  L(g, 18, 66, 18 + 112 * ss(cl((fs.u - 0.32) / 0.9)), 66, FC(fs, BLU, BLU2), 1);
+  g.globalAlpha = 1;
+}
+/* the one bottom slot - only ever one line hot at a time */
+function BOT(g: Ctx, fs: Focus, txt: string, y: number, sz: number, c: string, w: number) {
+  if (!fs.on) return;
+  SCR(g, fs.A * ss(cl(fs.u / 0.5)) * 0.92, 160, y, w, 20);
+  FT(g, fs, { txt: txt, x: 160, y: y, sz: sz, c: c, al: "center", stag: 0.03 });
+}
+
+function FORK(g: Ctx, cx: number, cy: number, A: number) {
+  g.globalAlpha = A;
+  L(g, cx, cy - 1, cx, cy + 7, CH.gold, 1.35);
+  for (let i = 0; i < 3; i++) L(g, cx - 3.2 + i * 3.2, cy - 7, cx - 3.2 + i * 3.2, cy - 1, CH.gold, 1.1);
+  L(g, cx - 3.2, cy - 1, cx + 3.2, cy - 1, CH.gold, 1.1);
+  g.globalAlpha = 1;
+}
+function BST(g: Ctx, cx: number, cy: number, A: number) {
+  g.globalAlpha = A;
+  for (let i = 0; i < 7; i++) {
+    const a = (i / 7) * TAU + 0.32;
+    L(g, cx + Math.cos(a) * 2.6, cy + Math.sin(a) * 2.6, cx + Math.cos(a) * 7.4, cy + Math.sin(a) * 7.4, CH.gold, 1.25);
+  }
+  g.globalAlpha = 1;
+}
+function CLK(g: Ctx, x: number, y: number, r: number, ang: number, c: string, c2: string, A: number, lw?: number) {
+  g.globalAlpha = A * 0.85;
+  g.strokeStyle = c;
+  g.lineWidth = 1.2;
+  g.beginPath();
+  g.arc(x, y, r, 0, TAU);
+  g.stroke();
+  for (let a = 0; a < 12; a++) {
+    const th = (a / 12) * TAU;
+    g.globalAlpha = A * 0.34;
+    L(g, x + Math.cos(th) * (r - 2.6), y + Math.sin(th) * (r - 2.6), x + Math.cos(th) * (r - 1), y + Math.sin(th) * (r - 1), c2, 0.8);
+  }
+  g.globalAlpha = A;
+  L(g, x, y, x + Math.cos(ang) * (r * 0.7), y + Math.sin(ang) * (r * 0.7), c, lw || 1.5);
+  D(g, x, y, 1.4, c);
+  g.globalAlpha = 1;
+}
+
+/* camera - the move always follows whatever currently owns focus --------- */
+const SHCK = [
+  [0, 150, 92, 1.22, 1.22], [2.6, 156, 96, 1.1, 1.1], [4.8, 158, 100, 1.0, 1.0],
+  [6.8, 156, 102, 1.01, 1.01], [8.0, 152, 106, 1.04, 1.04], [9.2, 150, 110, 1.1, 1.1],
+  [11.4, 148, 116, 1.26, 1.26], [14.0, 147, 116, 1.32, 1.32], [16.2, 150, 114, 1.2, 1.2],
+  [19.6, 150, 113, 1.16, 1.16], [22.4, 152, 114, 1.12, 1.12], [25.2, 147, 116, 1.32, 1.32],
+  [27.0, 146, 118, 1.9, 1.9], [29.6, 148, 118, 1.44, 1.44], [32.0, 150, 120, 1.4, 1.4],
+  [38.0, 166, 120, 1.14, 1.14], [40.4, 176, 120, 1.03, 1.03], [42.0, 180, 120, 1.01, 1.01],
+  [44.0, 186, 118, 1.02, 1.02], [53.4, 196, 118, 1.06, 1.06], [55.6, 198, 118, 1.04, 1.18],
+  [58.6, 198, 118, 1.04, 1.16], [60.6, 194, 122, 1.05, 1.05], [62.4, 194, 124, 1.04, 1.04],
+  [64.2, 192, 124, 1.04, 1.04],
+  [71.2, 184, 116, 1.1, 1.1], [72.8, 182, 114, 1.12, 1.12], [85.6, 182.2, 113.8, 1.121, 1.121],
+  [86.4, 180, 112, 1.1, 1.1], [88.6, 172, 112, 1.04, 1.04], [94.2, 150, 108, 1.0, 1.0],
+  [102.0, 150, 108, 1.0, 1.0], [102.8, 148, 116, 1.36, 1.36], [104.6, 146, 118, 2.16, 2.16],
+  [116.4, 146, 118, 2.3, 2.3], [117.4, 146, 118, 2.06, 2.06], [118.6, 152, 110, 1.3, 1.3],
+  [120.0, 160, 100, 1.0, 1.0], [127.0, 160, 100, 1.0, 1.0],
+];
+/* the looping photon of beat 05 - the camera borrows this same path */
+function SHPP(p: number) {
+  const A0 = Math.atan2(108 - HY, 200 - HX),
+    th = A0 - TAU * 2 * p,
+    rr = lp(53, 42, Math.sin(Math.PI * p));
+  return [HX + Math.cos(th) * rr, HY + Math.sin(th) * rr];
+}
+function SHQ(t: number) {
+  return ss(cl((t - 89.4) / 4.6));
+}
+function SHCAM(t: number): CamV {
+  const k = KFR(t, SHCK);
+  let fx = k[1],
+    fy = k[2];
+  let z = k[3],
+    zy = k[4];
+  const w = (sg(t, 90.0, 90.8) - sg(t, 93.2, 94.0)) * 0.55;
+  if (w > 0) {
+    const pt = SHPP(SHQ(t));
+    fx = lp(fx, pt[0], w);
+    fy = lp(fy, pt[1], w);
+  }
+  /* hand-held drift, stilled where a static frame is the point */
+  const dr = 1 - Math.max(sg(t, 73.0, 74.0) - sg(t, 85.4, 86.2), sg(t, 119.4, 120.4));
+  fx += Math.sin(t * 0.13) * 1.5 * dr;
+  fy += Math.sin(t * 0.097 + 1.4) * 1.1 * dr;
+  z *= 1 + 0.005 * Math.sin(t * 0.21) * dr;
+  zy *= 1 + 0.005 * Math.sin(t * 0.21) * dr;
+  return { fx: fx, fy: fy, z: z, zy: zy };
+}
+
+/* ---- the three objects that live for the whole film ------------------- */
+const SHHK = [
+  [7.0, 0.7, 0], [7.8, 0.9, 1], [10.6, 1.1, 1], [12.0, 4.6, 1], [14.4, 6, 1], [25.4, 7, 1],
+  [26.8, 13, 1], [28.2, 15, 1], [116.2, 15, 1], [116.8, 8, 1], [117.4, 2, 1], [117.9, 0.5, 0],
+];
+const SHRK = [
+  [27.0, 15, 0], [27.8, 26, 0.9], [29.0, 34, 1], [29.8, 36, 1], [116.0, 36, 1],
+  [116.8, 18, 0.9], [117.4, 4, 0],
+];
+const SHFK = [
+  [37.6, 302, 118, 1, 1], [39.6, 216, 118, 1, 1], [42.0, 214, 118, 1, 1], [53.0, 212, 118, 1, 1],
+  [56.2, 210, 88, 1, 2.1], [58.6, 210, 88, 1, 2.1], [60.2, 210, 106, 1, 1.45],
+  [61.6, 208, 114, 1, 1.12], [63.0, 206, 116, 1, 1.05], [71.0, 194, 118.7, 0.98, 1], [72.6, 186, 119.7, 0.95, 1],
+  [89.0, 186, 119.7, 0.95, 1], [101.0, 188, 119.7, 0.95, 1], [103.4, 256, 119.7, 0.95, 1],
+  [118.0, 256, 119.7, 0.95, 1],
+];
+
+function SHHOLE(g: Ctx, t: number) {
+  const k = KFR(t, SHHK),
+    r = k[1],
+    a = k[2];
+  if (t < SHHK[0][0] || a <= 0.004) return;
+  if (r < 2.2) {
+    g.globalAlpha = a;
+    D(g, HX, HY, Math.max(0.9, r * 1.6), CH.gold);
+    g.globalAlpha = a * 0.26;
+    D(g, HX, HY, r * 5 + 2.6 + Math.sin(t * 2.4) * 0.7, CH.gold);
+    g.globalAlpha = 1;
+    return;
+  }
+  BH(g, HX, HY, r, t, a * 0.9, a);
+}
+/* the horizon: created once, then quietly alive for as long as it is up */
+function SHRING(g: Ctx, t: number) {
+  if (t < SHRK[0][0]) return;
+  const k = KFR(t, SHRK),
+    r = k[1],
+    a = k[2],
+    sw = ss(cl((t - 27.1) / 1.8)),
+    pu = 0.5 + 0.5 * Math.sin(t * 2.05);
+  if (a <= 0.004 || r <= 0.4) return;
+  g.save();
+  g.globalAlpha = a * 0.72;
+  g.setLineDash([4, 4.6]);
+  g.lineDashOffset = -t * 7;
+  g.strokeStyle = CH.blue;
+  g.lineWidth = 1.2;
+  g.beginPath();
+  g.arc(HX, HY, r, -Math.PI / 2, -Math.PI / 2 + TAU * sw);
+  g.stroke();
+  g.globalAlpha = a * (0.11 + 0.12 * pu);
+  g.setLineDash([1.6, 5]);
+  g.lineDashOffset = t * 4;
+  g.lineWidth = 0.85;
+  g.beginPath();
+  g.arc(HX, HY, Math.max(1, r - 3.6), 0, TAU);
+  g.stroke();
+  g.setLineDash([]);
+  g.globalAlpha = a * (0.05 + 0.06 * pu);
+  g.lineWidth = 3.6;
+  g.beginPath();
+  g.arc(HX, HY, r + 1.8, 0, TAU);
+  g.stroke();
+  g.restore();
+  g.globalAlpha = 1;
+}
+function SHGROUND(g: Ctx, t: number) {
+  const a = cl(sg(t, 37.6, 38.6) - sg(t, 52.6, 53.6) + sg(t, 59.0, 60.0) - sg(t, 101.0, 102.0));
+  if (a <= 0.004) return;
+  AL(g, a, 0.26);
+  L(g, 110, 151.5, 332, 151.5, CH.blue, 1);
+  g.globalAlpha = 1;
+}
+
+/* the figure - one body, keyframed, posed by absolute time -------------- */
+type Pose = {
+  a0: number;
+  a1: number;
+  lean: number;
+  mouth: number | "o" | "O";
+  eye: string;
+  nd: number;
+  lw: number;
+  red: number;
+  beard: number;
+};
+function SHPOSE(t: number): Pose {
+  const look = sg(t, 38.2, 39.6),
+    np = sg(t, 39.8, 40.6) - sg(t, 42.6, 43.6),
+    set = sg(t, 42.6, 43.8),
+    str = sg(t, 53.0, 56.2),
+    rel = sg(t, 58.8, 60.2),
+    wv = sg(t, 71.0, 72.4),
+    bd = sg(t, 103.0, 109.0);
+  let a0 = 212,
+    a1 = -32,
+    lean = 0,
+    nd = 0,
+    lw = 2.2;
+  let mouth: number | "o" | "O" = 0.45,
+    eye = "dot";
+  a1 = lp(a1, 152, look);
+  a0 = lp(a0, 138, np);
+  a1 = lp(a1, 118, np);
+  lean -= np * 0.5;
+  a0 = lp(a0, 206, set);
+  a1 = lp(a1, 18, set);
+  a0 = lp(a0, 252, str);
+  a1 = lp(a1, -58, str);
+  nd = str * 0.5;
+  lw = lp(2.2, 1.5, str);
+  a1 = lp(a1, -58 + Math.sin((t - 58.8) * 8.4) * 46 * Math.exp(-cl(t - 58.8) * 1.2), rel);
+  a1 = lp(a1, 58 + Math.sin(20 * (1 - Math.exp(-cl(t - 71.0) / 2.6))) * 36, wv);
+  const red = sg(t, 71.6, 76.0) * 0.9;
+  if (t > 103.4) eye = "shut";
+  else if (str > 0.3 && t < 59.8) eye = "wide";
+  else if (np > 0.4) eye = "wide";
+  if (str > 0.5 && t < 59.6) mouth = "O";
+  else if (rel > 0.4 && t < 61.4) mouth = "o";
+  else if (np > 0.4) mouth = -0.5;
+  else if (t > 72.6) mouth = 0.3;
+  return { a0: a0, a1: a1, lean: lean, mouth: mouth, eye: eye, nd: nd, lw: lw, red: red, beard: bd * 0.85 };
+}
+function SHFIG(g: Ctx, t: number) {
+  const al = sg(t, 37.6, 38.3) - sg(t, 117.6, 118.3);
+  if (al <= 0.004) return;
+  const k = KFR(t, SHFK),
+    a = KFR(t - 0.07, SHFK),
+    b = KFR(t + 0.07, SHFK);
+  const vx = (b[1] - a[1]) / 0.14,
+    vy = (b[2] - a[2]) / 0.14,
+    sp = Math.hypot(vx, vy);
+  const wk = cl((sp - 3) / 12) * (1 - cl((sp - 30) / 22)),
+    sm = cl((sp - 34) / 34);
+  const P = SHPOSE(t),
+    ph = t * 8.4,
+    sw = Math.sin(ph) * 1.05 * wk,
+    bob = Math.abs(Math.sin(ph)) * 1.4 * wk;
+  const o: SFOpt = {
+    hx: k[1],
+    hy: k[2],
+    s: k[3],
+    st: k[4],
+    lw: P.lw,
+    nd: P.nd,
+    lean: P.lean,
+    beard: P.beard,
+    eye: P.eye,
+    mouth: P.mouth,
+    ph: ph,
+    arms: [P.a0 + sw * 30, P.a1 + sw * 30],
+    legs: [-1 + sw * 0.9, 1 + sw * 0.9],
+    c: P.red > 0 ? MX(INK, RED, P.red * 0.55) : CH.ink,
+  };
+  if (sm > 0.02)
+    for (let i = 2; i >= 1; i--) {
+      o.hx = k[1] - vx * i * 0.032;
+      o.hy = k[2] - vy * i * 0.032 - bob;
+      g.globalAlpha = al * (1 - sm * 0.45) * 0.2 * sm;
+      SF(g, o);
+    }
+  o.hx = k[1];
+  o.hy = k[2] - bob;
+  g.globalAlpha = al * (1 - sm * 0.45);
+  SF(g, o);
+  g.globalAlpha = 1;
+}
+
+/* 01 - the sheet, and the dent everything rolls into ------------------- */
+function SHGRID(g: Ctx, t: number) {
+  const gA = cl(sg(t, 8.6, 10.2) - sg(t, 22.6, 24.0)),
+    u = t - 10.6,
+    cx = HX,
+    cy = HY - 14,
+    rip = sg(t, 13.4, 15.0);
+  if (gA <= 0.004) return;
+  let i: number, j: number, xx: number, yy: number, oy: number, sp: number, pj: number;
+  const DZ = function (x: number, y: number) {
+    const dd = Math.hypot((x - cx) * 0.66, (y - cy) * 1.5),
+      dp = 27 * OSH(cl((u - dd * 0.006) / 2.4));
+    return dp / (1 + Math.pow(dd / 24, 2.5)) + Math.sin(u * 1.7 - dd * 0.13) * 1.05 * rip * cl(dp / 27);
+  };
+  g.strokeStyle = CH.blue;
+  g.lineWidth = 0.9;
+  g.lineJoin = "round";
+  for (j = 0; j < 9; j++) {
+    pj = j / 8;
+    yy = 84 + 62 * Math.pow(pj, 1.25);
+    sp = lp(0.52, 1, pj);
+    g.globalAlpha = gA * 0.32;
+    g.beginPath();
+    for (i = 0; i <= 46; i++) {
+      xx = lp(cx - 136 * sp, cx + 136 * sp, i / 46);
+      oy = yy + DZ(xx, yy);
+      if (i) g.lineTo(xx, oy);
+      else g.moveTo(xx, oy);
+    }
+    g.stroke();
+  }
+  for (i = 0; i <= 12; i++) {
+    g.globalAlpha = gA * 0.24;
+    g.beginPath();
+    for (j = 0; j <= 28; j++) {
+      pj = j / 28;
+      yy = 84 + 62 * Math.pow(pj, 1.25);
+      sp = lp(0.52, 1, pj);
+      xx = lp(cx - 136 * sp, cx + 136 * sp, i / 12);
+      oy = yy + DZ(xx, yy);
+      if (j) g.lineTo(xx, oy);
+      else g.moveTo(xx, oy);
+    }
+    g.stroke();
+  }
+  g.globalAlpha = 1;
+}
+function SHORB(g: Ctx, t: number) {
+  const ob = cl(sg(t, 19.2, 20.1) - sg(t, 22.4, 23.2)),
+    oa = -t * 2.1;
+  if (ob <= 0.004) return;
+  g.globalAlpha = ob * 0.36;
+  g.strokeStyle = CH.blue;
+  g.lineWidth = 0.9;
+  g.setLineDash([2.6, 3.4]);
+  g.beginPath();
+  g.ellipse(HX, HY - 2, 44, 14, 0, 0, TAU);
+  g.stroke();
+  g.setLineDash([]);
+  g.globalAlpha = ob;
+  D(g, HX + Math.cos(oa) * 44, HY - 2 + Math.sin(oa) * 14, 2.3, CH.blue);
+  g.globalAlpha = 1;
+}
+
+/* 05 - the loop, and the trail it leaves behind ------------------------ */
+function SHTRAIL(g: Ctx, t: number) {
+  const a = cl(sg(t, 89.6, 90.4) - sg(t, 101.2, 102.4)),
+    q = SHQ(t);
+  if (a <= 0.004) return;
+  g.strokeStyle = CH.gold;
+  g.lineWidth = 1.1;
+  g.lineJoin = "round";
+  g.lineCap = "round";
+  g.globalAlpha = a * 0.3;
+  g.beginPath();
+  for (let i = 0; i <= 110; i++) {
+    const pt = SHPP((q * i) / 110);
+    if (i) g.lineTo(pt[0], pt[1]);
+    else g.moveTo(pt[0], pt[1]);
+  }
+  g.stroke();
+  g.globalAlpha = a * 0.2;
+  g.setLineDash([2, 7]);
+  g.lineDashOffset = -t * 26;
+  g.stroke();
+  g.setLineDash([]);
+  g.globalAlpha = 1;
+}
+function SHPHOT(g: Ctx, t: number) {
+  const a = cl(sg(t, 89.4, 89.9) - sg(t, 94.4, 95.0));
+  if (a <= 0.004) return;
+  const pt = SHPP(SHQ(t));
+  g.globalAlpha = a;
+  D(g, pt[0], pt[1], 2.2, "#ffe4a6");
+  g.globalAlpha = a * 0.3;
+  D(g, pt[0], pt[1], 4.8 + Math.sin(t * 5) * 0.7, CH.gold);
+  g.globalAlpha = 1;
+}
+function SHGHOST(g: Ctx, t: number) {
+  const a = cl(sg(t, 94.4, 95.2) - sg(t, 101.4, 102.2));
+  if (a <= 0.004) return;
+  g.globalAlpha = a * 0.4;
+  SF(g, { hx: 86, hy: 96, s: 0.9, arms: [212, 60 + Math.sin((t - 72) * 0.4) * 24], legs: [-1, 1], eye: "back" });
+  g.globalAlpha = 1;
+}
+
+/* 06 - the leak ------------------------------------------------------- */
+function SHLEAK(g: Ctx, t: number) {
+  const a = cl(sg(t, 104.6, 105.8)),
+    R = rng(913),
+    k = KFR(t, SHHK),
+    r = k[1],
+    pop = sg(t, 116.2, 116.8),
+    cool = 1 - 0.55 * sg(t, 108.6, 109.4);
+  if (a <= 0.004 || t > 119) return;
+  let i: number, ang: number;
+  for (i = 0; i < 34; i++) {
+    ang = R() * TAU;
+    const spd = 14 + R() * 26,
+      phz = (t * spd * 0.6 + R() * 40) % 40,
+      rr = r + 2 + phz * 1.35;
+    if (rr > 42) continue;
+    g.globalAlpha = a * cl(1 - phz / 24) * 0.7 * cool * (1 - pop);
+    g.fillStyle = i % 3 ? CH.gold : "#ffe6ad";
+    g.fillRect(HX + Math.cos(ang) * rr, HY + Math.sin(ang) * rr, 1.3, 1.3);
+  }
+  g.globalAlpha = 1;
+  if (pop > 0 && pop < 1)
+    for (i = 0; i < 11; i++) {
+      ang = (i / 11) * TAU;
+      AL(g, cl(pop * (1 - pop) * 4) * 0.75);
+      L(
+        g,
+        HX + Math.cos(ang) * (5 + pop * 14),
+        HY + Math.sin(ang) * (5 + pop * 14),
+        HX + Math.cos(ang) * (11 + pop * 26),
+        HY + Math.sin(ang) * (11 + pop * 26),
+        CH.gold,
+        1.2,
+      );
+    }
+  g.globalAlpha = 1;
+}
+/* his watch lives in the world, beside him */
+function SHDIAL(g: Ctx, t: number) {
+  const fs = FS(t, 78.6, 81.6, 86.0);
+  if (!fs.on) return;
+  const ang = -Math.PI / 2 + 3.1 * (1 - Math.exp(-cl(t - 78.6) / 3.6));
+  CLK(g, 224, 104, 12.5, ang, FC(fs, RED, RED2), FC(fs, RED, RED2), fs.a, 1.6);
+  AL(g, fs.a, 0.28);
+  g.setLineDash([1.8, 3.4]);
+  L(g, 200, 110, 211, 106, CH.red, 0.9);
+  g.setLineDash([]);
+  g.globalAlpha = 1;
+}
+
+/* ---- screen-space type: fixed slots, one hot at a time --------------- */
+function SHTEXT(g: Ctx, t: number) {
+  let fs: Focus, f2: Focus, p: number[];
+  /* 00 title */
+  fs = FS(t, 0.25, 3.4, 6.8, 0.66);
+  if (fs.on) {
+    AL(g, fs.a, 0.45);
+    L(g, 28, 66, 28 + 150 * ss(cl(fs.u / 1.4)), 66, FC(fs, BLU, BLU2), 1.1);
+    g.globalAlpha = 1;
+    FT(g, fs, { txt: "BLACK HOLES", x: 28, y: 84, sz: 27, c: FC(fs, INK, [182, 178, 170]), wt: 700, stag: 0.13, dur: 0.6 });
+  }
+  fs = FS(t, 3.6, 7.2, 8.0);
+  FT(g, fs, { txt: "a field guide for people who will ignore it", x: 28, y: 106, sz: 8.4, c: FC(fs, BLU, BLU2), stag: 0.035 });
+  /* 01 the dent */
+  HDR(g, t, "01", "Gravity is just a dent.", 8.4, 10.2, 21.8);
+  BOT(g, FS(t, 14.0, 18.2, 19.4), "not a rope pulling you. a dent that everything rolls into.", 157, 8.5, CH.ink2, 282);
+  fs = FS(t, 19.6, undefined, 23.0);
+  if (fs.on) {
+    FT(g, fs, { txt: "this one is fine.", x: 302, y: 48, sz: 7.6, c: FC(fs, INK, INK2), al: "right", stag: 0.03 });
+    FT(g, fs, { txt: "it is in orbit.", x: 302, y: 60, sz: 7.6, c: FC(fs, BLU, BLU2), al: "right", stag: 0.03, d: 0.4 });
+  }
+  /* 02 the horizon */
+  HDR(g, t, "02", "The line you do not cross.", 23.6, 25.4, 42.0);
+  fs = FS(t, 30.4, 32.8, 37.4);
+  if (fs.on) {
+    p = PJ(HX + 25.5, HY - 25.5);
+    AL(g, fs.A, 0.4);
+    L(g, p[0] + 2, p[1] - 2, 228, 52, CH.blue, 0.9);
+    g.globalAlpha = 1;
+    SCR(g, fs.A * 0.8, 268, 55, 80, 30);
+    FT(g, fs, { txt: "EVENT HORIZON", x: 302, y: 48, sz: 8.4, c: FC(fs, BLU, BLU2), al: "right", stag: 0.028 });
+  }
+  f2 = FS(t, 33.0, 35.6, 37.6);
+  FT(g, f2, { txt: "one way. no exits.", x: 302, y: 61, sz: 7.6, c: FC(f2, INK, INK2), al: "right", stag: 0.028 });
+  BOT(g, FS(t, 35.8, 40.0, 41.4), "past this line, every road out points back in.", 157, 8.5, CH.ink2, 244);
+  fs = FS(t, 40.4, 42.2, 43.0);
+  if (fs.on) {
+    p = PJ(210, 100);
+    FT(g, fs, { txt: "nope", x: CLP(p[0], 60, 296), y: CLP(p[1], 30, 150), sz: 13, c: CH.red, wt: 700, al: "right", stag: 0.04 });
+  }
+  /* 03 tides, then the word */
+  HDR(g, t, "03", "The pull is not the problem.", 43.6, 45.4, 67.6);
+  BOT(g, FS(t, 45.6, 48.4, 49.0), "the pull is fine.", 157, 8.5, CH.ink2, 116);
+  BOT(g, FS(t, 49.2, 52.4, 53.0), "the difference across you is not.", 157, 8.5, CH.ink2, 196);
+  fs = FS(t, 54.4, 56.8, 59.6);
+  if (fs.on) {
+    const kk = KFR(t, SHFK);
+    p = PJ(kk[1], kk[2] - 15);
+    AL(g, fs.a, 0.85);
+    AR(g, p[0], p[1] - 3, p[0], p[1] - 15, CH.blue, 1.3);
+    g.globalAlpha = 1;
+    FT(g, fs, { txt: "head: less", x: CLP(p[0], 52, 288), y: CLP(p[1] - 24, 26, 160), sz: 7.6, c: FC(fs, BLU, BLU2), al: "center", stag: 0.028 });
+  }
+  fs = FS(t, 57.0, 59.0, 59.8);
+  if (fs.on) {
+    const k2 = KFR(t, SHFK);
+    p = PJ(k2[1], k2[2] + SFH(k2[3], k2[4]));
+    AL(g, fs.a, 0.85);
+    AR(g, p[0], p[1] + 3, p[0], p[1] + 15, CH.gold, 1.4);
+    g.globalAlpha = 1;
+    FT(g, fs, { txt: "feet: more", x: CLP(p[0], 52, 288), y: CLP(p[1] + 25, 30, 168), sz: 7.6, c: FC(fs, GLD, GLD2), al: "center", stag: 0.028 });
+  }
+  fs = FS(t, 60.6, 63.4, 66.6);
+  if (fs.on) {
+    SCR(g, fs.A * 0.9, 160, 140, 238, 24);
+    FT(g, fs, { txt: "SPAGHETTIFICATION", x: 160, y: 140, sz: 13, c: FC(fs, GLD, GLD2), wt: 700, al: "center", stag: 0.055 });
+  }
+  fs = FS(t, 63.6, 66.0, 66.8);
+  FT(g, fs, { txt: "(the actual term)", x: 160, y: 156, sz: 7.6, c: FC(fs, INK, INK2), al: "center", stag: 0.03 });
+  fs = FS(t, 66.2, undefined, 68.6);
+  if (fs.on) {
+    FORK(g, 142, 173, fs.a);
+    FT(g, fs, { txt: "al dente", x: 152, y: 173, sz: 7.6, c: FC(fs, GLD, GLD2), stag: 0.03, d: 0.16 });
+  }
+  /* 04 frozen time */
+  HDR(g, t, "04", "Out here, he never lands.", 69.4, 71.2, 84.6);
+  BOT(g, FS(t, 73.0, 77.0, 78.2), "he waves goodbye. from out here the wave never finishes.", 157, 8.5, CH.ink2, 272);
+  fs = FS(t, 78.8, 81.6, 86.0);
+  if (fs.on) {
+    p = PJ(224, 120);
+    FT(g, fs, { txt: "his watch", x: CLP(p[0], 48, 290), y: CLP(p[1], 28, 150), sz: 7.6, c: FC(fs, RED, RED2), al: "center", stag: 0.03 });
+    FT(g, fs, { txt: "barely moves", x: CLP(p[0], 48, 290), y: CLP(p[1] + 11, 38, 162), sz: 6.8, c: FC(fs, INK, INK2), al: "center", stag: 0.026, d: 0.3 });
+  }
+  fs = FS(t, 82.0, undefined, 86.2);
+  if (fs.on) {
+    SCR(g, fs.A * 0.8, 258, 54, 124, 34);
+    CLK(g, 296, 54, 12.5, -Math.PI / 2 + t * 3.6, FC(fs, INK, INK2), FC(fs, INK, INK2), fs.a, 1.5);
+    FT(g, fs, { txt: "your watch", x: 274, y: 48, sz: 7.6, c: FC(fs, INK, INK2), al: "right", stag: 0.03 });
+    FT(g, fs, { txt: "runs normally", x: 274, y: 60, sz: 6.8, c: FC(fs, INK, INK2), al: "right", stag: 0.026, d: 0.3 });
+  }
+  /* 05 the loop */
+  HDR(g, t, "05", "Wave at your own back.", 87.0, 88.8, 99.6);
+  fs = FS(t, 95.4, 97.8, 100.6);
+  if (fs.on) {
+    p = PJ(74, 143);
+    FT(g, fs, { txt: "you, from behind", x: CLP(p[0], 56, 270), y: CLP(p[1], 30, 150), sz: 7.4, c: FC(fs, BLU, BLU2), al: "center", stag: 0.03 });
+  }
+  BOT(g, FS(t, 98.0, undefined, 101.6), "light can loop around and bring the back of your head home.", 157, 8.5, CH.ink2, 286);
+  /* 06 the leak */
+  HDR(g, t, "06", "They leak.", 102.6, 104.4, 112.6);
+  BOT(g, FS(t, 108.4, 111.8, 113.0), "black holes do leak. this one is gone in 10^67 years.", 157, 8.5, CH.ink2, 258);
+  BOT(g, FS(t, 113.2, 115.2, 116.0), "bring a book.", 172, 7.6, CH.ink2, 96);
+  fs = FS(t, 116.6, undefined, 119.4);
+  if (fs.on) {
+    BST(g, 160, 132, fs.a * 0.9);
+    FT(g, fs, { txt: "poof.", x: 160, y: 150, sz: 14, c: FC(fs, GLD, GLD2), wt: 700, al: "center", stag: 0.04, d: 0.2 });
+  }
+  /* 07 verdict - the frame is finally still */
+  fs = FS(t, 120.0, undefined, 126.4);
+  if (fs.on) {
+    FT(g, fs, { txt: "Verdict:", x: 24, y: 72, sz: 17, c: CH.ink, wt: 700, stag: 0.055, dur: 0.5 });
+    FT(g, fs, { txt: "admire from a distance.", x: 24, y: 94, sz: 17, c: CH.ink, wt: 700, stag: 0.055, dur: 0.5, d: 0.34 });
+    AL(g, fs.A, 0.4);
+    L(g, 24, 110, 24 + 228 * ss(cl((fs.u - 1.4) / 1.1)), 110, CH.blue, 0.9);
+    g.globalAlpha = 1;
+    f2 = FS(t, 122.2, undefined, 126.4);
+    FT(g, f2, { txt: 'prompt: "explain black holes with a stick', x: 24, y: 128, sz: 8, c: CH.blue, stag: 0.026, op: 0.9 });
+    FT(g, f2, { txt: 'figure, and make it funny."', x: 24, y: 140, sz: 8, c: CH.blue, stag: 0.026, op: 0.9, d: 0.24 });
+  }
+}
+
 export const SCENES: Record<string, Scene> = {
+  /* stick-figure black hole explainer: one take, one focal point at a time */
+  stickhole: {
+    T: SHT,
+    poster: 30.8,
+    draw(g, t) {
+      CPUSH(g, SHCAM(t));
+      SHGRID(g, t);
+      SHORB(g, t);
+      SHGROUND(g, t);
+      SHTRAIL(g, t);
+      SHRING(g, t);
+      SHHOLE(g, t);
+      SHLEAK(g, t);
+      SHPHOT(g, t);
+      SHGHOST(g, t);
+      SHFIG(g, t);
+      SHDIAL(g, t);
+      g.restore();
+      VIG(
+        g,
+        0.15 +
+          0.3 * (sg(t, 60.6, 61.4) - sg(t, 66.6, 67.4)) +
+          0.3 * (sg(t, 116.6, 117.2) - sg(t, 119.4, 120.0)) +
+          0.22 * sg(t, 120.0, 120.9) +
+          0.16 * (1 - sg(t, 6.6, 7.8)),
+      );
+      SHTEXT(g, t);
+      g.globalAlpha = 1;
+    },
+  },
+
   /* an emission nebula condensing out of the dark */
   nebula: {
     T: 16,

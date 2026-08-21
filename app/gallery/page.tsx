@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 import GalleryVideo from "../components/GalleryVideo";
 import { Hover } from "../components/Interactive";
 
-type Card = { scene: string; label: string; title: string; dur?: string; prompt: string };
+type Card = { scene: string; label: string; title: string; dur?: string; prompt: string; big?: boolean };
 type Section = { id: string; num: string; set: string; heading: string; desc?: string; cards: Card[] };
 
 const SECTIONS: Section[] = [
@@ -13,8 +13,9 @@ const SECTIONS: Section[] = [
     num: "01",
     set: "Showcase",
     heading: "Showcase",
-    desc: "The heaviest renders in the library. The first three run long enough to tell a story. Every one is a single prompt away.",
+    desc: "The long ones. Full explainers and heavy renders, each still a single sentence away.",
     cards: [
+      { scene: "stickhole", label: "Explainer", title: "How not to fall into a black hole", dur: "2:07", prompt: "“explain black holes with a stick figure, and make it funny”", big: true },
       { scene: "origin", label: "Astrophysics", title: "How a world gets made", dur: "0:46", prompt: "“start with a cloud of dust and end with a world someone could stand on”" },
       { scene: "tree", label: "L-systems", title: "A year in one tree", dur: "0:34", prompt: "“grow a tree from one seed and run it through four seasons”" },
       { scene: "aurora", label: "Fields", title: "Northern lights", dur: "0:30", prompt: "“put the aurora over a frozen lake and let it drift”" },
@@ -143,7 +144,7 @@ function SceneCard({ card, lead }: { card: Card; lead?: boolean }) {
       <div style={parseStyle(lead ? "padding:16px 19px 18px;" : "padding:15px 17px 16px;")}>
         {card.dur ? (
           <div style={parseStyle(`display:flex; align-items:baseline; justify-content:space-between; gap:${lead ? "14px" : "12px"}; margin:0 0 ${lead ? "6px" : "7px"};`)}>
-            <p style={parseStyle(`margin:0; font-family:'Space Grotesk'; font-weight:600; font-size:${lead ? "19px" : "15.5px"}; color:#f4f4f5; letter-spacing:${lead ? "-0.015em" : "-0.01em"};`)}>
+            <p style={parseStyle(`margin:0; font-family:'Space Grotesk'; font-weight:600; font-size:${card.big ? "19px" : "15.5px"}; color:#f4f4f5; letter-spacing:${card.big ? "-0.015em" : "-0.01em"};`)}>
               {card.title}
             </p>
             <span style={parseStyle(durBadge)}>{card.dur}</span>
@@ -234,7 +235,7 @@ export default function Gallery() {
         <p style={parseStyle("margin:-6px 0 clamp(20px,2.6vw,30px); max-width:560px; font-size:15px; line-height:1.65; color:#6b6b73; text-wrap:pretty;")}>{showcase.desc}</p>
         <div className="gl-sheet gl-sheet-lead">
           {showcase.cards.map((c, i) => (
-            <SceneCard key={c.scene} card={c} lead={i === 0} />
+            <SceneCard key={c.scene} card={c} lead={i < 2} />
           ))}
         </div>
       </section>

@@ -18,10 +18,8 @@ type Item = {
   dur: string;
 };
 
-// The scene the panel opens on; the design still lists it under "For video".
-const START: Item = { text: "start with a cloud of dust and end with a world someone could stand on", scene: "origin", label: "A world from dust", cls: "WorldFromDust", mob: 1443, anim: 9, lines: 212, mb: 14.6, secs: 268, dur: "0:46" };
-
 const WALL: (Item & { short: string })[] = [
+  { scene: "stickhole", short: "Explainer", text: "explain black holes with a stick figure, and make it funny", label: "How not to fall into a black hole", cls: "StickFigureBlackHole", mob: 126, anim: 38, lines: 402, mb: 22.6, secs: 402, dur: "2:07" },
   { scene: "tree", short: "Seasons", text: "grow a tree from one seed and run it through four seasons", label: "A year in one tree", cls: "SeasonTree", mob: 340, anim: 7, lines: 176, mb: 10.2, secs: 198, dur: "0:34" },
   { scene: "aurora", short: "Aurora", text: "put the aurora over a frozen lake and let it drift", label: "Aurora over a frozen lake", cls: "AuroraCurtains", mob: 146, anim: 6, lines: 158, mb: 9.4, secs: 174, dur: "0:30" },
   { scene: "nebula", short: "Nebula", text: "grow an emission nebula out of the dark and light it up", label: "Nebula, condensing", cls: "NebulaGrow", mob: 4000, anim: 4, lines: 121, mb: 7.8, secs: 104, dur: "0:16" },
@@ -32,6 +30,9 @@ const WALL: (Item & { short: string })[] = [
   { scene: "turing", short: "Turing", text: "grow Turing patterns from reaction-diffusion", label: "Gray-Scott patterns", cls: "GrayScott", mob: 4, anim: 2, lines: 126, mb: 5.9, secs: 96, dur: "0:18" },
   { scene: "phyllo", short: "Bloom", text: "pack seeds at the golden angle", label: "Phyllotaxis bloom", cls: "GoldenBloom", mob: 430, anim: 2, lines: 61, mb: 3.6, secs: 39, dur: "0:14" },
 ];
+
+// The scene the panel opens on.
+const START = WALL[0];
 
 const LOG_AT = [0, 250, 510, 810, 1180, 1620];
 const LOG_TOTAL = 1870;
