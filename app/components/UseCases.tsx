@@ -112,17 +112,20 @@ export default function UseCases() {
             <span style={parseStyle(`grid-column:1 / -1; justify-self:start; display:inline-flex; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:${cur.accent}; background:${cur.bg}; border-radius:100px; padding:5px 11px; margin-bottom:18px;`)}>
               {cur.tag}
             </span>
-            <p style={parseStyle("grid-column:1; margin:0 0 20px; font-size:16px; line-height:1.65; color:#c8c8cc; text-wrap:pretty;")}>{cur.desc}</p>
-            <div style={parseStyle("grid-column:1; display:flex; align-items:center; gap:10px; background:#0f1117; border:1px solid #26262c; border-radius:12px; padding:12px 14px; margin-bottom:0;")}>
+            <p style={parseStyle("grid-column:1; min-width:0; margin:0 0 20px; font-size:16px; line-height:1.65; color:#c8c8cc; text-wrap:pretty;")}>{cur.desc}</p>
+            <div
+              className="hh-ptry"
+              style={parseStyle("grid-column:1; min-width:0; display:flex; align-items:center; gap:10px; background:#0f1117; border:1px solid #26262c; border-radius:12px; padding:12px 14px; margin-bottom:0;")}
+            >
               <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#5b5b63; flex:none;")}>Try</span>
-              <span style={parseStyle("min-width:0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#e8e8ea; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;")}>{cur.prompt}</span>
+              <span className="hh-ptext" style={parseStyle("min-width:0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#e8e8ea; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;")}>{cur.prompt}</span>
               <span style={parseStyle("flex:none; margin-left:auto; width:26px; height:26px; border-radius:8px; background:#3b62e0; display:flex; align-items:center; justify-content:center;")}>
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5"></path><path d="M6 11l6-6 6 6"></path></svg>
               </span>
             </div>
             <div
               className="hh-ppoints"
-              style={parseStyle("grid-column:2; grid-row:2 / span 2; display:flex; flex-direction:column; gap:13px; border-top:1px solid #26262c; padding-top:16px;")}
+              style={parseStyle("grid-column:2; grid-row:2 / span 2; min-width:0; display:flex; flex-direction:column; gap:13px; border-top:1px solid #26262c; padding-top:16px;")}
             >
               {cur.points.map((pt, i) => (
                 <div key={i} style={parseStyle("display:flex; align-items:flex-start; gap:10px; font-size:14px; line-height:1.55; color:#a1a1aa;")}>

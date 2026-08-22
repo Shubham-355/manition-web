@@ -48,7 +48,8 @@ export default function GalleryVideo({
     const fill = fillRef.current;
     const knob = knobRef.current;
     const time = timeRef.current;
-    if (!wrap || !cv || !big || !pp || !track || !fill || !knob || !time) return;
+    /* mini tiles render no chrome at all, so every control below is optional */
+    if (!wrap || !cv) return;
     const g = cv.getContext("2d");
     if (!g) return;
 
@@ -73,12 +74,12 @@ export default function GalleryVideo({
     const ui = () => {
       wrap.classList.toggle("paused", !playing);
       wrap.classList.toggle("playing", playing);
-      big.innerHTML = ended ? ICON.replay : ICON.play;
-      pp.innerHTML = playing ? ICON.pause : ICON.play;
+      if (big) big.innerHTML = ended ? ICON.replay : ICON.play;
+      if (pp) pp.innerHTML = playing ? ICON.pause : ICON.play;
       const pr = ((started ? t : 0) / T) * 100;
-      fill.style.width = pr + "%";
-      knob.style.left = pr + "%";
-      time.textContent = fmt(started ? t : 0) + " / " + fmt(T);
+      if (fill) fill.style.width = pr + "%";
+      if (knob) knob.style.left = pr + "%";
+      if (time) time.textContent = fmt(started ? t : 0) + " / " + fmt(T);
     };
 
     const draw = () => {
@@ -166,6 +167,7 @@ export default function GalleryVideo({
     };
 
     const seekEv = (e: PointerEvent) => {
+      if (!track) return;
       const r = track.getBoundingClientRect();
       t = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * T;
       started = true;
@@ -173,6 +175,7 @@ export default function GalleryVideo({
       draw();
     };
     const onTrackDown = (e: PointerEvent) => {
+      if (!track) return;
       e.stopPropagation();
       track.setPointerCapture(e.pointerId);
       wrap.classList.add("scrub");
@@ -213,9 +216,9 @@ export default function GalleryVideo({
     } else {
       cv.addEventListener("click", onCanvasClick);
     }
-    big.addEventListener("click", onBig);
-    pp.addEventListener("click", onPp);
-    track.addEventListener("pointerdown", onTrackDown);
+    big?.addEventListener("click", onBig);
+    pp?.addEventListener("click", onPp);
+    track?.addEventListener("pointerdown", onTrackDown);
     wrap.addEventListener("keydown", onKey);
 
     const ro = new ResizeObserver(size);
@@ -246,9 +249,9 @@ export default function GalleryVideo({
       wrap.removeEventListener("pointerenter", onEnter);
       wrap.removeEventListener("pointerleave", onLeave);
       cv.removeEventListener("click", onCanvasClick);
-      big.removeEventListener("click", onBig);
-      pp.removeEventListener("click", onPp);
-      track.removeEventListener("pointerdown", onTrackDown);
+      big?.removeEventListener("click", onBig);
+      pp?.removeEventListener("click", onPp);
+      track?.removeEventListener("pointerdown", onTrackDown);
       wrap.removeEventListener("keydown", onKey);
       ro.disconnect();
       if (io) io.disconnect();
@@ -259,15 +262,22 @@ export default function GalleryVideo({
     <div ref={wrapRef} className={"gv-wrap paused" + (mini ? " mini" : "")} tabIndex={mini ? -1 : 0}>
       <canvas ref={canvasRef} className="gv-canvas"></canvas>
       {label ? <span className="gv-tag">{label}</span> : null}
-      <button ref={bigRef} className="gv-big" aria-label="Play"></button>
-      <div className="gv-bar">
-        <button ref={ppRef} className="gv-pp" aria-label="Play / pause"></button>
-        <div ref={trackRef} className="gv-track">
-          <div ref={fillRef} className="gv-fill"></div>
-          <div ref={knobRef} className="gv-knob"></div>
-        </div>
-        <span ref={timeRef} className="gv-time"></span>
-      </div>
+      {/* CSS hides the chrome on mini tiles, and they are often nested inside a
+          button of their own, so don't render it at all rather than emit
+          buttons inside buttons. */}
+      {mini ? null : (
+        <>
+          <button ref={bigRef} className="gv-big" aria-label="Play"></button>
+          <div className="gv-bar">
+            <button ref={ppRef} className="gv-pp" aria-label="Play / pause"></button>
+            <div ref={trackRef} className="gv-track">
+              <div ref={fillRef} className="gv-fill"></div>
+              <div ref={knobRef} className="gv-knob"></div>
+            </div>
+            <span ref={timeRef} className="gv-time"></span>
+          </div>
+        </>
+      )}
     </div>
   );
 }
