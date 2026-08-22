@@ -201,7 +201,7 @@ export default function TrySentence() {
 
             <div style={parseStyle("margin:16px 0 9px;")}></div>
 
-            <div style={parseStyle("display:grid; grid-template-columns:repeat(auto-fill,minmax(102px,1fr)); gap:8px;")}>
+            <div className="hh-thumbs" style={parseStyle("display:grid; grid-template-columns:repeat(auto-fill,minmax(102px,1fr)); gap:8px;")}>
               {WALL.map((w) => (
                 <button
                   key={w.scene}

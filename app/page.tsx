@@ -69,6 +69,7 @@ function SpecRow({ num, title, desc, visual }: { num: string; title: string; des
         <p style={parseStyle("margin:0; max-width:430px; font-size:14.5px; line-height:1.65; color:#6b6b73; text-wrap:pretty;")}>{desc}</p>
       </div>
       <div
+        className="hh-vis"
         style={parseStyle(
           "min-width:0; height:clamp(132px,13vw,164px); background:#0b0d13; border:1px solid #1c2030; border-radius:14px; overflow:hidden; display:flex;",
         )}
@@ -93,7 +94,7 @@ export default function Home() {
         <div
           className="hh-hero"
           style={parseStyle(
-            "display:grid; grid-template-columns:minmax(0,0.92fr) minmax(0,1.08fr); gap:54px; align-items:center; padding-left:max(clamp(18px,4vw,30px), calc((100% - 1200px) / 2));",
+            "display:grid; grid-template-columns:minmax(0,0.92fr) minmax(0,1.08fr); gap:54px; align-items:center; max-width:1200px; margin:0 auto; padding:0 clamp(18px,4vw,30px);",
           )}
         >
           <div className="hh-copy" style={parseStyle("min-width:0; max-width:540px;")}>
@@ -172,7 +173,7 @@ export default function Home() {
           <div
             className="hh-film"
             style={parseStyle(
-              "position:relative; width:100%; aspect-ratio:16/9; border-radius:18px 0 0 18px; overflow:hidden; background:#f7f6f3;",
+              "position:relative; width:100%; aspect-ratio:16/9; border-radius:18px; overflow:hidden; background:#f7f6f3;",
             )}
           >
             <div style={parseStyle("position:absolute; left:-4.8%; top:-4.8%; width:109.6%; height:109.6%;")}>
@@ -214,15 +215,15 @@ export default function Home() {
             title="Plain-language prompts"
             desc="Say it the way you'd explain it at a whiteboard. Manition handles the geometry, timing and easing for you."
             visual={
-              <div style={parseStyle("flex:1; min-width:0; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px; padding:14px 16px;")}>
+              <div className="hh-io" style={parseStyle("flex:1; min-width:0; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px; padding:14px 16px;")}>
                 <div style={parseStyle("min-width:0; display:flex; flex-direction:column; gap:7px;")}>
                   <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:#5b6480;")}>You type</span>
                   <span style={parseStyle("font-family:'IBM Plex Mono',monospace; font-size:11.5px; line-height:1.45; color:#e8eaf2;")}>a sine wave unrolling from a circle</span>
                 </div>
-                <div style={parseStyle("display:flex; align-items:center; color:#3a4260;")}>
+                <div className="hh-io-arrow" style={parseStyle("display:flex; align-items:center; color:#3a4260;")}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
                 </div>
-                <div style={parseStyle("position:relative; min-width:0; height:100%; border-radius:10px; overflow:hidden; background:radial-gradient(circle at 50% 40%,#15151d,#0b0b0e); border:1px solid #1f1f26; display:flex; align-items:center; justify-content:center;")}>
+                <div className="hh-io-prev" style={parseStyle("position:relative; min-width:0; height:100%; border-radius:10px; overflow:hidden; background:radial-gradient(circle at 50% 40%,#15151d,#0b0b0e); border:1px solid #1f1f26; display:flex; align-items:center; justify-content:center;")}>
                   <svg width="108" height="56" viewBox="0 0 130 80" fill="none"><path d="M8 40 Q 30 6 52 40 T 96 40 T 130 40" stroke="#3b62e0" strokeWidth="2.4"></path><circle cx="24" cy="40" r="15" stroke="#33333d" strokeWidth="1.4"></circle></svg>
                   <span style={parseStyle("position:absolute; right:9px; bottom:7px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#8a8a92;")}>0:12 · 1080p</span>
                 </div>
@@ -234,7 +235,7 @@ export default function Home() {
             title="Real, editable code"
             desc="Every scene is genuine Manim. Peek at the code, tweak a value, or export the script - nothing is locked away."
             visual={
-              <div style={parseStyle("flex:1; min-width:0; padding:15px 0 15px 16px; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.85; color:#cfd3dc; overflow:hidden;")}>
+              <div className="hh-code" style={parseStyle("flex:1; min-width:0; padding:15px 0 15px 16px; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.85; color:#cfd3dc; overflow:hidden;")}>
                 <div style={parseStyle("white-space:nowrap;")}><span style={parseStyle("color:#c98fff;")}>class</span> SineToCircle(<span style={parseStyle("color:#6cc7ff;")}>Scene</span>):</div>
                 <div style={parseStyle("white-space:nowrap;")}>&nbsp;&nbsp;<span style={parseStyle("color:#c98fff;")}>def</span> construct(<span style={parseStyle("color:#e88fb0;")}>self</span>):</div>
                 <div style={parseStyle("white-space:nowrap; background:rgba(95,207,134,0.1); border-left:2px solid #5fcf86; margin-left:-16px; padding:0 16px 0 14px;")}>&nbsp;&nbsp;&nbsp;&nbsp;self.play(<span style={parseStyle("color:#ffcf6c;")}>Transform</span>(wave, dot), run_time=<span style={parseStyle("color:#5fcf86;")}>3</span>)</div>
