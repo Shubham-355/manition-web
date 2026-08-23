@@ -171,7 +171,7 @@ export function WaitlistForm({ source = "/" }: { source?: string }) {
           aria-label="Email address"
           style={{
             ...parseStyle(
-              "flex:1; min-width:240px; box-sizing:border-box; background:#17171c; border:1px solid #2c2c33; border-radius:12px; color:#f4f4f5; font-family:inherit; font-size:15px; padding:15px 17px; outline:none;",
+              "flex:1 1 240px; min-width:min(240px,100%); box-sizing:border-box; background:#17171c; border:1px solid #2c2c33; border-radius:12px; color:#f4f4f5; font-family:inherit; font-size:15px; padding:15px 17px; outline:none;",
             ),
             ...(focused
               ? {

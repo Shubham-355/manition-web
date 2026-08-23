@@ -27,7 +27,6 @@ const WALL: (Item & { short: string })[] = [
   { scene: "curl", short: "Dye", text: "pour dye into a swirling field and let it draw", label: "Dye in a curl field", cls: "CurlDye", mob: 150, anim: 3, lines: 104, mb: 6.1, secs: 83, dur: "0:16" },
   { scene: "dejong", short: "Attractor", text: "morph a de Jong attractor through its parameters", label: "de Jong attractor", cls: "DeJongMorph", mob: 60000, anim: 3, lines: 88, mb: 6.9, secs: 92, dur: "0:18" },
   { scene: "galaxy", short: "Galaxies", text: "collide two galaxies and keep the tidal tails", label: "Galaxy collision", cls: "GalaxyPass", mob: 1400, anim: 3, lines: 134, mb: 7.1, secs: 112, dur: "0:20" },
-  { scene: "turing", short: "Turing", text: "grow Turing patterns from reaction-diffusion", label: "Gray-Scott patterns", cls: "GrayScott", mob: 4, anim: 2, lines: 126, mb: 5.9, secs: 96, dur: "0:18" },
   { scene: "phyllo", short: "Bloom", text: "pack seeds at the golden angle", label: "Phyllotaxis bloom", cls: "GoldenBloom", mob: 430, anim: 2, lines: 61, mb: 3.6, secs: 39, dur: "0:14" },
 ];
 

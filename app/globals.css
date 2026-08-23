@@ -34,9 +34,8 @@ details[open] .faq-chevron { transform: rotate(180deg); }
   .hh-hero{ max-width:1360px !important; gap:72px !important; }
   .hh-copy{ max-width:600px !important; }
 }
-/* ahead of the 980px block on purpose: the design file puts these after it, where
-   the .hh-spec rule leaks past 980 and cancels the stack */
-@media (max-width:1180px){
+/* the design scopes this band so it stops at 981 and never cancels the stack below */
+@media (min-width:981px) and (max-width:1180px){
   .hh-hero{ gap:40px !important; }
   .hh-spec{ grid-template-columns:minmax(0,1fr) minmax(0,47%) !important; gap:24px !important; }
   .hh-pdetail{ column-gap:32px !important; }
@@ -45,14 +44,14 @@ details[open] .faq-chevron { transform: rotate(180deg); }
   .hh-hero{ grid-template-columns:1fr !important; gap:36px !important; }
   .hh-film{ border-radius:16px !important; }
   .hh-spec{ grid-template-columns:1fr !important; gap:18px !important; }
+  .hh-perrow{ grid-template-columns:1fr !important; }
   .hh-pdetail{ grid-template-columns:1fr !important; }
   .hh-ppoints{ grid-column:1 !important; grid-row:auto !important; margin-top:22px !important; }
   .hh-split{ grid-template-columns:1fr !important; gap:26px !important; }
   .hh-secthead{ grid-template-columns:1fr !important; gap:16px !important; align-items:start !important; }
 }
 @media (max-width:640px){
-  .hh-perrow{ grid-template-columns:1fr !important; }
-  .hh-persona{ padding:16px 2px !important; gap:10px !important; }
+  .hh-persona{ padding:18px 4px !important; gap:12px !important; }
   .hh-cta{ flex:1 1 100% !important; justify-content:center !important; }
   .hh-vis{ height:auto !important; min-height:112px !important; }
   .hh-io{ grid-template-columns:1fr !important; gap:10px !important; }
