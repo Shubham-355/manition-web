@@ -98,6 +98,7 @@ export default function Nav({ active = "home" }: { active?: ActiveKey }) {
 
         <div style={parseStyle("flex:1;")}></div>
 
+        {/* Sign in is hidden until the auth page is ported.
         <Hover
           as="a"
           className="nv-signin"
@@ -107,6 +108,7 @@ export default function Nav({ active = "home" }: { active?: ActiveKey }) {
         >
           Sign in
         </Hover>
+        */}
         <Hover
           as="a"
           className="nv-cta"
@@ -182,6 +184,7 @@ export default function Nav({ active = "home" }: { active?: ActiveKey }) {
                 </Link>
               );
             })}
+            {/* Sign in is hidden until the auth page is ported.
             <a
               href="../Manition Auth v3.dc.html"
               style={parseStyle(
@@ -190,6 +193,7 @@ export default function Nav({ active = "home" }: { active?: ActiveKey }) {
             >
               Sign in
             </a>
+            */}
           </div>
         </div>
       )}
