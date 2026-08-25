@@ -98,17 +98,6 @@ export default function Nav({ active = "home" }: { active?: ActiveKey }) {
 
         <div style={parseStyle("flex:1;")}></div>
 
-        {/* Sign in is hidden until the auth page is ported.
-        <Hover
-          as="a"
-          className="nv-signin"
-          href="../Manition Auth v3.dc.html"
-          style="text-decoration:none; font-size:13.5px; font-weight:500; color:#3f3f46; padding:7px 10px; border-radius:9px;"
-          hoverStyle={{ color: "#16161a" }}
-        >
-          Sign in
-        </Hover>
-        */}
         <Hover
           as="a"
           className="nv-cta"
@@ -184,16 +173,6 @@ export default function Nav({ active = "home" }: { active?: ActiveKey }) {
                 </Link>
               );
             })}
-            {/* Sign in is hidden until the auth page is ported.
-            <a
-              href="../Manition Auth v3.dc.html"
-              style={parseStyle(
-                "text-decoration:none; font-size:16px; font-weight:500; color:#3f3f46; padding:16px 8px 4px;",
-              )}
-            >
-              Sign in
-            </a>
-            */}
           </div>
         </div>
       )}

@@ -120,17 +120,13 @@ export default function TrySentence() {
     setScene,
     setLabel,
   });
-  const cur = useRef<Item>(START);
 
   useEffect(() => {
     const c = ctl.current;
     return () => clearRun(c);
   }, []);
 
-  const pick = (p: Item) => {
-    cur.current = p;
-    run(ctl.current, p);
-  };
+  const pick = (p: Item) => run(ctl.current, p);
 
   return (
     <section style={parseStyle("background:#efece7; border-top:1px solid #e6e2da; border-bottom:1px solid #e6e2da;")}>
