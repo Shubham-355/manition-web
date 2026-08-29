@@ -34,10 +34,6 @@ const SECTIONS: Section[] = [
     set: "Fractals",
     heading: "Fractals & self-similarity",
     cards: [
-      { scene: "mandel", label: "Fractals", title: "The Mandelbrot set", prompt: "“render the Mandelbrot set line by line”" },
-      { scene: "julia", label: "Fractals", title: "Julia set, breathing", prompt: "“walk c around a circle and morph the set”" },
-      { scene: "newton", label: "Complex analysis", title: "Newton's basins", prompt: "“color every start by the root it falls into”" },
-      { scene: "complexmap", label: "Complex analysis", title: "Domain coloring", prompt: "“paint a complex function by its angle”" },
       { scene: "koch", label: "Fractals", title: "Koch snowflake", prompt: "“bend every edge into four, forever”" },
       { scene: "chaosgame", label: "Fractals", title: "A fern from dice", prompt: "“roll four matrices at random until a fern grows”" },
       { scene: "apollonian", label: "Geometry", title: "Apollonian gasket", prompt: "“pack a circle with circles until the gaps run out”" },
