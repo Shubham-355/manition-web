@@ -106,34 +106,46 @@ export function WaitlistForm({ source = "/" }: { source?: string }) {
   if (state.status === "joined") {
     return (
       <div
+        className="wl-joined"
         style={parseStyle(
-          "display:inline-flex; align-items:center; gap:11px; background:#14211a; border:1px solid #2a4a35; color:#8fe0a6; border-radius:13px; padding:16px 24px; font-size:15px;",
+          "display:inline-flex; align-items:center; gap:11px; max-width:520px; text-align:left; background:#14211a; border:1px solid #2a4a35; color:#8fe0a6; border-radius:13px; padding:16px 24px; font-size:15px; line-height:1.5;",
         )}
       >
         <span
           style={parseStyle(
-            "width:22px; height:22px; border-radius:50%; background:#2f7a4a; color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px;",
+            "flex:0 0 auto; width:22px; height:22px; border-radius:50%; background:#2f7a4a; color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px;",
           )}
         >
           ✓
         </span>
-        {state.alreadyOn ? (
-          <>
-            You&apos;re already on the list. We&apos;ll email{" "}
-            <strong style={parseStyle("color:#f7f6f3; font-weight:600;")}>
-              {state.email}
-            </strong>{" "}
-            when it&apos;s your turn.
-          </>
-        ) : (
-          <>
-            You&apos;re on the list! We&apos;ll email{" "}
-            <strong style={parseStyle("color:#f7f6f3; font-weight:600;")}>
-              {state.email}
-            </strong>{" "}
-            soon.
-          </>
-        )}
+        {/* one child, or each run of text becomes its own flex item on a nowrap row */}
+        <span>
+          {state.alreadyOn ? (
+            <>
+              You&apos;re already on the list. We&apos;ll email{" "}
+              <strong
+                style={parseStyle(
+                  "color:#f7f6f3; font-weight:600; overflow-wrap:anywhere;",
+                )}
+              >
+                {state.email}
+              </strong>{" "}
+              when it&apos;s your turn.
+            </>
+          ) : (
+            <>
+              You&apos;re on the list! We&apos;ll email{" "}
+              <strong
+                style={parseStyle(
+                  "color:#f7f6f3; font-weight:600; overflow-wrap:anywhere;",
+                )}
+              >
+                {state.email}
+              </strong>{" "}
+              soon.
+            </>
+          )}
+        </span>
       </div>
     );
   }
@@ -142,6 +154,7 @@ export function WaitlistForm({ source = "/" }: { source?: string }) {
     <>
       <form
         action={formAction}
+        className="wl-form"
         style={parseStyle(
           "display:flex; flex-wrap:wrap; gap:11px; justify-content:center; max-width:520px; margin:0 auto;",
         )}
@@ -162,6 +175,7 @@ export function WaitlistForm({ source = "/" }: { source?: string }) {
           name="email"
           required
           autoComplete="email"
+          className="wl-input"
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           placeholder="you@example.com"
@@ -181,6 +195,7 @@ export function WaitlistForm({ source = "/" }: { source?: string }) {
         <button
           type="submit"
           disabled={pending}
+          className="wl-btn"
           onMouseEnter={() => setBtnHover(true)}
           onMouseLeave={() => setBtnHover(false)}
           style={{

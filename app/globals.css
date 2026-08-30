@@ -69,6 +69,17 @@ details[open] .faq-chevron { transform: rotate(180deg); }
   .hh-thumbs{ grid-template-columns:repeat(auto-fill,minmax(86px,1fr)) !important; }
 }
 
+/* ===== Waitlist form (Home.dc.html) ===== */
+/* below this the input and button no longer fit on one row inside the card padding */
+@media (max-width:560px){
+  .wl-btn{ flex:1 1 100% !important; }
+}
+@media (max-width:420px){
+  .wl-form{ gap:9px !important; }
+  .wl-input, .wl-btn{ font-size:15px !important; padding:14px 16px !important; }
+  .wl-joined{ padding:14px 16px !important; font-size:14px !important; }
+}
+
 /* ===== Features (Features.dc.html) ===== */
 @keyframes ftIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
 @media (max-width:900px){
