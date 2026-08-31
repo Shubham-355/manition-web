@@ -1,8 +1,5 @@
 import "server-only";
 
-const PREHEADER =
-  "You're on the list. Your invite lands in this inbox as soon as a seat opens.";
-
 const SUBJECT = "You're on the Manition waitlist";
 
 function siteUrl(): string {
@@ -76,8 +73,6 @@ function waitlistEmailHtml(unsubscribe: string): string {
 </style>
 </head>
 <body style="margin:0; padding:0; background:#efece7;">
-
-<span style="display:none !important; visibility:hidden; opacity:0; color:transparent; height:0; width:0; overflow:hidden; mso-hide:all;">${PREHEADER}</span>
 
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#efece7;">
 <tr>
