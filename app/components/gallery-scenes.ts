@@ -200,6 +200,7 @@ type TreeNode = {
   lv: Leaf[];
 };
 type Leaf = { ox: number; oy: number; s: number; b: number; h: number; ph: number; dt: number; fx: number };
+type EmPt = { lx: number; ly: number; tx: number; ty: number; q: number };
 type NetNode = { x: number; y: number; b: number; l: number };
 type NetEdge = { a: NetNode; b: NetNode; w: number; l: number };
 
@@ -227,6 +228,7 @@ export interface Scene {
     arcs: { cx: number; cy: number; r: number; a0: number; a1: number }[];
   };
   _G?: { grid: Uint8Array; gen: number; hist: Uint8Array[] };
+  _emP?: EmPt[];
   _im?: Img;
   _ac?: Acc;
   _an?: number;
@@ -1182,6 +1184,219 @@ function SHTEXT(g: Ctx, t: number) {
   }
 }
 
+/* ---------- more chalkboard explainers -----------------------------------
+   Same kit as the black-hole film: one focal point per beat, a chapter
+   header that settles to context ink, a single bottom caption slot, and a
+   verdict card that names the prompt it came from.                       */
+function EXDUST(g: Ctx, t: number, T: number, seed: number, A0?: number) {
+  const A = cl(sg(t, 0.1, 1.8) - sg(t, T - 2.2, T - 0.6)) * (A0 === undefined ? 0.8 : A0),
+    R = rng(seed);
+  if (A <= 0.004) return;
+  for (let i = 0; i < 74; i++) {
+    const x = -40 + R() * 400,
+      y = -30 + R() * 260,
+      r = 0.2 + R() * 0.46,
+      q = R(),
+      tw = 0.45 + 0.55 * Math.sin(t * (0.4 + q * 1.1) + q * 15);
+    g.globalAlpha = A * (0.1 + R() * 0.26) * tw;
+    g.fillStyle = i % 9 === 0 ? "#b9cdf0" : "#e9e6de";
+    g.beginPath();
+    g.arc(x, y, r, 0, TAU);
+    g.fill();
+  }
+  g.globalAlpha = 1;
+}
+/* the card every explainer lands on */
+function EXEND(g: Ctx, t: number, tin: number, tout: number, l1: string, l2: string, p1: string, p2: string) {
+  const fs = FS(t, tin, undefined, tout);
+  if (!fs.on) return;
+  FT(g, fs, { txt: l1, x: 24, y: 72, sz: 17, c: CH.ink, wt: 700, stag: 0.055, dur: 0.5 });
+  FT(g, fs, { txt: l2, x: 24, y: 94, sz: 17, c: CH.ink, wt: 700, stag: 0.055, dur: 0.5, d: 0.34 });
+  AL(g, fs.A, 0.4);
+  L(g, 24, 110, 24 + 228 * ss(cl((fs.u - 1.4) / 1.1)), 110, CH.blue, 0.9);
+  g.globalAlpha = 1;
+  const f2 = FS(t, tin + 2.2, undefined, tout);
+  FT(g, f2, { txt: p1, x: 24, y: 128, sz: 8, c: CH.blue, stag: 0.026, op: 0.9 });
+  FT(g, f2, { txt: p2, x: 24, y: 140, sz: 8, c: CH.blue, stag: 0.026, op: 0.9, d: 0.24 });
+}
+function EXCAM(t: number, ks: number[][], tout: number): CamV {
+  const k = KFR(t, ks),
+    dr = 1 - sg(t, tout, tout + 1);
+  return {
+    fx: k[1] + Math.sin(t * 0.13) * 1.4 * dr,
+    fy: k[2] + Math.sin(t * 0.097 + 1.3) * 1 * dr,
+    z: k[3] * (1 + 0.005 * Math.sin(t * 0.21) * dr),
+    zy: k[4] * (1 + 0.005 * Math.sin(t * 0.21) * dr),
+  };
+}
+
+/* ==== entropy: one tidy room, and every other room ====================== */
+const EMT = 54;
+const EMCK = [
+  [0, 160, 92, 1.16, 1.16], [3.2, 160, 96, 1.06, 1.06], [6.4, 160, 100, 1, 1],
+  [8.2, 156, 104, 1.1, 1.1], [13.4, 156, 104, 1.12, 1.12], [15.2, 150, 102, 1.2, 1.2],
+  [19.6, 150, 102, 1.18, 1.18], [21.2, 160, 104, 1.04, 1.04], [27.2, 160, 104, 1.02, 1.02],
+  [33.8, 160, 104, 1.02, 1.02], [35.2, 158, 102, 1.1, 1.1], [42.2, 158, 102, 1.08, 1.08],
+  [44.2, 160, 100, 1, 1], [54, 160, 100, 1, 1],
+];
+const EMFK = [
+  [7.4, 332, 118, 1, 1], [9.9, 266, 118, 1, 1], [21.6, 266, 118, 1, 1], [23.2, 274, 118, 1, 1],
+  [44.8, 274, 118, 1, 1], [47.0, 306, 118, 1, 1],
+];
+/* how far the room has wandered from its one tidy arrangement */
+function EMM(t: number) {
+  const a = sg(t, 20.8, 27.2),
+    b = sg(t, 35.2, 38.6),
+    c = sg(t, 39.8, 42.2);
+  return Math.max(a * (1 - b), c);
+}
+function EMPT(o: Scene, i: number) {
+  if (!o._emP) {
+    const R = rng(2207),
+      P: EmPt[] = [];
+    for (let k = 0; k < 14; k++) {
+      const c = k % 4,
+        r = (k / 4) | 0;
+      P.push({ lx: 104 + c * 36, ly: 84 + r * 17, tx: 94 + R() * 128, ty: 78 + R() * 54, q: R() });
+    }
+    o._emP = P;
+  }
+  return o._emP[i];
+}
+function EMGND(g: Ctx, t: number) {
+  const a = cl(sg(t, 7.4, 8.6) - sg(t, 46.8, 47.8));
+  if (a <= 0.004) return;
+  AL(g, a, 0.24);
+  L(g, 66, 151.5, 326, 151.5, CH.blue, 1);
+  g.globalAlpha = 1;
+}
+function EMROOM(g: Ctx, t: number) {
+  const a = cl(sg(t, 7.0, 8.4) - sg(t, 45.6, 46.8)),
+    p = ss(cl((t - 7.0) / 1.7)),
+    x = 86,
+    y = 72,
+    w = 150,
+    h = 68;
+  if (a <= 0.004) return;
+  AL(g, a, 0.34);
+  g.strokeStyle = CH.blue;
+  g.lineWidth = 1;
+  g.lineCap = "round";
+  g.beginPath();
+  g.moveTo(x, y);
+  g.lineTo(x + w * p, y);
+  g.moveTo(x + w, y);
+  g.lineTo(x + w, y + h * p);
+  g.moveTo(x + w, y + h);
+  g.lineTo(x + w - w * p, y + h);
+  g.moveTo(x, y + h);
+  g.lineTo(x, y + h - h * p);
+  g.stroke();
+  g.globalAlpha = 1;
+}
+function EMDOTS(g: Ctx, t: number, o: Scene) {
+  const a = cl(sg(t, 8.2, 9.4) - sg(t, 45.6, 46.6)),
+    m = EMM(t);
+  if (a <= 0.004) return;
+  for (let i = 0; i < 14; i++) {
+    const P = EMPT(o, i),
+      ap = a * ss(cl((t - 8.2 - i * 0.16) / 0.7)),
+      pp = ss(cl(m * 1.42 - i * 0.026));
+    const x = lp(P.lx, P.tx, pp) + Math.sin(t * (0.7 + P.q * 1.05) + P.q * 19) * 4.2 * pp,
+      y = lp(P.ly, P.ty, pp) + Math.cos(t * (0.62 + P.q * 0.9) + P.q * 11) * 2.8 * pp;
+    g.globalAlpha = ap;
+    D(g, CLP(x, 90, 232), CLP(y, 76, 136), 2.15, MX(INK, GLD, pp * 0.72));
+  }
+  g.globalAlpha = 1;
+}
+function EMFIG(g: Ctx, t: number) {
+  const al = sg(t, 7.4, 8.2) - sg(t, 47.0, 47.8);
+  if (al <= 0.004) return;
+  const k = KFR(t, EMFK),
+    a = KFR(t - 0.07, EMFK),
+    b = KFR(t + 0.07, EMFK);
+  const vx = (b[1] - a[1]) / 0.14,
+    wk = cl((Math.abs(vx) - 3) / 12),
+    ph = t * 8.2,
+    sw = Math.sin(ph) * 1.05 * wk,
+    bob = Math.abs(Math.sin(ph)) * 1.4 * wk;
+  const proud = sg(t, 10.0, 11.4) - sg(t, 21.4, 22.6),
+    shock = sg(t, 22.6, 23.8) - sg(t, 42.8, 44.0),
+    shrug = sg(t, 43.2, 44.6);
+  let a0 = lp(196, 152, proud),
+    a1 = lp(-24, 196, proud);
+  a0 = lp(a0, 238, shock);
+  a1 = lp(a1, -56, shock);
+  a0 = lp(a0, 214, shrug);
+  a1 = lp(a1, -34, shrug);
+  g.globalAlpha = al;
+  SF(g, {
+    hx: k[1],
+    hy: k[2] - bob,
+    s: 1,
+    c: CH.ink,
+    lw: 2.2,
+    ph: ph,
+    nd: wk * 0.12,
+    arms: [a0 + sw * 26, a1 + sw * 26],
+    legs: [-1 + sw * 0.9, 1 + sw * 0.9],
+    eye: shock > 0.4 ? "wide" : "dot",
+    mouth: shock > 0.4 ? -0.5 : proud > 0.4 ? 0.55 : 0.35,
+  });
+  g.globalAlpha = 1;
+}
+/* the rewind badge for beat 04 */
+function EMREW(g: Ctx, t: number) {
+  const fs = FS(t, 35.0, 38.8, 39.6);
+  if (!fs.on) return;
+  const c = FC(fs, BLU, BLU2);
+  AL(g, fs.a, 0.9);
+  g.strokeStyle = c;
+  g.lineWidth = 1.1;
+  g.beginPath();
+  g.arc(252, 60, 7.5, -2.5, 1.9);
+  g.stroke();
+  g.globalAlpha = 1;
+  AL(g, fs.a, 0.9);
+  AR(g, 252 + Math.cos(1.9) * 7.5, 60 + Math.sin(1.9) * 7.5, 252 + Math.cos(2.6) * 8.8, 60 + Math.sin(2.6) * 8.8, c, 1.1);
+  g.globalAlpha = 1;
+  FT(g, fs, { txt: "rewind", x: 252, y: 76, sz: 7, c: c, al: "center", stag: 0.03 });
+}
+function EMTEXT(g: Ctx, t: number) {
+  let fs: Focus;
+  fs = FS(t, 0.25, 3.2, 6.4, 0.66);
+  if (fs.on) {
+    AL(g, fs.a, 0.45);
+    L(g, 28, 66, 28 + 150 * ss(cl(fs.u / 1.4)), 66, FC(fs, BLU, BLU2), 1.1);
+    g.globalAlpha = 1;
+    FT(g, fs, { txt: "ENTROPY", x: 28, y: 84, sz: 27, c: FC(fs, INK, [182, 178, 170]), wt: 700, stag: 0.13, dur: 0.6 });
+  }
+  fs = FS(t, 3.4, 6.6, 7.4);
+  FT(g, fs, { txt: "why tidy never stays tidy", x: 28, y: 106, sz: 8.4, c: FC(fs, BLU, BLU2), stag: 0.035 });
+  HDR(g, t, "01", "One tidy room.", 7.6, 9.4, 13.8);
+  BOT(g, FS(t, 10.8, 12.8, 13.8), "fourteen things, each exactly where it goes.", 168, 8.5, CH.ink2, 250);
+  HDR(g, t, "02", "There is one way to be tidy.", 14.2, 16.0, 20.4);
+  fs = FS(t, 15.6, 18.4, 20.2);
+  if (fs.on) {
+    FT(g, fs, { txt: "1 arrangement", x: 298, y: 82, sz: 8.4, c: FC(fs, BLU, BLU2), al: "right", stag: 0.03 });
+    FT(g, fs, { txt: "this one", x: 298, y: 94, sz: 7.2, c: FC(fs, INK, INK2), al: "right", stag: 0.028, d: 0.3 });
+  }
+  BOT(g, FS(t, 17.6, 19.6, 20.6), "exactly one arrangement counts as tidy.", 168, 8.5, CH.ink2, 232);
+  HDR(g, t, "03", "And a great many that are not.", 20.8, 22.6, 33.8);
+  fs = FS(t, 24.2, 28.4, 33.4);
+  if (fs.on) {
+    FT(g, fs, { txt: "10^13 arrangements", x: 298, y: 82, sz: 8.4, c: FC(fs, GLD, GLD2), al: "right", stag: 0.03 });
+    FT(g, fs, { txt: "also this one", x: 298, y: 94, sz: 7.2, c: FC(fs, INK, INK2), al: "right", stag: 0.028, d: 0.3 });
+  }
+  BOT(g, FS(t, 27.6, 30.2, 31.0), "nobody knocked anything over. it just wandered.", 168, 8.5, CH.ink2, 262);
+  BOT(g, FS(t, 31.2, 33.4, 34.2), "mess is not a force. it is a headcount.", 168, 8.5, CH.ink2, 226);
+  HDR(g, t, "04", "Time is not the villain.", 34.4, 36.2, 45.4);
+  BOT(g, FS(t, 36.4, 38.6, 39.4), "run it backwards and the tidy room is perfectly legal.", 168, 8.5, CH.ink2, 286);
+  BOT(g, FS(t, 40.2, 42.4, 43.2), "legal, yes. also one ticket in ten trillion.", 168, 8.5, CH.ink2, 254);
+  BOT(g, FS(t, 43.4, 45.2, 46.0), "you are not fighting physics. you are fighting arithmetic.", 168, 8.5, CH.ink2, 296);
+  EXEND(g, t, 47.4, 53.4, "Verdict:", "tidy is a rental.", 'prompt: "explain entropy with a stick figure', 'who just cleaned his room."');
+}
+
 export const SCENES: Record<string, Scene> = {
   /* stick-figure black hole explainer: one take, one focal point at a time */
   stickhole: {
@@ -1210,6 +1425,31 @@ export const SCENES: Record<string, Scene> = {
           0.16 * (1 - sg(t, 6.6, 7.8)),
       );
       SHTEXT(g, t);
+      g.globalAlpha = 1;
+    },
+  },
+
+  /* entropy: one tidy room, and every other room */
+  stickmess: {
+    T: EMT,
+    poster: 26.4,
+    draw(g, t) {
+      CPUSH(g, EXCAM(t, EMCK, 46.6));
+      EXDUST(g, t, EMT, 3301, 0.7);
+      EMGND(g, t);
+      EMROOM(g, t);
+      EMDOTS(g, t, this);
+      EMFIG(g, t);
+      g.restore();
+      VIG(
+        g,
+        0.16 +
+          0.2 * (sg(t, 24.2, 25.2) - sg(t, 33.4, 34.4)) +
+          0.22 * sg(t, 47.4, 48.4) +
+          0.14 * (1 - sg(t, 6.4, 7.6)),
+      );
+      EMREW(g, t);
+      EMTEXT(g, t);
       g.globalAlpha = 1;
     },
   },
