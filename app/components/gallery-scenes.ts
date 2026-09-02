@@ -1792,6 +1792,129 @@ function LKTEXT(g: Ctx, t: number) {
   EXEND(g, t, 43.2, 47.4, "Verdict:", "hope is not a strategy.", "prompt: \"explain the gambler's fallacy with a", 'stick figure on a losing streak."');
 }
 
+/* ==== traffic: the other lane is not faster ============================= */
+const LNT = 44,
+  LNHX = 118,
+  LNY0 = 112,
+  LNY1 = 136;
+const LNCK = [
+  [0, 160, 96, 1.12, 1.12], [3.6, 160, 99, 1.05, 1.05], [6.8, 160, 110, 1, 1],
+  [8.4, 146, 116, 1.18, 1.18], [15.0, 146, 116, 1.18, 1.18], [16.4, 168, 116, 1.12, 1.12],
+  [22.6, 168, 116, 1.12, 1.12], [24.2, 160, 110, 1, 1], [32.8, 160, 110, 1, 1],
+  [34.2, 214, 96, 1.14, 1.14], [39.6, 214, 96, 1.14, 1.14], [41.0, 160, 104, 1, 1], [44, 160, 104, 1, 1],
+];
+/* stop-and-go: distance travelled by a lane whose speed oscillates at phase ph */
+function LNS(t: number, ph: number) {
+  const w = 0.92;
+  return 27 * (t - (0.94 / w) * (Math.cos(w * t + ph) - Math.cos(ph)));
+}
+function LNREL(t: number) {
+  return LNS(t, 0.5 + Math.PI) - LNS(t, 0.5);
+}
+function LNCAR(g: Ctx, x: number, y: number, c: string, A: number, hero?: number) {
+  if (x < -16 || x > 336) return;
+  g.globalAlpha = A;
+  g.strokeStyle = c;
+  g.lineWidth = hero ? 1.5 : 1.15;
+  g.lineJoin = "round";
+  g.beginPath();
+  g.roundRect(x - 11, y - 4.6, 22, 9.2, 2.6);
+  g.stroke();
+  g.globalAlpha = A * 0.55;
+  L(g, x - 4.6, y - 4.6, x + 3, y - 4.6, c, 1);
+  g.globalAlpha = A * 0.8;
+  D(g, x - 6, y + 5.2, 1.5, c);
+  D(g, x + 6, y + 5.2, 1.5, c);
+  g.globalAlpha = 1;
+}
+function LNROAD(g: Ctx, t: number) {
+  const a = cl(sg(t, 6.6, 7.8) - sg(t, 41.2, 42.2));
+  if (a <= 0.004) return;
+  g.globalAlpha = a * 0.3;
+  L(g, -10, 98, 330, 98, CH.blue, 1);
+  L(g, -10, 150, 330, 150, CH.blue, 1);
+  const off = -LNS(t, 0.5) % 34;
+  for (let i = -1; i < 12; i++) {
+    const x = off + i * 34;
+    g.globalAlpha = a * 0.22;
+    L(g, x, 124, x + 16, 124, CH.ink2, 1);
+  }
+  g.globalAlpha = 1;
+}
+function LNCARS(g: Ctx, t: number) {
+  const a = cl(sg(t, 7.0, 8.2) - sg(t, 41.0, 42.0)),
+    rel = LNREL(t);
+  if (a <= 0.004) return;
+  for (let i = -2; i < 4; i++) if (i) LNCAR(g, LNHX + i * 40, LNY0, CH.ink2, a * 0.85);
+  for (let i = 0; i < 9; i++) {
+    const x = -24 + (((i * 40 + rel) % 360) + 360) % 360;
+    LNCAR(g, x, LNY1, CH.blue, a * 0.9);
+  }
+  LNCAR(g, LNHX, LNY0, CH.gold, a, 1);
+}
+function LNFIG(g: Ctx, t: number) {
+  const a = cl(sg(t, 8.6, 9.8) - sg(t, 40.4, 41.4)),
+    look = sg(t, 16.0, 17.2),
+    shrug = sg(t, 36.0, 37.4);
+  if (a <= 0.004) return;
+  g.globalAlpha = a;
+  SF(g, {
+    hx: LNHX + look * 3,
+    hy: 96,
+    s: 0.5,
+    c: CH.gold,
+    st: 0.42,
+    arms: [212 - shrug * 46, -32 + shrug * 44],
+    eye: t > 16.2 && t < 24 ? "wide" : "dot",
+    mouth: t > 16.2 && t < 23 ? "o" : t > 35.8 ? -0.3 : 0.2,
+  });
+  g.globalAlpha = 1;
+}
+/* the tally that settles it: time spent watching vs time spent being watched */
+function LNBARS(g: Ctx, t: number) {
+  const fs = FS(t, 34.6, 39.0, 40.6);
+  if (!fs.on) return;
+  const c = FC(fs, GLD, GLD2),
+    p = ss(cl((t - 35.2) / 4.2));
+  AL(g, fs.a, 0.75);
+  TX(g, "watched them pass", 196, 60, 7, CH.ink2);
+  TX(g, "watched yourself pass", 196, 84, 7, CH.ink2);
+  g.globalAlpha = 1;
+  AL(g, fs.a, 0.22);
+  L(g, 196, 68, 292, 68, CH.ink2, 4);
+  L(g, 196, 92, 292, 92, CH.ink2, 4);
+  g.globalAlpha = 1;
+  AL(g, fs.a, 1);
+  L(g, 196, 68, 196 + 92 * p, 68, c, 4);
+  L(g, 196, 92, 196 + 34 * p, 92, CH.blue, 4);
+  g.globalAlpha = 1;
+  AL(g, fs.a, 0.85);
+  TX(g, Math.round(62 * p) + "s", 292, 60, 7, c, "right");
+  TX(g, Math.round(23 * p) + "s", 292, 84, 7, CH.blue, "right");
+  g.globalAlpha = 1;
+}
+function LNTEXT(g: Ctx, t: number) {
+  let fs: Focus;
+  fs = FS(t, 0.25, 3.2, 6.4, 0.66);
+  if (fs.on) {
+    AL(g, fs.a, 0.45);
+    L(g, 28, 66, 28 + 150 * ss(cl(fs.u / 1.4)), 66, FC(fs, BLU, BLU2), 1.1);
+    g.globalAlpha = 1;
+    FT(g, fs, { txt: "TRAFFIC", x: 28, y: 84, sz: 25, c: FC(fs, INK, [182, 178, 170]), wt: 700, stag: 0.11, dur: 0.6 });
+  }
+  fs = FS(t, 3.4, 6.6, 7.4);
+  FT(g, fs, { txt: "the other lane is not faster", x: 28, y: 106, sz: 8.4, c: FC(fs, BLU, BLU2), stag: 0.035 });
+  HDR(g, t, "01", "Your lane stops.", 7.6, 9.4, 15.0);
+  BOT(g, FS(t, 12.4, 14.2, 15.0), "stop-and-go traffic never stops everywhere at once.", 176, 8.5, CH.ink2, 272);
+  HDR(g, t, "02", "Theirs is moving.", 15.6, 17.4, 23.4);
+  BOT(g, FS(t, 19.4, 21.6, 22.4), "so you sit still and watch a whole lane slide past you.", 176, 8.5, CH.ink2, 286);
+  HDR(g, t, "03", "Now speed the road up.", 24.0, 25.8, 33.0);
+  BOT(g, FS(t, 28.2, 30.6, 31.4), "both lanes take the same time to reach the exit.", 176, 8.5, CH.ink2, 262);
+  HDR(g, t, "04", "So why does it feel rigged?", 33.6, 35.4, 40.4);
+  BOT(g, FS(t, 36.4, 38.8, 39.6), "you are stopped, and looking sideways, far longer than you are moving.", 176, 8.5, CH.ink2, 320);
+  EXEND(g, t, 41.6, 43.4, "Verdict:", "the lanes tie. you only look when you are losing.", 'prompt: "explain why the other lane looks faster', 'with a stick figure stuck in traffic."');
+}
+
 export const SCENES: Record<string, Scene> = {
   /* stick-figure black hole explainer: one take, one focal point at a time */
   stickhole: {
@@ -1899,6 +2022,30 @@ export const SCENES: Record<string, Scene> = {
           0.14 * (1 - sg(t, 6.6, 7.8)),
       );
       LKTEXT(g, t);
+      g.globalAlpha = 1;
+    },
+  },
+
+  /* traffic: the other lane is not faster */
+  sticklane: {
+    T: LNT,
+    poster: 19.6,
+    draw(g, t) {
+      CPUSH(g, EXCAM(t, LNCK, 41.6));
+      EXDUST(g, t, LNT, 4409, 0.6);
+      LNROAD(g, t);
+      LNCARS(g, t);
+      LNFIG(g, t);
+      g.restore();
+      VIG(
+        g,
+        0.16 +
+          0.2 * (sg(t, 16.4, 17.4) - sg(t, 23.0, 24.0)) +
+          0.22 * sg(t, 41.6, 42.6) +
+          0.14 * (1 - sg(t, 6.8, 8.0)),
+      );
+      LNBARS(g, t);
+      LNTEXT(g, t);
       g.globalAlpha = 1;
     },
   },
