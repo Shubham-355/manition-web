@@ -1397,6 +1397,194 @@ function EMTEXT(g: Ctx, t: number) {
   EXEND(g, t, 47.4, 53.4, "Verdict:", "tidy is a rental.", 'prompt: "explain entropy with a stick figure', 'who just cleaned his room."');
 }
 
+/* ==== Hilbert's hotel: full, and still taking guests ==================== */
+const HTT = 52,
+  HTB = 118;
+const HTCK = [
+  [0, 160, 94, 1.14, 1.14], [3.4, 160, 98, 1.05, 1.05], [6.8, 160, 100, 1, 1],
+  [8.4, 150, 112, 1.08, 1.08], [13.6, 150, 112, 1.1, 1.1], [15.2, 78, 124, 1.22, 1.22],
+  [20.8, 78, 124, 1.2, 1.2], [22.6, 140, 112, 1.06, 1.06], [28.0, 118, 112, 1.1, 1.1],
+  [32.8, 118, 112, 1.1, 1.1], [34.6, 168, 110, 1.02, 1.02], [44.6, 168, 110, 1.02, 1.02],
+  [46.2, 160, 100, 1, 1], [52, 160, 100, 1, 1],
+];
+const HNK = [
+  [14.2, 8, 118, 1, 1], [16.8, 44, 118, 1, 1], [27.6, 44, 118, 1, 1], [29.6, 74, 118, 1, 1],
+  [52, 74, 118, 1, 1],
+];
+/* the corridor runs off in perspective: room u shrinks and crowds the vanishing point */
+function HDS(u: number) {
+  return 1 / (1 + 0.34 * u);
+}
+function HDX(u: number) {
+  return 62 + 88.2 * Math.log(1 + 0.34 * u);
+}
+/* which room guest i is standing in: n → n+1, then n → 2n */
+function HTIDX(i: number, t: number) {
+  const p1 = sg(t, 23.6 + i * 0.14, 24.9 + i * 0.14),
+    p2 = sg(t, 37.0 + i * 0.12, 38.5 + i * 0.12);
+  return lp(lp(i, i + 1, p1), 2 * i + 3, p2);
+}
+function HTGND(g: Ctx, t: number) {
+  const a = cl(sg(t, 7.2, 8.4) - sg(t, 45.6, 46.6));
+  if (a <= 0.004) return;
+  AL(g, a, 0.26);
+  L(g, -4, 151.5, 330, 151.5, CH.blue, 1);
+  AL(g, a, 0.2);
+  L(g, 40, HTB + 0.6, 292, HTB + 0.6, CH.blue, 1);
+  AL(g, a, 0.11);
+  L(g, -6, 152, 54, HTB + 1, CH.blue, 0.8);
+  L(g, 318, 152, 272, HTB + 1, CH.blue, 0.8);
+  g.globalAlpha = 1;
+}
+function HTDOORS(g: Ctx, t: number) {
+  const a = cl(sg(t, 7.4, 8.6) - sg(t, 45.4, 46.6)),
+    free = cl(sg(t, 38.6, 39.8) - sg(t, 44.6, 45.6)),
+    one = cl(sg(t, 28.4, 29.4) - sg(t, 31.8, 32.8));
+  if (a <= 0.004) return;
+  for (let i = 0; i < 24; i++) {
+    const s = HDS(i),
+      x = HDX(i),
+      w = 24 * s,
+      h = 34 * s,
+      ap = a * ss(cl((t - 7.4 - i * 0.13) / 0.8)) * cl(s * 3.4 + 0.18);
+    g.globalAlpha = ap * 0.5;
+    g.strokeStyle = CH.blue;
+    g.lineWidth = Math.max(0.55, s);
+    g.beginPath();
+    g.rect(x, HTB - h, w, h);
+    g.stroke();
+    if ((i % 2 === 0 && free > 0.01) || (i === 0 && one > 0.01)) {
+      g.globalAlpha = ap * Math.max(i === 0 ? one : 0, i % 2 === 0 ? free : 0) * 0.8;
+      g.setLineDash([2.4, 2.6]);
+      g.lineDashOffset = -t * 4;
+      g.strokeStyle = CH.blue;
+      g.beginPath();
+      g.rect(x - 1.4, HTB - h - 1.4, w + 2.8, h + 2.8);
+      g.stroke();
+      g.setLineDash([]);
+    }
+    if (i < 6) {
+      g.globalAlpha = ap * 0.55;
+      TX(g, String(i + 1), x + w / 2, HTB - h - 5, Math.max(5, 7 * s), CH.ink2, "center");
+    }
+  }
+  g.globalAlpha = a * 0.45;
+  TX(g, "...", HDX(25) + 3, HTB - 7, 9, CH.ink2, "left");
+  g.globalAlpha = 1;
+}
+function HTGUESTS(g: Ctx, t: number) {
+  const a = cl(sg(t, 9.2, 10.4) - sg(t, 44.8, 46.0));
+  if (a <= 0.004) return;
+  for (let i = 0; i < 8; i++) {
+    const u = HTIDX(i, t),
+      s = HDS(u),
+      ap = a * ss(cl((t - 9.2 - i * 0.17) / 0.7)) * cl(s * 3.6),
+      hop = Math.abs(Math.sin(t * 7.4 + i)) * 2.4 * cl(Math.abs(HTIDX(i, t + 0.06) - HTIDX(i, t - 0.06)) * 26);
+    g.globalAlpha = ap;
+    SF(g, { hx: HDX(u) + 12 * s, hy: HTB - 24.2 * s - hop, s: 0.72 * s, c: CH.ink, lw: 2, arms: [206, -26], legs: [-1, 1], eye: "dot", mouth: 0.3 });
+  }
+  g.globalAlpha = 1;
+}
+/* the guest at the door - walks in, asks, then takes room 1 */
+function HTNEW(g: Ctx, t: number) {
+  const al = sg(t, 14.2, 15.2) - sg(t, 45.0, 46.0);
+  if (al <= 0.004) return;
+  const k = KFR(t, HNK),
+    ent = sg(t, 30.0, 31.6),
+    u = lp(0, 1, sg(t, 37.4, 38.9)),
+    s0 = HDS(u);
+  const vx = (KFR(t + 0.07, HNK)[1] - KFR(t - 0.07, HNK)[1]) / 0.14,
+    wk = cl((Math.abs(vx) - 3) / 12),
+    ph = t * 8.2,
+    sw = Math.sin(ph) * 1.05 * wk,
+    bob = Math.abs(Math.sin(ph)) * 1.4 * wk;
+  const x = lp(k[1], HDX(u) + 12 * s0, ent),
+    s = lp(1, 0.72 * s0, ent),
+    hy = lp(k[2], HTB - 24.2 * s0, ent);
+  const ask = sg(t, 17.2, 18.6) - sg(t, 23.0, 24.0),
+    a0 = lp(206, 150, ask),
+    a1 = lp(-26, 22, ask);
+  g.globalAlpha = al;
+  SF(g, {
+    hx: x,
+    hy: hy - bob * (1 - ent),
+    s: s,
+    c: CH.gold,
+    lw: 2.2,
+    ph: ph,
+    arms: [a0 + sw * 26, a1 + sw * 26],
+    legs: [-1 + sw * 0.9, 1 + sw * 0.9],
+    eye: "dot",
+    mouth: ask > 0.4 ? 0.5 : 0.35,
+  });
+  const sa = al * (1 - ent) * 0.9;
+  if (sa > 0.01) {
+    g.globalAlpha = sa;
+    g.strokeStyle = CH.gold;
+    g.lineWidth = 1.2;
+    g.beginPath();
+    g.rect(x + 9.5, hy + 13 - bob, 9, 7);
+    g.stroke();
+    L(g, x + 12, hy + 13 - bob, x + 13.6, hy + 10.8 - bob, CH.gold, 1);
+    g.globalAlpha = 1;
+  }
+  g.globalAlpha = 1;
+}
+function HTARR(g: Ctx, t: number) {
+  const a = cl(sg(t, 23.2, 24.2) - sg(t, 27.4, 28.4));
+  if (a <= 0.004) return;
+  for (let i = 0; i < 7; i++) {
+    const s = HDS(i),
+      y = HTB - 34 * s - 8 * Math.max(0.42, s);
+    g.globalAlpha = a * 0.72 * cl(s * 3.4);
+    AR(g, HDX(i) + 12 * s + 2, y, HDX(i + 1) + 12 * HDS(i + 1) - 2, y, CH.blue, Math.max(0.7, 1.1 * s));
+  }
+  g.globalAlpha = 1;
+}
+function HTSIGN(g: Ctx, t: number) {
+  const fs = FS(t, 10.4, 12.8, 20.4);
+  if (!fs.on) return;
+  const c = FC(fs, RED, RED2);
+  AL(g, fs.a, 0.85);
+  g.strokeStyle = c;
+  g.lineWidth = 1;
+  g.beginPath();
+  g.rect(226, 40, 78, 20);
+  g.stroke();
+  g.globalAlpha = 1;
+  FT(g, fs, { txt: "NO VACANCY", x: 265, y: 50, sz: 7.6, c: c, al: "center", stag: 0.03 });
+}
+function HTTEXT(g: Ctx, t: number) {
+  let fs: Focus;
+  fs = FS(t, 0.25, 3.2, 6.4, 0.66);
+  if (fs.on) {
+    AL(g, fs.a, 0.45);
+    L(g, 28, 66, 28 + 150 * ss(cl(fs.u / 1.4)), 66, FC(fs, BLU, BLU2), 1.1);
+    g.globalAlpha = 1;
+    FT(g, fs, { txt: "INFINITY", x: 28, y: 84, sz: 27, c: FC(fs, INK, [182, 178, 170]), wt: 700, stag: 0.13, dur: 0.6 });
+  }
+  fs = FS(t, 3.4, 6.6, 7.4);
+  FT(g, fs, { txt: "a hotel with no vacancy and room for you", x: 28, y: 106, sz: 8.4, c: FC(fs, BLU, BLU2), stag: 0.035 });
+  HDR(g, t, "01", "Full means full.", 7.6, 9.4, 13.6);
+  BOT(g, FS(t, 11.0, 13.0, 13.8), "every room taken. and there is no last room.", 170, 8.5, CH.ink2, 254);
+  HDR(g, t, "02", "Someone knocks.", 14.0, 15.8, 20.8);
+  fs = FS(t, 17.4, 19.4, 20.6);
+  FT(g, fs, { txt: "one room, please", x: 62, y: 88, sz: 7.6, c: FC(fs, GLD, GLD2), stag: 0.03 });
+  BOT(g, FS(t, 18.9, 20.4, 21.2), "the desk says: certainly.", 170, 8.5, CH.ink2, 150);
+  HDR(g, t, "03", "Everybody, one door down.", 21.4, 23.2, 32.8);
+  BOT(g, FS(t, 25.4, 27.4, 28.2), "the guest in room n moves to room n+1.", 170, 8.5, CH.ink2, 232);
+  fs = FS(t, 28.6, 30.6, 31.8);
+  FT(g, fs, { txt: "room 1: free", x: 100, y: 126, sz: 7.6, c: FC(fs, BLU, BLU2), al: "center", stag: 0.03 });
+  BOT(g, FS(t, 28.8, 31.0, 31.8), "nobody shares. nobody is turned out. there is always an n+1.", 170, 8.5, CH.ink2, 296);
+  HDR(g, t, "04", "Now a whole bus.", 33.2, 35.0, 44.4);
+  BOT(g, FS(t, 35.2, 37.0, 37.8), "infinitely many friends show up at once.", 170, 8.5, CH.ink2, 238);
+  BOT(g, FS(t, 38.0, 40.0, 40.8), "everyone doubles their room number.", 170, 8.5, CH.ink2, 218);
+  fs = FS(t, 40.4, 42.8, 44.2);
+  FT(g, fs, { txt: "every odd room: free", x: 298, y: 52, sz: 8, c: FC(fs, BLU, BLU2), al: "right", stag: 0.03 });
+  BOT(g, FS(t, 41.2, 43.6, 44.4), "that empties infinitely many rooms. the desk is unbothered.", 170, 8.5, CH.ink2, 296);
+  EXEND(g, t, 45.4, 51.4, "Verdict:", '"full" is not a number.', "prompt: \"explain hilbert's hotel with a stick", 'figure who just wants one room."');
+}
+
 export const SCENES: Record<string, Scene> = {
   /* stick-figure black hole explainer: one take, one focal point at a time */
   stickhole: {
@@ -1450,6 +1638,32 @@ export const SCENES: Record<string, Scene> = {
       );
       EMREW(g, t);
       EMTEXT(g, t);
+      g.globalAlpha = 1;
+    },
+  },
+
+  /* Hilbert's hotel: full, and still taking guests */
+  stickhotel: {
+    T: HTT,
+    poster: 25.6,
+    draw(g, t) {
+      CPUSH(g, EXCAM(t, HTCK, 46.4));
+      EXDUST(g, t, HTT, 5507, 0.62);
+      HTGND(g, t);
+      HTDOORS(g, t);
+      HTARR(g, t);
+      HTGUESTS(g, t);
+      HTNEW(g, t);
+      g.restore();
+      VIG(
+        g,
+        0.16 +
+          0.2 * (sg(t, 15.2, 16.2) - sg(t, 20.8, 21.8)) +
+          0.22 * sg(t, 45.4, 46.4) +
+          0.14 * (1 - sg(t, 6.8, 8.0)),
+      );
+      HTSIGN(g, t);
+      HTTEXT(g, t);
       g.globalAlpha = 1;
     },
   },

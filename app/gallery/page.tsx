@@ -17,6 +17,7 @@ const SECTIONS: Section[] = [
     cards: [
       { scene: "stickhole", label: "Explainer", title: "How not to fall into a black hole", dur: "2:07", prompt: "“explain black holes with a stick figure, and make it funny”", big: true },
       { scene: "stickmess", label: "Explainer", title: "Why your room gets messy", dur: "0:54", prompt: "“explain entropy with a stick figure who just cleaned his room”" },
+      { scene: "stickhotel", label: "Explainer", title: "The hotel that is always full", dur: "0:52", prompt: "“explain Hilbert's hotel with a stick figure who just wants one room”" },
       { scene: "origin", label: "Astrophysics", title: "How a world gets made", dur: "0:46", prompt: "“start with a cloud of dust and end with a world someone could stand on”" },
       { scene: "tree", label: "L-systems", title: "A year in one tree", dur: "0:34", prompt: "“grow a tree from one seed and run it through four seasons”" },
       { scene: "aurora", label: "Fields", title: "Northern lights", dur: "0:30", prompt: "“put the aurora over a frozen lake and let it drift”" },
