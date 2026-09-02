@@ -229,6 +229,7 @@ export interface Scene {
   };
   _G?: { grid: Uint8Array; gen: number; hist: Uint8Array[] };
   _emP?: EmPt[];
+  _D?: { P: number[]; G: number[]; N: number };
   _im?: Img;
   _ac?: Acc;
   _an?: number;
@@ -291,6 +292,27 @@ function CQ(g: Ctx, x1: number, y1: number, cx: number, cy: number, x2: number, 
   g.moveTo(x1, y1);
   g.quadraticCurveTo(cx, cy, x2, y2);
   g.stroke();
+}
+
+/* the sans-serif sibling of TX, for glyphs that want the display face */
+function GK(g: Ctx, s: string, x: number, y: number, sz: number, c: string, al?: CanvasTextAlign, wt?: number) {
+  g.font = (wt || 600) + ' ' + sz + 'px "Space Grotesk",system-ui,sans-serif';
+  g.fillStyle = c;
+  g.textAlign = al || "left";
+  g.textBaseline = "middle";
+  g.fillText(s, x, y);
+}
+
+function DC(g: Ctx, x: number, y: number, r: number, c: string, w?: number, dash?: number[], off?: number) {
+  g.save();
+  g.setLineDash(dash || [3.6, 4]);
+  g.lineDashOffset = off || 0;
+  g.strokeStyle = c;
+  g.lineWidth = w || 1.1;
+  g.beginPath();
+  g.arc(x, y, r, 0, TAU);
+  g.stroke();
+  g.restore();
 }
 
 function SFH(s: number, st?: number) {
@@ -1585,6 +1607,191 @@ function HTTEXT(g: Ctx, t: number) {
   EXEND(g, t, 45.4, 51.4, "Verdict:", '"full" is not a number.', "prompt: \"explain hilbert's hotel with a stick", 'figure who just wants one room."');
 }
 
+/* ==== luck: the coin does not remember ================================== */
+const LKT = 48,
+  LGX = 112,
+  LGY = 76,
+  LGW = 176,
+  LGH = 58;
+const LKCK = [
+  [0, 160, 94, 1.14, 1.14], [3.4, 160, 98, 1.05, 1.05], [6.6, 160, 100, 1, 1],
+  [8.2, 96, 104, 1.22, 1.22], [15.2, 96, 104, 1.24, 1.24], [16.8, 88, 100, 1.3, 1.3],
+  [21.8, 88, 100, 1.28, 1.28], [23.6, 150, 104, 1.06, 1.06], [26.2, 178, 104, 1.1, 1.1],
+  [33.0, 178, 104, 1.1, 1.1], [34.8, 186, 102, 1.14, 1.14], [41.0, 186, 102, 1.12, 1.12],
+  [42.8, 160, 100, 1, 1], [48, 160, 100, 1, 1],
+];
+/* when each of the five flips leaves his hand */
+const LKF = [8.2, 9.7, 11.2, 12.7, 14.2];
+/* a thousand honest flips, cached: P = running share of heads, G = raw gap */
+function LKDATA(o: Scene) {
+  if (o._D) return o._D;
+  const R = rng(9109),
+    N = 1000,
+    P: number[] = [],
+    G: number[] = [];
+  let h = 0;
+  for (let i = 1; i <= N; i++) {
+    if (i > 5 && R() < 0.5) h++;
+    P.push(h / i);
+    G.push(Math.abs(2 * h - i));
+  }
+  o._D = { P: P, G: G, N: N };
+  return o._D;
+}
+/* a spinning coin, read as an ellipse squashed by its own phase */
+function LKDISC(g: Ctx, x: number, y: number, r: number, sp: number, A: number) {
+  const c = Math.cos(sp),
+    ry = Math.max(0.6, Math.abs(c) * r);
+  g.globalAlpha = A;
+  g.strokeStyle = CH.gold;
+  g.lineWidth = 1.15;
+  g.beginPath();
+  g.ellipse(x, y, r, ry, 0, 0, TAU);
+  g.stroke();
+  if (Math.abs(c) > 0.3) {
+    g.globalAlpha = A * 0.9 * cl((Math.abs(c) - 0.3) / 0.28);
+    GK(g, c > 0 ? "H" : "T", x, y + 0.4, 6.4, CH.gold, "center", 600);
+  }
+  g.globalAlpha = 1;
+}
+function LKCOIN(g: Ctx, t: number) {
+  for (let i = 0; i < 5; i++) {
+    const p = (t - LKF[i]) / 1.05;
+    if (p < 0 || p > 1.34) continue;
+    const A = 1 - sg(p, 1, 1.34);
+    LKDISC(g, lp(84, 97, cl(p)), 112 - 33 * Math.sin(Math.PI * cl(p)), 5.2, p * 11.5, A);
+  }
+}
+function LKTALLY(g: Ctx, t: number) {
+  for (let i = 0; i < 5; i++) {
+    const a = cl(sg(t, LKF[i] + 0.95, LKF[i] + 1.45) - sg(t, 22.8, 23.8));
+    if (a <= 0.01) continue;
+    const x = 124 + i * 15;
+    g.globalAlpha = a;
+    GK(g, "T", x, 84, 11, CH.ink, "center", 700);
+    g.globalAlpha = a * 0.45;
+    L(g, x - 5, 92, x + 5, 92, CH.blue, 0.9);
+    g.globalAlpha = 1;
+  }
+}
+function LKDUE(g: Ctx, t: number) {
+  const fs = FS(t, 16.8, 20.4, 21.8);
+  if (!fs.on) return;
+  const c = FC(fs, GLD, GLD2);
+  AL(g, fs.a, 0.5);
+  DC(g, 94, 78, 15, c, 1.1, [3, 3.6], -t * 5);
+  g.globalAlpha = 1;
+  AL(g, fs.a, 0.4);
+  D(g, 78, 97, 1.6, c);
+  D(g, 73, 103, 1.1, c);
+  g.globalAlpha = 1;
+  FT(g, fs, { txt: "due", x: 94, y: 78, sz: 11, c: c, al: "center", wt: 700, stag: 0.04 });
+}
+function LKFIG(g: Ctx, t: number) {
+  const al = sg(t, 7.2, 8.0) - sg(t, 41.8, 42.8);
+  if (al <= 0.004) return;
+  let toss = 0;
+  for (let i = 0; i < 5; i++) {
+    const p = (t - LKF[i] + 0.35) / 1.5;
+    if (p > 0 && p < 1) toss = Math.max(toss, Math.sin(Math.PI * p));
+  }
+  const watch = sg(t, 23.8, 25.2),
+    shrug = sg(t, 39.4, 40.8);
+  let a0 = lp(202, 214, watch),
+    a1 = lp(-30, -14, watch);
+  a1 = lp(a1, 64, toss);
+  a0 = lp(a0, 222, shrug);
+  a1 = lp(a1, -40, shrug);
+  g.globalAlpha = al;
+  SF(g, {
+    hx: 62,
+    hy: 118,
+    s: 1,
+    c: CH.ink,
+    lw: 2.2,
+    arms: [a0, a1],
+    legs: [-1, 1],
+    eye: t > 16.6 && t < 22.2 ? "wide" : "dot",
+    mouth: t > 16.6 && t < 22.2 ? "o" : t > 39.2 ? -0.35 : 0.35,
+  });
+  g.globalAlpha = 1;
+}
+/* the share of heads on a log x-axis, with the raw gap laid over it */
+function LKGRAPH(g: Ctx, t: number, o: Scene) {
+  const a = cl(sg(t, 24.6, 26.0) - sg(t, 41.4, 42.6)),
+    Dt = LKDATA(o),
+    k = Math.max(3, Math.floor(Dt.N * ss(cl((t - 25.8) / 7.4))));
+  let i: number, x: number;
+  if (a <= 0.004) return;
+  AL(g, a, 0.3);
+  L(g, LGX, LGY + LGH, LGX + LGW, LGY + LGH, CH.blue, 0.9);
+  L(g, LGX, LGY, LGX, LGY + LGH, CH.blue, 0.9);
+  g.globalAlpha = 1;
+  AL(g, a, 0.4);
+  g.setLineDash([3, 3.4]);
+  L(g, LGX, LGY + LGH * 0.5, LGX + LGW, LGY + LGH * 0.5, CH.blue, 0.9);
+  g.setLineDash([]);
+  g.globalAlpha = 1;
+  AL(g, a, 0.6);
+  TX(g, "0.5", LGX - 5, LGY + LGH * 0.5, 6.4, CH.blue, "right");
+  TX(g, "1", LGX - 5, LGY, 6.4, CH.ink2, "right");
+  TX(g, "0", LGX - 5, LGY + LGH, 6.4, CH.ink2, "right");
+  g.globalAlpha = 1;
+  g.globalAlpha = a;
+  g.strokeStyle = CH.ink;
+  g.lineWidth = 1.15;
+  g.lineJoin = "round";
+  g.beginPath();
+  for (i = 1; i < k; i++) {
+    x = LGX + (LGW * Math.log(i + 1)) / Math.log(Dt.N + 1);
+    if (i > 1) g.lineTo(x, LGY + LGH * (1 - Dt.P[i]));
+    else g.moveTo(x, LGY + LGH * (1 - Dt.P[i]));
+  }
+  g.stroke();
+  const gp = cl(sg(t, 34.6, 35.8) - sg(t, 41.2, 42.2));
+  if (gp > 0.01) {
+    g.globalAlpha = a * gp;
+    g.strokeStyle = CH.gold;
+    g.lineWidth = 1.15;
+    g.beginPath();
+    for (i = 1; i < k; i++) {
+      x = LGX + (LGW * Math.log(i + 1)) / Math.log(Dt.N + 1);
+      if (i > 1) g.lineTo(x, LGY + LGH - LGH * cl(Dt.G[i] / 68));
+      else g.moveTo(x, LGY + LGH - LGH * cl(Dt.G[i] / 68));
+    }
+    g.stroke();
+  }
+  const h = Math.round(Dt.P[k - 1] * k);
+  g.globalAlpha = a * 0.75;
+  TX(g, "flips " + k, LGX, LGY + LGH + 11, 6.8, CH.ink2, "left");
+  TX(g, "heads " + h + "  ·  tails " + (k - h), LGX + LGW, LGY + LGH + 11, 6.8, CH.ink2, "right");
+  g.globalAlpha = 1;
+}
+function LKTEXT(g: Ctx, t: number) {
+  let fs: Focus;
+  fs = FS(t, 0.25, 3.2, 6.4, 0.66);
+  if (fs.on) {
+    AL(g, fs.a, 0.45);
+    L(g, 28, 66, 28 + 150 * ss(cl(fs.u / 1.4)), 66, FC(fs, BLU, BLU2), 1.1);
+    g.globalAlpha = 1;
+    FT(g, fs, { txt: "LUCK", x: 28, y: 84, sz: 27, c: FC(fs, INK, [182, 178, 170]), wt: 700, stag: 0.13, dur: 0.6 });
+  }
+  fs = FS(t, 3.4, 6.6, 7.4);
+  FT(g, fs, { txt: "the coin does not remember", x: 28, y: 106, sz: 8.4, c: FC(fs, BLU, BLU2), stag: 0.035 });
+  HDR(g, t, "01", "Five tails in a row.", 7.4, 9.2, 15.2);
+  BOT(g, FS(t, 13.0, 15.0, 15.8), "five tails. it happens one time in thirty-two.", 170, 8.5, CH.ink2, 262);
+  HDR(g, t, "02", "He feels a heads coming.", 15.8, 17.6, 22.4);
+  BOT(g, FS(t, 19.2, 21.4, 22.2), "the coin has no memory of the last five. it has no memory at all.", 170, 8.5, CH.ink2, 306);
+  HDR(g, t, "03", "So run it a thousand times.", 23.0, 24.8, 33.0);
+  BOT(g, FS(t, 28.8, 31.0, 31.8), "the share of heads settles toward one half.", 170, 8.5, CH.ink2, 250);
+  HDR(g, t, "04", "Two true things.", 33.4, 35.2, 41.8);
+  fs = FS(t, 35.6, 38.4, 41.6);
+  FT(g, fs, { txt: "the gap keeps growing", x: 298, y: 52, sz: 8, c: FC(fs, GLD, GLD2), al: "right", stag: 0.03 });
+  BOT(g, FS(t, 36.0, 38.2, 39.0), "the share settles. the raw gap between them grows.", 170, 8.5, CH.ink2, 282);
+  BOT(g, FS(t, 39.2, 41.4, 42.2), "both are true. neither one owes you anything.", 170, 8.5, CH.ink2, 262);
+  EXEND(g, t, 43.2, 47.4, "Verdict:", "hope is not a strategy.", "prompt: \"explain the gambler's fallacy with a", 'stick figure on a losing streak."');
+}
+
 export const SCENES: Record<string, Scene> = {
   /* stick-figure black hole explainer: one take, one focal point at a time */
   stickhole: {
@@ -1664,6 +1871,34 @@ export const SCENES: Record<string, Scene> = {
       );
       HTSIGN(g, t);
       HTTEXT(g, t);
+      g.globalAlpha = 1;
+    },
+  },
+
+  /* luck: the coin does not remember */
+  stickluck: {
+    T: LKT,
+    poster: 30.0,
+    draw(g, t) {
+      CPUSH(g, EXCAM(t, LKCK, 42.6));
+      EXDUST(g, t, LKT, 7717, 0.62);
+      AL(g, cl(sg(t, 7.2, 8.4) - sg(t, 42.0, 43.0)), 0.24);
+      L(g, 20, 151.5, 300, 151.5, CH.blue, 1);
+      g.globalAlpha = 1;
+      LKGRAPH(g, t, this);
+      LKTALLY(g, t);
+      LKDUE(g, t);
+      LKFIG(g, t);
+      LKCOIN(g, t);
+      g.restore();
+      VIG(
+        g,
+        0.16 +
+          0.2 * (sg(t, 16.8, 17.8) - sg(t, 21.8, 22.8)) +
+          0.22 * sg(t, 43.2, 44.2) +
+          0.14 * (1 - sg(t, 6.6, 7.8)),
+      );
+      LKTEXT(g, t);
       g.globalAlpha = 1;
     },
   },
