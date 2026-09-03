@@ -1915,6 +1915,138 @@ function LNTEXT(g: Ctx, t: number) {
   EXEND(g, t, 41.6, 43.4, "Verdict:", "the lanes tie. you only look when you are losing.", 'prompt: "explain why the other lane looks faster', 'with a stick figure stuck in traffic."');
 }
 
+/* ==== Monty Hall: the two-thirds does not evaporate ===================== */
+const DRT = 46,
+  DRX = [96, 160, 224],
+  DRW = 46,
+  DRTOP = 54,
+  DRH = 64;
+const DRCK = [
+  [0, 160, 96, 1.12, 1.12], [3.6, 160, 99, 1.05, 1.05], [6.6, 160, 100, 1, 1],
+  [8.2, 116, 94, 1.18, 1.18], [14.6, 116, 94, 1.18, 1.18], [16.0, 214, 94, 1.16, 1.16],
+  [22.6, 214, 94, 1.16, 1.16], [24.0, 160, 96, 1.02, 1.02], [32.4, 160, 96, 1.02, 1.02],
+  [33.8, 160, 116, 1.1, 1.1], [41.0, 160, 116, 1.1, 1.1], [42.4, 160, 100, 1, 1], [46, 160, 100, 1, 1],
+];
+/* door 0 is his pick, door 2 is the one the host opens, door 1 is the prize */
+function DRDOOR(g: Ctx, i: number, t: number, A: number) {
+  const x = DRX[i],
+    op = i === 2 ? sg(t, 16.6, 17.8) : 0,
+    pick = i === 0 ? sg(t, 10.2, 11.2) : 0,
+    win = i === 1 ? sg(t, 20.0, 21.2) : 0,
+    c = pick ? CH.gold : win ? CH.blue : CH.ink2;
+  g.globalAlpha = A * (pick || win ? 1 : 0.7);
+  g.strokeStyle = c;
+  g.lineWidth = pick || win ? 1.6 : 1.2;
+  g.lineJoin = "round";
+  g.beginPath();
+  g.roundRect(x - DRW / 2, DRTOP, DRW, DRH, 3);
+  g.stroke();
+  if (op > 0.01) {
+    g.globalAlpha = A * op * 0.9;
+    g.fillStyle = "#0b0b10";
+    g.beginPath();
+    g.roundRect(x - DRW / 2 + 2, DRTOP + 2, DRW - 4, DRH - 4, 2.4);
+    g.fill();
+    g.globalAlpha = A * op * 0.8;
+    GK(g, "empty", x, DRTOP + DRH / 2, 8, CH.ink2, "center", 600);
+  }
+  if (op < 0.99) {
+    g.globalAlpha = A * 0.8 * (1 - op);
+    D(g, x + DRW / 2 - 8, DRTOP + DRH / 2, 1.7, c);
+    g.globalAlpha = A * 0.55 * (1 - op);
+    GK(g, String.fromCharCode(65 + i), x - DRW / 2 + 9, DRTOP + 11, 8.5, c, "center", 600);
+  }
+  g.globalAlpha = 1;
+}
+function DRDOORS(g: Ctx, t: number) {
+  const a = cl(sg(t, 7.0, 8.2) - sg(t, 33.0, 34.2));
+  if (a <= 0.004) return;
+  g.globalAlpha = a * 0.28;
+  L(g, 44, 132, 276, 132, CH.blue, 1);
+  g.globalAlpha = 1;
+  for (let i = 0; i < 3; i++) DRDOOR(g, i, t, a);
+}
+/* the 2/3 slides off the opened door and lands whole on the one still shut */
+function DRODDS(g: Ctx, t: number) {
+  const fs = FS(t, 11.6, 29.0, 30.2);
+  if (!fs.on) return;
+  const c = FC(fs, GLD, GLD2);
+  AL(g, fs.a, 0.9);
+  GK(g, "1/3", DRX[0], 40, 10.5, c, "center", 700);
+  g.globalAlpha = 1;
+  const x = lp(192, DRX[1], sg(t, 18.4, 19.8));
+  AL(g, fs.a, 0.5);
+  L(g, lp(DRX[1] - 20, DRX[1] - 14, sg(t, 18.4, 19.8)), 46, lp(DRX[2] + 20, DRX[1] + 14, sg(t, 18.4, 19.8)), 46, CH.blue, 1);
+  g.globalAlpha = 1;
+  AL(g, fs.a, 0.9);
+  GK(g, "2/3", x, 40, 10.5, FC(fs, BLU, BLU2), "center", 700);
+  g.globalAlpha = 1;
+}
+function DRFIG(g: Ctx, t: number) {
+  const a = cl(sg(t, 8.6, 9.8) - sg(t, 33.2, 34.4)),
+    pt = sg(t, 9.6, 10.8) - sg(t, 23.0, 24.0),
+    sw = sg(t, 23.4, 24.6);
+  if (a <= 0.004) return;
+  g.globalAlpha = a;
+  SF(g, {
+    hx: 48 + sw * 4,
+    hy: 98,
+    s: 0.62,
+    c: CH.ink,
+    st: 1,
+    arms: [212, -32 + pt * 44 + sw * 10],
+    eye: t > 16.4 && t < 23 ? "wide" : "dot",
+    mouth: t > 16.4 && t < 22.6 ? "o" : t > 23.4 ? 0.45 : 0.2,
+  });
+  g.globalAlpha = 1;
+}
+function DRRUNS(g: Ctx, t: number) {
+  const fs = FS(t, 34.4, 39.2, 40.8);
+  if (!fs.on) return;
+  const c = FC(fs, BLU, BLU2),
+    p = ss(cl((t - 35.0) / 4.4));
+  AL(g, fs.a, 0.75);
+  TX(g, "stayed", 44, 60, 7, CH.ink2);
+  TX(g, "switched", 44, 84, 7, CH.ink2);
+  g.globalAlpha = 1;
+  AL(g, fs.a, 0.2);
+  L(g, 44, 68, 272, 68, CH.ink2, 4.4);
+  L(g, 44, 92, 272, 92, CH.ink2, 4.4);
+  g.globalAlpha = 1;
+  AL(g, fs.a, 1);
+  L(g, 44, 68, 44 + 76 * p, 68, CH.gold, 4.4);
+  L(g, 44, 92, 44 + 152 * p, 92, c, 4.4);
+  g.globalAlpha = 1;
+  AL(g, fs.a, 0.85);
+  TX(g, Math.round(33 * p) + "% won", 272, 60, 7, CH.gold, "right");
+  TX(g, Math.round(67 * p) + "% won", 272, 84, 7, c, "right");
+  g.globalAlpha = 1;
+  AL(g, fs.a, 0.6);
+  TX(g, "300 games", 160, 108, 7, CH.ink2, "center");
+  g.globalAlpha = 1;
+}
+function DRTEXT(g: Ctx, t: number) {
+  let fs: Focus;
+  fs = FS(t, 0.25, 3.2, 6.4, 0.66);
+  if (fs.on) {
+    AL(g, fs.a, 0.45);
+    L(g, 28, 66, 28 + 150 * ss(cl(fs.u / 1.4)), 66, FC(fs, BLU, BLU2), 1.1);
+    g.globalAlpha = 1;
+    FT(g, fs, { txt: "DOORS", x: 28, y: 84, sz: 27, c: FC(fs, INK, [182, 178, 170]), wt: 700, stag: 0.13, dur: 0.6 });
+  }
+  fs = FS(t, 3.4, 6.6, 7.4);
+  FT(g, fs, { txt: "switching is not a trick", x: 28, y: 106, sz: 8.4, c: FC(fs, BLU, BLU2), stag: 0.035 });
+  HDR(g, t, "01", "He picks a door.", 7.6, 9.4, 15.2);
+  BOT(g, FS(t, 12.2, 14.4, 15.2), "one in three. the other two hold two in three between them.", 176, 8.5, CH.ink2, 296);
+  HDR(g, t, "02", "The host opens an empty one.", 15.8, 17.6, 23.0);
+  BOT(g, FS(t, 19.6, 21.8, 22.6), "he knew which one was empty. that is the whole secret.", 176, 8.5, CH.ink2, 288);
+  HDR(g, t, "03", "The two-thirds has to go somewhere.", 23.6, 25.4, 32.6);
+  BOT(g, FS(t, 27.8, 30.2, 31.0), "it does not split. it all lands on the door still shut.", 176, 8.5, CH.ink2, 282);
+  HDR(g, t, "04", "Play it three hundred times.", 33.2, 35.0, 40.6);
+  BOT(g, FS(t, 36.6, 39.0, 39.8), "staying wins a third of the time. switching wins the rest.", 176, 8.5, CH.ink2, 292);
+  EXEND(g, t, 41.8, 43.6, "Verdict:", "switch. it is two doors wearing one.", 'prompt: "explain the Monty Hall problem with a', 'stick figure who does not trust the host."');
+}
+
 export const SCENES: Record<string, Scene> = {
   /* stick-figure black hole explainer: one take, one focal point at a time */
   stickhole: {
@@ -2046,6 +2178,30 @@ export const SCENES: Record<string, Scene> = {
       );
       LNBARS(g, t);
       LNTEXT(g, t);
+      g.globalAlpha = 1;
+    },
+  },
+
+  /* Monty Hall: the two-thirds does not evaporate */
+  stickdoors: {
+    T: DRT,
+    poster: 20.4,
+    draw(g, t) {
+      CPUSH(g, EXCAM(t, DRCK, 41.8));
+      EXDUST(g, t, DRT, 6203, 0.6);
+      DRDOORS(g, t);
+      DRODDS(g, t);
+      DRFIG(g, t);
+      g.restore();
+      VIG(
+        g,
+        0.16 +
+          0.2 * (sg(t, 16.6, 17.6) - sg(t, 23.0, 24.0)) +
+          0.22 * sg(t, 41.8, 42.8) +
+          0.14 * (1 - sg(t, 6.6, 7.8)),
+      );
+      DRRUNS(g, t);
+      DRTEXT(g, t);
       g.globalAlpha = 1;
     },
   },
