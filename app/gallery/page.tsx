@@ -21,6 +21,7 @@ const SECTIONS: Section[] = [
       { scene: "stickluck", label: "Explainer", title: "Why you feel due for a win", dur: "0:48", prompt: "“explain the gambler's fallacy with a stick figure on a losing streak”" },
       { scene: "sticklane", label: "Explainer", title: "Why the other lane is faster", dur: "0:44", prompt: "“explain why the other lane looks faster with a stick figure stuck in traffic”" },
       { scene: "stickdoors", label: "Explainer", title: "Always switch doors", dur: "0:46", prompt: "“explain the Monty Hall problem with a stick figure who does not trust the host”" },
+      { scene: "kaleido", label: "Symmetry", title: "Mandala, drawn once", dur: "0:30", prompt: "“mirror one wandering curve twelve ways until it blooms”" },
       { scene: "origin", label: "Astrophysics", title: "How a world gets made", dur: "0:46", prompt: "“start with a cloud of dust and end with a world someone could stand on”" },
       { scene: "tree", label: "L-systems", title: "A year in one tree", dur: "0:34", prompt: "“grow a tree from one seed and run it through four seasons”" },
       { scene: "aurora", label: "Fields", title: "Northern lights", dur: "0:30", prompt: "“put the aurora over a frozen lake and let it drift”" },
@@ -236,7 +237,7 @@ export default function Gallery() {
         <p style={parseStyle("margin:-6px 0 clamp(20px,2.6vw,30px); max-width:560px; font-size:15px; line-height:1.65; color:#6b6b73; text-wrap:pretty;")}>{showcase.desc}</p>
         <div className="gl-sheet gl-sheet-lead">
           {showcase.cards.map((c, i) => (
-            <SceneCard key={c.scene} card={c} lead={i < 2} />
+            <SceneCard key={c.scene} card={c} lead={i < 8} />
           ))}
         </div>
       </section>

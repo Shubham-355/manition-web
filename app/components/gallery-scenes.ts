@@ -229,6 +229,7 @@ export interface Scene {
   };
   _G?: { grid: Uint8Array; gen: number; hist: Uint8Array[] };
   _emP?: EmPt[];
+  _kal?: number[][];
   _D?: { P: number[]; G: number[]; N: number };
   _im?: Img;
   _ac?: Acc;
@@ -2202,6 +2203,82 @@ export const SCENES: Record<string, Scene> = {
       );
       DRRUNS(g, t);
       DRTEXT(g, t);
+      g.globalAlpha = 1;
+    },
+  },
+
+  /* one wandering curve, mirrored twelve ways into a mandala */
+  kaleido: {
+    T: 30,
+    poster: 19,
+    draw(g, t) {
+      const sym = 12,
+        N = 1500,
+        cx = 160,
+        cy = 82,
+        CHK = 50;
+      let i: number, k: number;
+      if (!this._kal) {
+        const P: number[][] = [];
+        for (i = 0; i < N; i++) {
+          const u = ((i / N) * TAU * 7),
+            r = (48 + 26 * Math.sin(u * 0.5) + 15 * Math.sin(u * 2.13) + 8 * Math.cos(u * 5.7)) * 0.78;
+          P.push([Math.cos(u * 0.37) * r, Math.sin(u * 0.37) * r]);
+        }
+        this._kal = P;
+      }
+      const P = this._kal;
+      const n = Math.max(2, Math.floor(N * ss(cl((t - 0.6) / 20.5)))),
+        spin = t * 0.1,
+        pal = t * 0.035,
+        layers = 1 + Math.floor(cl((t - 3) / 6.4) * 3);
+      /* draw the curve ONCE into an offscreen wedge, then blit it around the
+         circle: 1 curve rasterised per frame instead of 24, so the frame cost
+         stays ~4ms however long the trail gets */
+      const ac = ACC(this, 320, 200),
+        ag = ac.g;
+      ag.clearRect(0, 0, 320, 200);
+      ag.lineCap = "round";
+      ag.lineJoin = "round";
+      ag.lineWidth = 0.8;
+      for (k = 0; k < n; k += CHK) {
+        const c1 = Math.min(n, k + CHK + 1),
+          h = HSV(pal + 0.34 * (k / N), 0.55, 1);
+        ag.strokeStyle = "rgb(" + h[0] + "," + h[1] + "," + h[2] + ")";
+        ag.globalAlpha = (0.06 + 0.16 * cl((k - (n - 500)) / 500)) * layers * 0.5;
+        ag.beginPath();
+        for (i = k; i < c1; i++) {
+          if (i === k) ag.moveTo(cx + P[i][0], cy + P[i][1]);
+          else ag.lineTo(cx + P[i][0], cy + P[i][1]);
+        }
+        ag.stroke();
+      }
+      ag.globalAlpha = 1;
+      for (k = 0; k < sym; k++)
+        for (let mir = 0; mir < 2; mir++) {
+          g.save();
+          g.translate(cx, cy);
+          g.rotate((k / sym) * TAU + spin);
+          g.scale(1, mir ? -1 : 1);
+          g.translate(-cx, -cy);
+          g.drawImage(ac.c, 0, 0);
+          g.restore();
+        }
+      g.globalAlpha = 1;
+      const bloom = sg(t, 21.4, 24.4) - sg(t, 27.6, 29.4);
+      if (bloom > 0) {
+        g.globalAlpha = bloom * 0.5;
+        const gr2 = g.createRadialGradient(cx, cy, 4, cx, cy, 92);
+        gr2.addColorStop(0, "rgba(255,244,214,.5)");
+        gr2.addColorStop(1, "rgba(255,244,214,0)");
+        g.fillStyle = gr2;
+        g.beginPath();
+        g.arc(cx, cy, 92, 0, TAU);
+        g.fill();
+        g.globalAlpha = 1;
+      }
+      g.globalAlpha = sg(t, 2, 3) - sg(t, 27.4, 28.8);
+      TX(g, "one curve, mirrored twelve ways", 22, 44, 9, K.dim, "left");
       g.globalAlpha = 1;
     },
   },
