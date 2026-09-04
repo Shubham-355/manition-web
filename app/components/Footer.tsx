@@ -19,7 +19,7 @@ export default function Footer() {
       <div className="fo-wrap" style={parseStyle("max-width:1200px; margin:0 auto; padding:clamp(40px,5.2vw,66px) clamp(18px,4vw,30px) clamp(14px,1.8vw,20px);")}>
         <div className="fo-head" style={parseStyle("display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:36px;")}>
           <p style={parseStyle("margin:0; max-width:300px; font-size:15px; line-height:1.55; color:#a4a29c; text-wrap:pretty;")}>
-            Say what you want to explain. Get a video back.
+            Say what you want. Get a video back.
           </p>
           <nav className="fo-links" style={parseStyle("display:flex; flex-wrap:wrap; gap:12px 26px;")}>
             {LINKS.map((l) => (
@@ -27,14 +27,6 @@ export default function Footer() {
                 {l.label}
               </Hover>
             ))}
-            <Hover
-              as="a"
-              href="/#waitlist"
-              style="text-decoration:none; font-size:14.5px; font-weight:600; color:#8fb3e6;"
-              hoverStyle={{ color: "#b9d0f4" }}
-            >
-              Join the waitlist
-            </Hover>
           </nav>
         </div>
 
@@ -47,9 +39,8 @@ export default function Footer() {
           Manition
         </Hover>
 
-        <div className="fo-foot" style={parseStyle("display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px 28px; margin-top:clamp(22px,2.8vw,34px); padding-top:16px; border-top:1px solid #24242a;")}>
-          <p style={parseStyle("margin:0; font-size:13px; color:#77756f;")}>© 2026 Manition</p>
-          <p style={parseStyle("margin:0; font-size:13px; color:#77756f;")}>Made for people who explain things.</p>
+        <div className="fo-foot">
+          <p>© 2026 Manition</p>
         </div>
       </div>
     </footer>

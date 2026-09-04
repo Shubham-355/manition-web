@@ -1,9 +1,11 @@
+import { Fragment } from "react";
 import Link from "next/link";
-import { parseStyle } from "./lib/css";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
+import Reveal from "./components/Reveal";
+import Magnetic from "./components/Magnetic";
 import ManitionDemo from "./components/film/ManitionDemo";
-import GalleryVideo from "./components/GalleryVideo";
+import PicksSection from "./components/PicksSection";
 import { Hover, WaitlistForm } from "./components/Interactive";
 
 const arrow = (
@@ -13,168 +15,178 @@ const arrow = (
   </svg>
 );
 
+const TICKER = [
+  "grow a tree from one seed and run it through four seasons",
+  "bend starlight around a black hole",
+  "explain entropy with a stick figure who just cleaned his room",
+  "fill a square with one unbroken line",
+  "put the aurora over a frozen lake and let it drift",
+  "throw two galaxies through each other",
+  "sweep a Lissajous figure through every ratio",
+];
+
 const STEPS = [
   {
-    n: "1",
+    n: "01",
     title: "Describe it",
-    body: "Type what you want to show, the way you would say it to a friend.",
+    body: "Type what you want to show, the way you would say it to a friend. No syntax to learn, no timeline to scrub.",
   },
   {
-    n: "2",
+    n: "02",
     title: "Watch it appear",
-    body: "Manition makes the video while you wait. Ask for changes in plain words until you like it.",
+    body: "Manition renders while you wait. Ask for changes in plain words until it says what you meant.",
   },
   {
-    n: "3",
+    n: "03",
     title: "Share it",
-    body: "Download the video and use it in a class, a post, a video, or a group chat.",
+    body: "Take the file. Drop it in a lecture, a thread, a lesson plan, or a group chat.",
   },
 ];
 
 const PICKS = [
-  { scene: "tree", label: "A year in one tree", caption: "One seed, four seasons" },
-  { scene: "aurora", label: "Aurora over a frozen lake", caption: "Why the sky glows green" },
-  { scene: "phyllo", label: "Phyllotaxis bloom", caption: "How a sunflower packs its seeds" },
+  { scene: "tree", title: "A year in one tree", prompt: "“grow a tree from one seed and run it through four seasons”" },
+  { scene: "aurora", title: "Northern lights", prompt: "“put the aurora over a frozen lake and let it drift”" },
+  { scene: "blackhole", title: "Lensed light", prompt: "“bend starlight around a black hole”" },
+  { scene: "origin", title: "How a world gets made", prompt: "“start with a cloud of dust and end with a world someone could stand on”" },
+  { scene: "phyllo", title: "Sunflower spiral", prompt: "“grow a sunflower with the golden angle”" },
+  { scene: "lorenz", title: "The Lorenz butterfly", prompt: "“trace the Lorenz attractor”" },
+  { scene: "fourier", title: "Square wave from circles", prompt: "“build a square wave by stacking spinning circles”" },
+  { scene: "boids", title: "Flocking", prompt: "“give 130 birds three rules, then add a hawk”" },
+  { scene: "kaleido", title: "Mandala, drawn once", prompt: "“mirror one wandering curve twelve ways until it blooms”" },
+  { scene: "galaxy", title: "Galaxy collision", prompt: "“throw two galaxies through each other”" },
+  { scene: "supernova", title: "Supernova", prompt: "“blow up a star and follow the shockwave out”" },
+  { scene: "terrain", title: "Flight over a range", prompt: "“fly me over mountains that were never surveyed”" },
 ];
 
-const AVATARS = [
-  { text: "Ed", bg: "#e7ddc9", fg: "#8a6d2f" },
-  { text: "YT", bg: "#d9e2f7", fg: "#3358c0" },
-  { text: "Ph", bg: "#dcefe0", fg: "#2f7a4a" },
+const QUOTE: { w: string; on?: boolean }[] = [
+  ...["Made", "for", "teachers", "who", "want", "the", "class", "to", "see", "it,", "creators", "who", "want", "a", "better", "visual,", "and", "anyone", "who", "has", "ever", "said"].map((w) => ({ w })),
+  ...["“it", "is", "hard", "to", "explain,", "but…”"].map((w) => ({ w, on: true })),
 ];
 
 export default function Home() {
   return (
-    <div style={parseStyle("font-family:'IBM Plex Sans',ui-sans-serif,system-ui; color:#16161a; background:#f7f6f3; overflow-x:hidden;")}>
+    <div className="hm-page">
+      <div className="grain" aria-hidden="true"></div>
+
       <Nav active="home" />
 
-      {/* ============ FILM ============ */}
-      <section id="demo" className="hm-film" style={parseStyle("max-width:1120px; margin:0 auto; padding:clamp(28px,4vw,44px) clamp(20px,5vw,32px) 0;")}>
-        {/* the stage is exactly 16/9, so it fits the frame with nothing cropped */}
-        <div style={parseStyle("position:relative; width:100%; aspect-ratio:16/9; border-radius:clamp(14px,1.8vw,22px); overflow:hidden; background:#f7f6f3;")}>
-          <div style={parseStyle("position:absolute; inset:0;")}>
-            <ManitionDemo />
+      {/* ============ HERO — unequal split inside the content column ============ */}
+      <section className="hm-hero">
+        <div className="hm-hero-copy">
+          <p className="hm-eyebrow">
+            Manition <span aria-hidden="true">&#47;&#47;</span> text to animation
+          </p>
+          <h1 className="hm-h1">
+            Say it.
+            <br />
+            Watch
+            <br />
+            it move.
+          </h1>
+          <div className="hm-actions">
+            <Magnetic>
+              <Hover
+                as="a"
+                href="#waitlist"
+                className="hm-btn"
+                style="display:inline-flex; align-items:center; gap:10px; text-decoration:none; background:#16161a; color:#f7f6f3; font-size:15.5px; font-weight:600; padding:16px 26px; border:1px solid #16161a;"
+                hoverStyle={{ background: "#000" }}
+              >
+                Join the waitlist
+                {arrow}
+              </Hover>
+            </Magnetic>
+            <Link href="/gallery" className="hm-link">
+              See examples
+            </Link>
           </div>
         </div>
+
+        <Reveal className="hm-film hm-film-rv">
+          <div id="demo" className="hm-film-frame">
+            <ManitionDemo />
+          </div>
+        </Reveal>
       </section>
 
-      {/* ============ HERO ============ */}
-      <section style={parseStyle("max-width:940px; margin:0 auto; padding:clamp(22px,2.8vw,32px) clamp(20px,5vw,32px) clamp(48px,6.4vw,76px); text-align:center;")}>
-        {/* one compact line under a wide film, not a second hero block */}
-        <h1 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(27px,3.4vw,40px); line-height:1.1; letter-spacing:-0.03em; text-wrap:balance;")}>
-          Say it. Watch it move.
-        </h1>
-        <div style={parseStyle("display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:clamp(18px,2.2vw,24px);")}>
-          <Hover
-            as="a"
-            href="#waitlist"
-            className="hm-cta"
-            style="display:inline-flex; align-items:center; gap:9px; text-decoration:none; background:#16161a; color:#f7f6f3; font-size:16px; font-weight:600; padding:15px 26px; border-radius:100px; border:1px solid #16161a; transition:transform .15s, background .15s;"
-            hoverStyle={{ background: "#000", transform: "translateY(-1px)" }}
-          >
-            Join the waitlist
-            {arrow}
-          </Hover>
-          <Hover
-            as="a"
-            href="/gallery"
-            className="hm-cta"
-            style="display:inline-flex; align-items:center; gap:9px; text-decoration:none; background:#fff; color:#16161a; font-size:16px; font-weight:600; padding:15px 24px; border-radius:100px; border:1px solid #e2ded4; transition:border-color .15s;"
-            hoverStyle={{ borderColor: "#c9c4b8" }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="6 4 20 12 6 20 6 4"></polygon>
-            </svg>
-            See examples
-          </Hover>
-        </div>
-      </section>
-
-      {/* ============ THREE STEPS ============ */}
-      <section style={parseStyle("background:#efece7; border-top:1px solid #e6e2da; border-bottom:1px solid #e6e2da;")}>
-        <div style={parseStyle("max-width:1080px; margin:0 auto; padding:clamp(50px,7vw,88px) clamp(20px,5vw,32px);")}>
-          <h2 style={parseStyle("margin:0 0 clamp(34px,4.4vw,52px); font-family:'Space Grotesk'; font-weight:700; font-size:clamp(26px,3.8vw,38px); letter-spacing:-0.03em; line-height:1.1; max-width:520px; text-wrap:pretty;")}>
-            Three steps. That is the whole thing.
-          </h2>
-          <div className="hm-steps" style={parseStyle("display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:clamp(22px,3.2vw,44px);")}>
-            {STEPS.map((s) => (
-              <div key={s.n} style={parseStyle("display:flex; flex-direction:column; gap:10px;")}>
-                <span style={parseStyle("font-family:'Space Grotesk'; font-weight:700; font-size:15px; color:#3b62e0;")}>{s.n}</span>
-                <h3 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:600; font-size:clamp(19px,2.2vw,22px); letter-spacing:-0.02em;")}>{s.title}</h3>
-                <p style={parseStyle("margin:0; font-size:15.5px; line-height:1.65; color:#63636a; text-wrap:pretty;")}>{s.body}</p>
-              </div>
+      {/* ============ TICKER — repeating type as texture ============ */}
+      <div className="hm-ticker" aria-hidden="true">
+        <div className="mq">
+          <div className="mq-row">
+            {TICKER.map((t) => (
+              <span key={t}>{t}</span>
+            ))}
+          </div>
+          <div className="mq-row">
+            {TICKER.map((t) => (
+              <span key={t}>{t}</span>
             ))}
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* ============ PEOPLE ASKED FOR THESE ============ */}
-      <section style={parseStyle("max-width:1080px; margin:0 auto; padding:clamp(52px,7vw,88px) clamp(20px,5vw,32px) clamp(16px,2vw,24px);")}>
-        <div style={parseStyle("max-width:560px; margin-bottom:clamp(26px,3.4vw,36px);")}>
-          <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(26px,3.8vw,38px); letter-spacing:-0.03em; line-height:1.1; text-wrap:pretty;")}>
-            People asked for these.
+      {/* ============ STEPS — editorial rows, not a card grid ============ */}
+      <section className="hm-band">
+        <div className="hm-wrap">
+          <h2 className="hm-h2 hm-h2-wide">
+            Three steps.
+            <br />
+            That is the whole thing.
           </h2>
-          <p style={parseStyle("margin:14px 0 0; font-size:16px; line-height:1.6; color:#63636a; text-wrap:pretty;")}>
-            One sentence each. This is what came back.
-          </p>
-        </div>
-
-        <div className="hm-strip" style={parseStyle("display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:clamp(12px,1.6vw,18px);")}>
-          {PICKS.map((p) => (
-            <div key={p.scene} style={parseStyle("display:flex; flex-direction:column; gap:9px;")}>
-              <div style={parseStyle("position:relative; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:#0a0a0d; border:1px solid #e2ded4;")}>
-                <GalleryVideo scene={p.scene} label={p.label} />
-              </div>
-              <p style={parseStyle("margin:0; font-size:14px; line-height:1.5; color:#63636a;")}>{p.caption}</p>
-            </div>
-          ))}
-        </div>
-
-        <div style={parseStyle("margin-top:clamp(22px,2.6vw,28px);")}>
-          <Link href="/gallery" style={parseStyle("display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-size:15px; font-weight:600; color:#16161a;")}>
-            See more videos {arrow}
-          </Link>
-        </div>
-      </section>
-
-      {/* ============ WHO IT IS FOR ============ */}
-      <section style={parseStyle("max-width:1080px; margin:0 auto; padding:clamp(52px,7vw,86px) clamp(20px,5vw,32px) clamp(20px,2.6vw,30px);")}>
-        <p style={parseStyle("margin:0; max-width:820px; font-family:'Space Grotesk'; font-weight:500; font-size:clamp(22px,3.2vw,32px); line-height:1.35; letter-spacing:-0.024em; color:#16161a; text-wrap:pretty;")}>
-          Made for teachers who want the class to see it, creators who want a better visual, and anyone who has ever said{" "}
-          <span style={parseStyle("color:#3b62e0;")}>&ldquo;it is hard to explain, but...&rdquo;</span>
-        </p>
-      </section>
-
-      {/* ============ WAITLIST ============ */}
-      <section id="waitlist" style={parseStyle("max-width:1080px; margin:0 auto; padding:clamp(30px,4vw,48px) clamp(20px,5vw,32px) clamp(60px,8vw,100px);")}>
-        <div style={parseStyle("background:#fff; border:1px solid #e6e2da; border-radius:clamp(18px,2.4vw,26px); padding:clamp(34px,5.4vw,62px) clamp(22px,4.4vw,54px); box-shadow:0 24px 60px -44px rgba(22,22,26,0.4);")}>
-          <div style={parseStyle("max-width:600px; margin:0 auto; text-align:center;")}>
-            <h2 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(27px,4.4vw,40px); letter-spacing:-0.032em; line-height:1.06; text-wrap:pretty;")}>
-              Be there on day one.
-            </h2>
-            <p style={parseStyle("margin:16px auto 0; max-width:420px; font-size:16px; line-height:1.6; color:#63636a; text-wrap:pretty;")}>
-              We are letting people in a few at a time. Leave your email and we will send one message when it is your turn.
-            </p>
-
-            <WaitlistForm />
-
-            <div style={parseStyle("display:flex; align-items:center; justify-content:center; gap:12px; margin-top:24px; flex-wrap:wrap;")}>
-              <div style={parseStyle("display:flex;")}>
-                {AVATARS.map((a, i) => (
-                  <div
-                    key={a.text}
-                    style={parseStyle(
-                      `width:28px; height:28px; border-radius:50%; background:${a.bg}; border:2px solid #fff; ${i ? "margin-left:-8px; " : ""}display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:700; color:${a.fg};`,
-                    )}
-                  >
-                    {a.text}
+          <ol className="hm-steps">
+            {STEPS.map((s) => (
+              <li key={s.n}>
+                <Reveal className="hm-step rvm-rule">
+                  <span className="hm-step-n">{s.n}</span>
+                  <div className="hm-step-body">
+                    <h3>{s.title}</h3>
+                    <p>{s.body}</p>
                   </div>
-                ))}
-              </div>
-              <p style={parseStyle("margin:0; font-size:14px; color:#77767d; line-height:1.4;")}>
-                4,200+ people are already waiting. No spam, no card.
-              </p>
-            </div>
+                </Reveal>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ============ PICKS — paged strip, hands off to the gallery at the end ============ */}
+      <PicksSection picks={PICKS} />
+
+      {/* ============ STATEMENT ============ */}
+      <section className="hm-quote">
+        <Reveal>
+          <p>
+            {QUOTE.map((q, i) => (
+              <Fragment key={`${q.w}-${i}`}>
+                <span className={q.on ? "hm-word on" : "hm-word"}>
+                  <span style={{ transitionDelay: `${i * 22}ms` }}>{q.w}</span>
+                </span>{" "}
+              </Fragment>
+            ))}
+          </p>
+        </Reveal>
+      </section>
+
+      {/* ============ JOIN — the page darkens into the footer ============ */}
+      <section id="waitlist" className="hm-join">
+        <div className="hm-join-inner">
+          <div className="hm-join-copy">
+            <p className="hm-eyebrow hm-eyebrow-dim">Early access</p>
+            <h2 className="hm-h2 hm-h2-light">
+              Be there
+              <br />
+              on day one.
+            </h2>
+          </div>
+          <div className="hm-join-form">
+            <p className="hm-join-lede">
+              We are letting people in a few at a time. Leave your email and we will send one message when it is your
+              turn.
+            </p>
+            <WaitlistForm tone="ink" />
+            <p className="hm-join-fine">
+              4,200+ already waiting <span aria-hidden="true">&middot;</span> no spam <span aria-hidden="true">&middot;</span> no card
+            </p>
           </div>
         </div>
       </section>
