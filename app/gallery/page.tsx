@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 import GalleryVideo from "../components/GalleryVideo";
 import { Hover } from "../components/Interactive";
 
-type Card = { scene: string; label: string; title: string; dur?: string; prompt: string; big?: boolean };
+type Card = { scene: string; label: string; title: string; dur?: string; prompt: string };
 type Section = { id: string; num: string; set: string; heading: string; desc?: string; cards: Card[] };
 
 const SECTIONS: Section[] = [
@@ -15,18 +15,17 @@ const SECTIONS: Section[] = [
     heading: "Showcase",
     desc: "The long ones. Full explainers and heavy renders, each still a single sentence away.",
     cards: [
-      { scene: "stickhole", label: "Explainer", title: "How not to fall into a black hole", dur: "2:07", prompt: "“explain black holes with a stick figure, and make it funny”", big: true },
       { scene: "stickmess", label: "Explainer", title: "Why your room gets messy", dur: "0:54", prompt: "“explain entropy with a stick figure who just cleaned his room”" },
       { scene: "stickhotel", label: "Explainer", title: "The hotel that is always full", dur: "0:52", prompt: "“explain Hilbert's hotel with a stick figure who just wants one room”" },
       { scene: "stickluck", label: "Explainer", title: "Why you feel due for a win", dur: "0:48", prompt: "“explain the gambler's fallacy with a stick figure on a losing streak”" },
       { scene: "sticklane", label: "Explainer", title: "Why the other lane is faster", dur: "0:44", prompt: "“explain why the other lane looks faster with a stick figure stuck in traffic”" },
       { scene: "stickdoors", label: "Explainer", title: "Always switch doors", dur: "0:46", prompt: "“explain the Monty Hall problem with a stick figure who does not trust the host”" },
+      { scene: "stickhole", label: "Explainer", title: "How not to fall into a black hole", dur: "2:07", prompt: "“explain black holes with a stick figure, and make it funny”" },
       { scene: "kaleido", label: "Symmetry", title: "Mandala, drawn once", dur: "0:30", prompt: "“mirror one wandering curve twelve ways until it blooms”" },
       { scene: "origin", label: "Astrophysics", title: "How a world gets made", dur: "0:46", prompt: "“start with a cloud of dust and end with a world someone could stand on”" },
       { scene: "tree", label: "L-systems", title: "A year in one tree", dur: "0:34", prompt: "“grow a tree from one seed and run it through four seasons”" },
       { scene: "aurora", label: "Fields", title: "Northern lights", dur: "0:30", prompt: "“put the aurora over a frozen lake and let it drift”" },
       { scene: "terrain", label: "Procedural", title: "Flight over a range", dur: "0:20", prompt: "“fly me over mountains that were never surveyed”" },
-      { scene: "deepzoom", label: "Fractals", title: "Endless zoom", dur: "0:18", prompt: "“fall into the Mandelbrot set and never hit the bottom”" },
       { scene: "supernova", label: "Astrophysics", title: "Supernova", dur: "0:15", prompt: "“blow up a star and follow the shockwave out”" },
       { scene: "nebula", label: "Astrophysics", title: "Nebula, condensing", dur: "0:16", prompt: "“grow an emission nebula out of the dark and light it up”" },
       { scene: "curl", label: "Fluids", title: "Dye in a curl field", dur: "0:16", prompt: "“pour dye into a swirling field and let it draw”" },
@@ -146,7 +145,7 @@ function SceneCard({ card, lead }: { card: Card; lead?: boolean }) {
       <div style={parseStyle(lead ? "padding:16px 19px 18px;" : "padding:15px 17px 16px;")}>
         {card.dur ? (
           <div style={parseStyle(`display:flex; align-items:baseline; justify-content:space-between; gap:${lead ? "14px" : "12px"}; margin:0 0 ${lead ? "6px" : "7px"};`)}>
-            <p style={parseStyle(`margin:0; font-family:'Space Grotesk'; font-weight:600; font-size:${card.big ? "19px" : "15.5px"}; color:#f4f4f5; letter-spacing:${card.big ? "-0.015em" : "-0.01em"};`)}>
+            <p style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:600; font-size:15.5px; color:#f4f4f5; letter-spacing:-0.01em;")}>
               {card.title}
             </p>
             <span style={parseStyle(durBadge)}>{card.dur}</span>
@@ -235,7 +234,7 @@ export default function Gallery() {
       <section className="gl-wrap" style={parseStyle("max-width:1200px; margin:0 auto; padding:clamp(30px,3.8vw,46px) clamp(18px,4vw,30px) 0;")}>
         <SectionHead section={showcase} first />
         <p style={parseStyle("margin:-6px 0 clamp(20px,2.6vw,30px); max-width:560px; font-size:15px; line-height:1.65; color:#6b6b73; text-wrap:pretty;")}>{showcase.desc}</p>
-        <div className="gl-sheet gl-sheet-lead">
+        <div className="gl-sheet">
           {showcase.cards.map((c, i) => (
             <SceneCard key={c.scene} card={c} lead={i < 8} />
           ))}

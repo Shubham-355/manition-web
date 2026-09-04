@@ -73,16 +73,14 @@ details[open] .pc-chev { transform:rotate(180deg); }
 .gl-cell:hover .gl-arrow { opacity:1; transform:translateX(0); }
 
 .gl-sheet { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:clamp(12px,1.7vw,18px); }
-.gl-sheet-lead > .gl-card:first-child { grid-column:span 3; }
 
 @media (max-width:980px){ .gl-hero{ grid-template-columns:1fr !important; gap:22px !important; align-items:start !important; } }
 @media (max-width:900px){
   .gl-sets{ grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
   .gl-sheet{ grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
-  .gl-sheet-lead > .gl-card:first-child{ grid-column:span 2 !important; }
 }
 @media (max-width:760px){ .gl-cta{ grid-template-columns:1fr !important; } .gl-cta a{ justify-self:start !important; } }
-@media (max-width:620px){ .gl-sheet{ grid-template-columns:1fr !important; } .gl-sheet-lead > .gl-card:first-child{ grid-column:auto !important; } }
+@media (max-width:620px){ .gl-sheet{ grid-template-columns:1fr !important; } }
 @media (max-width:420px){ .gl-sets{ grid-template-columns:1fr !important; } }
 @media (min-width:1700px){ .gl-wrap{ max-width:1400px !important; } }
 
