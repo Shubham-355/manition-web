@@ -29,6 +29,12 @@ details > summary::-webkit-details-marker { display: none; }
 @media (max-width:420px){ .nv-cta-tail { display:none !important; } }
 
 /* ===== Home (Home.dc.html) ===== */
+/* the film is the tallest thing on the page and it now leads, so its width is
+   budgeted against the viewport height to keep the line and buttons in view:
+   nav 66 + padding 76 + h1 44 + buttons 75, rounded up to 290 */
+@media (min-width:900px){
+  .hm-film{ max-width:clamp(520px, (100vh - 290px) * 16 / 9, 1120px) !important; }
+}
 @media (max-width:900px){
   .hm-steps{ grid-template-columns:1fr !important; gap:26px !important; }
   .hm-strip{ grid-template-columns:1fr 1fr !important; }
