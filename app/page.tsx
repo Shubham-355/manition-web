@@ -48,8 +48,18 @@ export default function Home() {
     <div style={parseStyle("font-family:'IBM Plex Sans',ui-sans-serif,system-ui; color:#16161a; background:#f7f6f3; overflow-x:hidden;")}>
       <Nav active="home" />
 
+      {/* ============ FILM ============ */}
+      <section id="demo" style={parseStyle("max-width:1120px; margin:0 auto; padding:clamp(34px,5.4vw,64px) clamp(20px,5vw,32px) clamp(26px,3.6vw,42px);")}>
+        <div style={parseStyle("position:relative; width:100%; aspect-ratio:16/9; border-radius:clamp(14px,1.8vw,22px); overflow:hidden; background:#f7f6f3;")}>
+          {/* oversized and inset so the film bleeds past the rounded frame */}
+          <div style={parseStyle("position:absolute; left:-4.8%; top:-4.8%; width:109.6%; height:109.6%;")}>
+            <ManitionDemo />
+          </div>
+        </div>
+      </section>
+
       {/* ============ HERO ============ */}
-      <section style={parseStyle("max-width:940px; margin:0 auto; padding:clamp(40px,6.4vw,80px) clamp(20px,5vw,32px) clamp(4px,1vw,10px); text-align:center;")}>
+      <section style={parseStyle("max-width:940px; margin:0 auto; padding:0 clamp(20px,5vw,32px) clamp(52px,7vw,84px); text-align:center;")}>
         <h1 style={parseStyle("margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(40px,7.4vw,72px); line-height:1.02; letter-spacing:-0.04em;")}>
           Say it.
           <br />
@@ -78,16 +88,6 @@ export default function Home() {
             </svg>
             See examples
           </Hover>
-        </div>
-      </section>
-
-      {/* ============ FILM ============ */}
-      <section id="demo" style={parseStyle("max-width:1120px; margin:0 auto; padding:clamp(24px,4vw,44px) clamp(20px,5vw,32px) clamp(52px,7vw,84px);")}>
-        <div style={parseStyle("position:relative; width:100%; aspect-ratio:16/9; border-radius:clamp(14px,1.8vw,22px); overflow:hidden; background:#f7f6f3;")}>
-          {/* oversized and inset so the film bleeds past the rounded frame */}
-          <div style={parseStyle("position:absolute; left:-4.8%; top:-4.8%; width:109.6%; height:109.6%;")}>
-            <ManitionDemo />
-          </div>
         </div>
       </section>
 
