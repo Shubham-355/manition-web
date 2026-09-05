@@ -231,6 +231,7 @@ export interface Scene {
   _emP?: EmPt[];
   _kal?: number[][];
   _sier?: number[][][][];
+  _drag?: number[][];
   _D?: { P: number[]; G: number[]; N: number };
   _im?: Img;
   _ac?: Acc;
@@ -4860,6 +4861,64 @@ export const SCENES: Record<string, Scene> = {
       g.globalAlpha = sg(t, 1.2, 2);
       const d = lv + (f > 0.5 ? 1 : 0);
       TX(g, "depth " + d + "  ·  " + this._sier[Math.min(6, d)].length + " triangles", 22, 44, 9, K.dim, "left");
+      g.globalAlpha = 1;
+    },
+  },
+  /* Heighway dragon folding out of a single crease */
+  dragon: {
+    T: 17,
+    poster: 12,
+    draw(g, t) {
+      let i: number;
+      if (!this._drag) {
+        let P: number[][] = [[0, 0], [1, 0]];
+        /* each fold copies the strip and turns the copy a quarter turn about its tip */
+        for (let k = 0; k < 12; k++) {
+          const Q = P.slice(),
+            ax = P[P.length - 1][0],
+            ay = P[P.length - 1][1];
+          for (i = P.length - 2; i >= 0; i--) {
+            const bx = P[i][0] - ax,
+              by = P[i][1] - ay;
+            Q.push([ax - by, ay + bx]);
+          }
+          P = Q;
+        }
+        let x0 = 1e9,
+          x1 = -1e9,
+          y0 = 1e9,
+          y1 = -1e9;
+        for (i = 0; i < P.length; i++) {
+          x0 = Math.min(x0, P[i][0]);
+          x1 = Math.max(x1, P[i][0]);
+          y0 = Math.min(y0, P[i][1]);
+          y1 = Math.max(y1, P[i][1]);
+        }
+        const s = Math.min(258 / (x1 - x0), 104 / (y1 - y0));
+        for (i = 0; i < P.length; i++) P[i] = [31 + (P[i][0] - x0) * s, 140 - (P[i][1] - y0) * s];
+        this._drag = P;
+      }
+      const P = this._drag,
+        n = Math.max(2, Math.floor(P.length * ss(cl((t - 0.5) / 12.6))));
+      g.lineJoin = "round";
+      g.lineCap = "round";
+      g.lineWidth = 1.25;
+      for (i = 1; i < n; i += 24) {
+        const e = Math.min(n, i + 25),
+          h = HSV(0.52 + 0.3 * (i / P.length) + 0.04 * Math.sin(t * 0.6), 0.55, 1);
+        g.strokeStyle = "rgb(" + h[0] + "," + h[1] + "," + h[2] + ")";
+        g.globalAlpha = 0.34 + 0.66 * cl((i - (n - 260)) / 260);
+        g.beginPath();
+        for (let j = i - 1; j < e; j++) {
+          if (j === i - 1) g.moveTo(P[j][0], P[j][1]);
+          else g.lineTo(P[j][0], P[j][1]);
+        }
+        g.stroke();
+      }
+      g.globalAlpha = 1;
+      D(g, P[n - 1][0], P[n - 1][1], 2.6, K.wht);
+      g.globalAlpha = sg(t, 1, 1.8);
+      TX(g, "one strip of paper, folded 12 times", 22, 44, 9, K.dim, "left");
       g.globalAlpha = 1;
     },
   },

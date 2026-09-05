@@ -40,6 +40,7 @@ const SECTIONS: Section[] = [
     heading: "Fractals & self-similarity",
     cards: [
       { scene: "sierpinski", label: "Fractals", title: "Sierpinski triangle", prompt: "“cut a triangle out of a triangle, forever”" },
+      { scene: "dragon", label: "Fractals", title: "Dragon curve", prompt: "“fold one strip of paper twelve times and unfold it”" },
       { scene: "koch", label: "Fractals", title: "Koch snowflake", prompt: "“bend every edge into four, forever”" },
       { scene: "chaosgame", label: "Fractals", title: "A fern from dice", prompt: "“roll four matrices at random until a fern grows”" },
       { scene: "apollonian", label: "Geometry", title: "Apollonian gasket", prompt: "“pack a circle with circles until the gaps run out”" },
