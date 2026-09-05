@@ -230,6 +230,7 @@ export interface Scene {
   _G?: { grid: Uint8Array; gen: number; hist: Uint8Array[] };
   _emP?: EmPt[];
   _kal?: number[][];
+  _sier?: number[][][][];
   _D?: { P: number[]; G: number[]; N: number };
   _im?: Img;
   _ac?: Acc;
@@ -4803,6 +4804,63 @@ export const SCENES: Record<string, Scene> = {
         TX(g, "every start falls to 1 — no one knows why", 160, 190, 9, K.dim, "center");
         g.globalAlpha = 1;
       }
+    },
+  },
+  /* Sierpinski triangle, one subdivision at a time */
+  sierpinski: {
+    T: 16,
+    poster: 11,
+    draw(g, t) {
+      let i: number;
+      const mid = (a: number[], b: number[]) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      if (!this._sier) {
+        let cur: number[][][] = [[[160, 16], [240, 134], [80, 134]]];
+        this._sier = [cur];
+        for (let j = 0; j < 6; j++) {
+          const nx: number[][][] = [];
+          for (i = 0; i < cur.length; i++) {
+            const A = cur[i][0],
+              B = cur[i][1],
+              C = cur[i][2],
+              ab = mid(A, B),
+              bc = mid(B, C),
+              ca = mid(C, A);
+            nx.push([A, ab, ca]);
+            nx.push([ab, B, bc]);
+            nx.push([ca, bc, C]);
+          }
+          this._sier.push(nx);
+          cur = nx;
+        }
+      }
+      const p = ss(cl((t - 0.6) / 13.4)) * 6,
+        lv = Math.min(5, Math.floor(p)),
+        f = cl(p - lv);
+      /* the level being replaced fades out under the level replacing it */
+      const draw = (list: number[][][], al: number, hue: number) => {
+        g.globalAlpha = al;
+        for (i = 0; i < list.length; i++) {
+          const q = list[i],
+            c = HSV(hue + 0.045 * Math.sin(i * 0.7 + t * 0.5), 0.42, 0.92);
+          g.fillStyle = "rgba(" + c[0] + "," + c[1] + "," + c[2] + ",.16)";
+          g.strokeStyle = "rgb(" + c[0] + "," + c[1] + "," + c[2] + ")";
+          g.lineWidth = Math.max(0.4, 1.5 - lv * 0.2);
+          g.beginPath();
+          g.moveTo(q[0][0], q[0][1]);
+          g.lineTo(q[1][0], q[1][1]);
+          g.lineTo(q[2][0], q[2][1]);
+          g.closePath();
+          g.fill();
+          g.stroke();
+        }
+        g.globalAlpha = 1;
+      };
+      draw(this._sier[lv], 1 - f * 0.75, 0.09);
+      if (f > 0.01) draw(this._sier[lv + 1], f, 0.55);
+      g.globalAlpha = sg(t, 1.2, 2);
+      const d = lv + (f > 0.5 ? 1 : 0);
+      TX(g, "depth " + d + "  ·  " + this._sier[Math.min(6, d)].length + " triangles", 22, 44, 9, K.dim, "left");
+      g.globalAlpha = 1;
     },
   },
   /* 24 · Koch snowflake iterations */
