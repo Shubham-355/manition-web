@@ -232,6 +232,7 @@ export interface Scene {
   _kal?: number[][];
   _sier?: number[][][][];
   _drag?: number[][];
+  _ros?: number[][];
   _D?: { P: number[]; G: number[]; N: number };
   _im?: Img;
   _ac?: Acc;
@@ -4100,6 +4101,63 @@ export const SCENES: Record<string, Scene> = {
         TX(g, "f(θ) = Σ 4/kπ · sin(kθ)", 160, 188, 9.5, K.dim, "center");
         g.globalAlpha = 1;
       }
+    },
+  },
+  /* Rössler attractor: one band, one fold */
+  rossler: {
+    T: 18,
+    poster: 12,
+    draw(g, t) {
+      let i: number;
+      if (!this._ros) {
+        const P: number[][] = [];
+        let x = 0.1,
+          y = 0,
+          z = 0;
+        const dt = 0.006,
+          a = 0.2,
+          b = 0.2,
+          c = 5.7;
+        for (i = 0; i < 26000; i++) {
+          const dx = -y - z,
+            dy = x + a * y,
+            dz = b + z * (x - c);
+          x += dx * dt;
+          y += dy * dt;
+          z += dz * dt;
+          /* skip the transient, then keep every other step */
+          if (i > 1200 && i % 2 === 0) P.push([x, y, z]);
+        }
+        this._ros = P;
+      }
+      const P = this._ros,
+        th = 0.35 + t * 0.16,
+        cs = Math.cos(th),
+        sn = Math.sin(th),
+        n = Math.floor(P.length * ss(cl((t - 0.4) / 13.5))),
+        CK = 32;
+      g.lineJoin = "round";
+      g.lineCap = "round";
+      g.lineWidth = 1;
+      const RP = (p: number[]) => [160 + (p[0] * cs - p[1] * sn) * 11, 86 - (p[2] * 0.56 + (p[0] * sn + p[1] * cs) * 2.9)];
+      for (i = 1; i < n; i += CK) {
+        const e = Math.min(n, i + CK + 1),
+          pm = P[Math.min(P.length - 1, i + (CK >> 1))],
+          h = HSV(0.58 - 0.16 * cl(pm[2] / 16), 0.62, 1);
+        g.strokeStyle = "rgb(" + h[0] + "," + h[1] + "," + h[2] + ")";
+        g.globalAlpha = 0.14 + 0.5 * cl(pm[2] / 9) + 0.36 * cl((i - (n - 900)) / 900);
+        g.beginPath();
+        for (let j = i - 1; j < e; j++) {
+          const q = RP(P[j]);
+          if (j === i - 1) g.moveTo(q[0], q[1]);
+          else g.lineTo(q[0], q[1]);
+        }
+        g.stroke();
+      }
+      g.globalAlpha = 1;
+      g.globalAlpha = sg(t, 1.4, 2.2) - sg(t, 16.2, 17.2);
+      TX(g, "x' = −y − z    y' = x + 0.2y    z' = 0.2 + z(x − 5.7)", 160, 44, 8, K.dim, "center");
+      g.globalAlpha = 1;
     },
   },
   /* 11 · Lorenz attractor */

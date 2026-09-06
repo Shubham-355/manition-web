@@ -53,6 +53,7 @@ const SECTIONS: Section[] = [
     set: "Chaos",
     heading: "Chaos & dynamics",
     cards: [
+      { scene: "rossler", label: "Chaos", title: "Rössler band", prompt: "“draw the attractor that folds itself once”" },
       { scene: "lorenz", label: "Chaos", title: "The Lorenz butterfly", prompt: "“trace the Lorenz attractor”" },
       { scene: "pendulum", label: "Chaos", title: "Butterfly effect", prompt: "“nudge a double pendulum by 0.001 radians”" },
       { scene: "logistic", label: "Chaos", title: "Route to chaos", prompt: "“sweep r through the logistic map”" },
