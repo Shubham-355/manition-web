@@ -3519,6 +3519,71 @@ export const SCENES: Record<string, Scene> = {
       }
     },
   },
+  /* a Möbius band, one side all the way round */
+  mobius: {
+    T: 16,
+    poster: 9,
+    draw(g, t) {
+      const N = 84,
+        R = 52,
+        sp = 0.55 + t * 0.34,
+        ca = Math.cos(0.62),
+        sa = Math.sin(0.62);
+      /* the band's own half-twist, then spin, tilt and a weak perspective */
+      const P3 = (u: number, v: number) => {
+        const x = (R + v * Math.cos(u / 2)) * Math.cos(u),
+          y = (R + v * Math.cos(u / 2)) * Math.sin(u),
+          z = v * Math.sin(u / 2);
+        const X = x * Math.cos(sp) - y * Math.sin(sp),
+          Y = x * Math.sin(sp) + y * Math.cos(sp);
+        const Y2 = Y * ca - z * sa,
+          Z = Y * sa + z * ca,
+          s = 260 / (260 + Z);
+        return [160 + X * s, 84 + Y2 * s, Z];
+      };
+      const grow = ss(cl((t - 0.4) / 6.2)),
+        M = Math.max(4, Math.floor(N * grow)),
+        q: { p: number[][]; z: number; u: number }[] = [];
+      let i: number;
+      for (i = 0; i < M; i++)
+        for (let j = 0; j < 3; j++) {
+          const u = (i / N) * TAU,
+            v = -21 + j * 14;
+          const a = P3(u, v),
+            b = P3(u + TAU / N, v),
+            c = P3(u + TAU / N, v + 14),
+            d2 = P3(u, v + 14);
+          q.push({ p: [a, b, c, d2], z: (a[2] + b[2] + c[2] + d2[2]) / 4, u: i / N });
+        }
+      /* painter's algorithm - no depth buffer on a 2d context */
+      q.sort((A, B) => A.z - B.z);
+      for (i = 0; i < q.length; i++) {
+        const Q = q[i],
+          h = HSV(0.52 + 0.34 * Q.u + 0.06 * Math.sin(t * 0.5), 0.55, lp(0.42, 1, cl((Q.z + 70) / 150)));
+        g.fillStyle = "rgba(" + h[0] + "," + h[1] + "," + h[2] + ",.62)";
+        g.strokeStyle = "rgba(" + h[0] + "," + h[1] + "," + h[2] + ",.95)";
+        g.lineWidth = 0.7;
+        g.beginPath();
+        g.moveTo(Q.p[0][0], Q.p[0][1]);
+        g.lineTo(Q.p[1][0], Q.p[1][1]);
+        g.lineTo(Q.p[2][0], Q.p[2][1]);
+        g.lineTo(Q.p[3][0], Q.p[3][1]);
+        g.closePath();
+        g.fill();
+        g.stroke();
+      }
+      const ant = cl(sg(t, 7.0, 7.8));
+      if (ant > 0) {
+        const au = (t - 7.0) * 0.62,
+          ap = P3(au % TAU, 0);
+        g.globalAlpha = ant;
+        D(g, ap[0], ap[1], 3.2, K.wht);
+        g.globalAlpha = ant * 0.85;
+        TX(g, "one edge. one side.", 22, 44, 9.5, K.dim, "left");
+        g.globalAlpha = 1;
+      }
+    },
+  },
   /* 4 · eigenvectors staying on their span */
   eigen: {
     T: 20,

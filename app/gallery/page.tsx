@@ -70,6 +70,7 @@ const SECTIONS: Section[] = [
     set: "Geometry",
     heading: "Algebra & geometry",
     cards: [
+      { scene: "mobius", label: "Topology", title: "Möbius band", prompt: "“walk a Möbius strip and come back mirrored”" },
       { scene: "eigen", label: "Linear algebra", title: "Eigenvectors", prompt: "“show which vectors keep their direction”" },
       { scene: "matrix", label: "Linear algebra", title: "Matrix transform", prompt: "“shear a grid with a 2×2 matrix”" },
       { scene: "vfield", label: "Linear algebra", title: "Vector field flow", prompt: "“animate a rotational vector field”" },
