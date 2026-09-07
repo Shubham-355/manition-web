@@ -54,6 +54,7 @@ const SECTIONS: Section[] = [
     heading: "Chaos & dynamics",
     cards: [
       { scene: "rossler", label: "Chaos", title: "Rössler band", prompt: "“draw the attractor that folds itself once”" },
+      { scene: "standardmap", label: "Chaos", title: "Islands of order", prompt: "“sweep the standard map until order drowns”" },
       { scene: "lorenz", label: "Chaos", title: "The Lorenz butterfly", prompt: "“trace the Lorenz attractor”" },
       { scene: "pendulum", label: "Chaos", title: "Butterfly effect", prompt: "“nudge a double pendulum by 0.001 radians”" },
       { scene: "logistic", label: "Chaos", title: "Route to chaos", prompt: "“sweep r through the logistic map”" },

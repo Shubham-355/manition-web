@@ -233,6 +233,7 @@ export interface Scene {
   _sier?: number[][][][];
   _drag?: number[][];
   _ros?: number[][];
+  _smK?: number;
   _D?: { P: number[]; G: number[]; N: number };
   _im?: Img;
   _ac?: Acc;
@@ -4101,6 +4102,63 @@ export const SCENES: Record<string, Scene> = {
         TX(g, "f(θ) = Σ 4/kπ · sin(kθ)", 160, 188, 9.5, K.dim, "center");
         g.globalAlpha = 1;
       }
+    },
+  },
+  /* Chirikov standard map: order dissolving into a chaotic sea */
+  standardmap: {
+    T: 18,
+    poster: 13,
+    draw(g, t) {
+      const W = 240,
+        H = 150,
+        im = IMG(this, W, H),
+        d = im.d.data;
+      const Kp = lp(0.05, 1.15, ss(cl((t - 0.8) / 13.6))),
+        R = rng(404),
+        kq = Math.round(Kp * 36);
+      /* the whole phase portrait only changes when K does, so redraw on K */
+      if (this._smK !== kq) {
+        this._smK = kq;
+        let i: number;
+        for (i = 0; i < W * H * 4; i += 4) {
+          d[i] = 8;
+          d[i + 1] = 8;
+          d[i + 2] = 11;
+          d[i + 3] = 255;
+        }
+        for (let j = 0; j < 110; j++) {
+          let x = R() * TAU,
+            y = (R() * 2 - 1) * Math.PI;
+          for (let kk = 0; kk < 270; kk++) {
+            y = y + Kp * Math.sin(x);
+            x = x + y;
+            x = ((x % TAU) + TAU) % TAU;
+            const yy = ((((y + Math.PI) % TAU) + TAU) % TAU) - Math.PI;
+            const px = Math.floor((x / TAU) * W),
+              py = Math.floor(((yy + Math.PI) / TAU) * H);
+            if (px < 0 || px >= W || py < 0 || py >= H) continue;
+            const idx = (py * W + px) * 4,
+              col = HSV(0.52 + 0.3 * (j / 110), 0.55, 1);
+            d[idx] = Math.min(255, d[idx] + col[0] * 0.3);
+            d[idx + 1] = Math.min(255, d[idx + 1] + col[1] * 0.3);
+            d[idx + 2] = Math.min(255, d[idx + 2] + col[2] * 0.3);
+          }
+        }
+        im.g.putImageData(im.d, 0, 0);
+      }
+      g.globalAlpha = cl(sg(t, 0.3, 1.2));
+      g.imageSmoothingEnabled = true;
+      g.drawImage(im.c, 40, 18, 240, 120);
+      g.globalAlpha = 1;
+      g.globalAlpha = 0.5;
+      g.strokeStyle = K.grid2;
+      g.lineWidth = 1;
+      g.strokeRect(40, 18, 240, 120);
+      g.globalAlpha = 1;
+      g.globalAlpha = sg(t, 1, 1.7);
+      TX(g, "K = " + Kp.toFixed(2), 280, 146, 10, K.gold, "right");
+      TX(g, "islands of order, drowning", 40, 146, 9, K.dim, "left");
+      g.globalAlpha = 1;
     },
   },
   /* Rössler attractor: one band, one fold */
