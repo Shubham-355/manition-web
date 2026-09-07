@@ -234,6 +234,7 @@ export interface Scene {
   _drag?: number[][];
   _ros?: number[][];
   _smK?: number;
+  _knot?: number[][];
   _D?: { P: number[]; G: number[]; N: number };
   _im?: Img;
   _ac?: Acc;
@@ -3582,6 +3583,57 @@ export const SCENES: Record<string, Scene> = {
         TX(g, "one edge. one side.", 22, 44, 9.5, K.dim, "left");
         g.globalAlpha = 1;
       }
+    },
+  },
+  /* a (3,7) torus knot, spinning */
+  torusknot: {
+    T: 17,
+    poster: 10,
+    draw(g, t) {
+      const N = 1100,
+        p = 3,
+        q = 7;
+      let i: number;
+      if (!this._knot) {
+        const P: number[][] = [];
+        for (i = 0; i < N; i++) {
+          const th = ((i / N) * TAU * p),
+            r = 44 + 18 * Math.cos((q * th) / p);
+          P.push([r * Math.cos(th), r * Math.sin(th), 18 * Math.sin((q * th) / p)]);
+        }
+        this._knot = P;
+      }
+      const P = this._knot,
+        sp = t * 0.42,
+        ca = Math.cos(0.5 + 0.16 * Math.sin(t * 0.3)),
+        sa = Math.sin(0.5 + 0.16 * Math.sin(t * 0.3));
+      const PR = (v: number[]) => {
+        const X = v[0] * Math.cos(sp) - v[1] * Math.sin(sp),
+          Y = v[0] * Math.sin(sp) + v[1] * Math.cos(sp),
+          Y2 = Y * ca - v[2] * sa,
+          Z = Y * sa + v[2] * ca,
+          s = 250 / (250 + Z);
+        return [160 + X * s, 84 + Y2 * s, Z];
+      };
+      const n = Math.max(3, Math.floor(N * ss(cl((t - 0.4) / 9.6))));
+      g.lineCap = "round";
+      /* strand thickness and alpha carry the depth, so the knot reads over itself */
+      for (i = 1; i < n; i++) {
+        const a = PR(P[i - 1]),
+          b = PR(P[i]),
+          dz = cl((b[2] + 60) / 120),
+          h = HSV(0.86 + 0.22 * (i / N) + 0.05 * Math.sin(t * 0.4), 0.52, lp(0.4, 1, dz));
+        g.strokeStyle = "rgb(" + h[0] + "," + h[1] + "," + h[2] + ")";
+        g.lineWidth = lp(1.4, 4.4, dz);
+        g.globalAlpha = lp(0.35, 1, dz);
+        g.beginPath();
+        g.moveTo(a[0], a[1]);
+        g.lineTo(b[0], b[1]);
+        g.stroke();
+      }
+      g.globalAlpha = sg(t, 1.4, 2.2);
+      TX(g, "(3, 7) torus knot", 22, 44, 9.5, K.dim, "left");
+      g.globalAlpha = 1;
     },
   },
   /* 4 · eigenvectors staying on their span */
