@@ -87,6 +87,7 @@ const SECTIONS: Section[] = [
     set: "Numbers",
     heading: "Numbers & chance",
     cards: [
+      { scene: "benford", label: "Probability", title: "Benford’s law", prompt: "“count the first digit of six thousand real numbers”" },
       { scene: "primes", label: "Geometry", title: "Spiral of primes", prompt: "“plot primes on an Ulam spiral”" },
       { scene: "modular", label: "Number theory", title: "Times-table cardioid", prompt: "“connect n to 2n around a circle, then sweep”" },
       { scene: "collatz", label: "Number theory", title: "Hailstone numbers", prompt: "“race five Collatz sequences down to 1”" },

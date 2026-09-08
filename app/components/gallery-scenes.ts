@@ -235,6 +235,7 @@ export interface Scene {
   _ros?: number[][];
   _smK?: number;
   _knot?: number[][];
+  _ben?: number[];
   _D?: { P: number[]; G: number[]; N: number };
   _im?: Img;
   _ac?: Acc;
@@ -4056,6 +4057,73 @@ export const SCENES: Record<string, Scene> = {
         TX(g, "1", 286, 40, 10, K.wht, "center");
         g.globalAlpha = 1;
       }
+    },
+  },
+  /* Benford's law: the first digit is not fair */
+  benford: {
+    T: 16,
+    poster: 11,
+    draw(g, t) {
+      const x0 = 42,
+        y0 = 132,
+        bw = 26,
+        gap = 4,
+        H = 94;
+      let i: number;
+      if (!this._ben) {
+        /* numbers spread over six orders of magnitude, the way real data is */
+        const R = rng(808),
+          C0 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        for (let k = 0; k < 6000; k++) {
+          const v = Math.pow(10, R() * 6) * Math.exp(R() * 2.4),
+            d = parseInt(String(v.toExponential(4)).charAt(0), 10);
+          if (d > 0) C0[d]++;
+        }
+        this._ben = C0;
+      }
+      const C = this._ben;
+      let tot = 0;
+      for (i = 1; i <= 9; i++) tot += C[i];
+      const p = ss(cl((t - 0.7) / 9.4)),
+        shown = Math.floor(tot * p);
+      for (i = 1; i <= 9; i++) {
+        const frac = C[i] / tot,
+          h = H * (frac / 0.3011) * p,
+          x = x0 + (i - 1) * (bw + gap),
+          c = HSV(0.09 + 0.03 * i, 0.55, 1);
+        g.globalAlpha = 0.9;
+        g.fillStyle = "rgba(" + c[0] + "," + c[1] + "," + c[2] + ",.24)";
+        g.fillRect(x, y0 - h, bw, h);
+        g.strokeStyle = "rgb(" + c[0] + "," + c[1] + "," + c[2] + ")";
+        g.lineWidth = 1.2;
+        g.strokeRect(x, y0 - h, bw, h);
+        g.globalAlpha = 1;
+        TX(g, String(i), x + bw / 2, y0 + 9, 9, K.dim, "center");
+        g.globalAlpha = sg(t, 9.8, 10.6);
+        TX(g, (frac * 100).toFixed(1) + "%", x + bw / 2, y0 - h - 8, 7.5, K.txt, "center");
+        g.globalAlpha = 1;
+      }
+      const lawA = sg(t, 10.4, 11.6);
+      if (lawA > 0) {
+        g.globalAlpha = lawA;
+        g.strokeStyle = K.blue;
+        g.lineWidth = 2;
+        g.beginPath();
+        for (i = 1; i <= 9; i++) {
+          const xx = x0 + (i - 1) * (bw + gap) + bw / 2,
+            yy = y0 - (H * (Math.log(1 + 1 / i) / Math.LN10)) / 0.3011;
+          if (i === 1) g.moveTo(xx, yy);
+          else g.lineTo(xx, yy);
+        }
+        g.stroke();
+        for (i = 1; i <= 9; i++) D(g, x0 + (i - 1) * (bw + gap) + bw / 2, y0 - (H * (Math.log(1 + 1 / i) / Math.LN10)) / 0.3011, 2.4, K.blue);
+        TX(g, "log₁₀(1 + 1/d)", 292, 44, 9.5, K.blue, "right");
+        g.globalAlpha = 1;
+      }
+      g.globalAlpha = sg(t, 0.6, 1.4);
+      L(g, x0 - 6, y0, 292, y0, K.grid, 1);
+      TX(g, shown.toLocaleString() + " real-world numbers  ·  leading digit", 22, 142, 9.5, K.dim, "left");
+      g.globalAlpha = 1;
     },
   },
   /* 9 · Ulam spiral of primes */
