@@ -236,6 +236,7 @@ export interface Scene {
   _smK?: number;
   _knot?: number[][];
   _ben?: number[];
+  _bday?: { d: number; hit: number }[];
   _D?: { P: number[]; G: number[]; N: number };
   _im?: Img;
   _ac?: Acc;
@@ -4124,6 +4125,95 @@ export const SCENES: Record<string, Scene> = {
       L(g, x0 - 6, y0, 292, y0, K.grid, 1);
       TX(g, shown.toLocaleString() + " real-world numbers  ·  leading digit", 22, 142, 9.5, K.dim, "left");
       g.globalAlpha = 1;
+    },
+  },
+  /* the birthday collision, watched arriving */
+  birthday: {
+    T: 16,
+    poster: 10,
+    draw(g, t) {
+      const cx = 104,
+        cy = 80,
+        R0 = 54;
+      let i: number;
+      if (!this._bday) {
+        const Rr = rng(1717),
+          S0: { d: number; hit: number }[] = [],
+          seen: Record<number, number> = {};
+        for (let k = 0; k < 60; k++) {
+          const s = Math.floor(Rr() * 365);
+          S0.push({ d: s, hit: seen[s] === undefined ? -1 : seen[s] });
+          if (seen[s] === undefined) seen[s] = k;
+        }
+        this._bday = S0;
+      }
+      const S = this._bday,
+        n = Math.floor(cl((t - 1.0) / 9.2) * 60);
+      g.globalAlpha = cl(sg(t, 0.2, 1));
+      g.strokeStyle = K.grid;
+      g.lineWidth = 1;
+      g.beginPath();
+      g.arc(cx, cy, R0, 0, TAU);
+      g.stroke();
+      g.globalAlpha = 1;
+      /* every arrival lands on its day; a repeat ties itself back to the first */
+      for (i = 0; i < n; i++) {
+        const a = (S[i].d / 365) * TAU - Math.PI / 2,
+          x = cx + Math.cos(a) * R0,
+          y = cy + Math.sin(a) * R0,
+          hit = S[i].hit >= 0,
+          ap = cl((t - 1.0 - i * 0.153) / 0.3);
+        g.globalAlpha = ap * (hit ? 1 : 0.75);
+        D(g, x, y, hit ? 4.2 : 2.4, hit ? K.gold : K.blue);
+        if (hit) {
+          const b = (S[S[i].hit].d / 365) * TAU - Math.PI / 2;
+          g.globalAlpha = ap * 0.75;
+          L(g, x, y, cx + Math.cos(b) * R0, cy + Math.sin(b) * R0, K.gold, 1.1);
+          g.globalAlpha = ap;
+          D(g, cx + Math.cos(b) * R0, cy + Math.sin(b) * R0, 4.2, K.gold);
+        }
+      }
+      g.globalAlpha = 1;
+      const pr = (k: number) => {
+        let q = 1;
+        for (let j = 0; j < k; j++) q *= (365 - j) / 365;
+        return 1 - q;
+      };
+      const gx0 = 204,
+        gx1 = 298,
+        gy0 = 30,
+        gy1 = 124;
+      g.globalAlpha = cl(sg(t, 1.4, 2.2));
+      L(g, gx0, gy1, gx1, gy1, K.grid, 1);
+      L(g, gx0, gy0, gx0, gy1, K.grid, 1);
+      g.setLineDash([3, 4]);
+      L(g, gx0, lp(gy1, gy0, 0.5), gx1, lp(gy1, gy0, 0.5), K.grid2, 1);
+      g.setLineDash([]);
+      TX(g, "50%", gx0 - 4, lp(gy1, gy0, 0.5), 7, K.dim, "right");
+      g.strokeStyle = K.blue;
+      g.lineWidth = 1.8;
+      g.beginPath();
+      for (i = 0; i <= Math.max(1, n); i++) {
+        const X = lp(gx0, gx1, i / 60),
+          Y = lp(gy1, gy0, pr(i));
+        if (i === 0) g.moveTo(X, Y);
+        else g.lineTo(X, Y);
+      }
+      g.stroke();
+      if (n > 0) {
+        const Xn = lp(gx0, gx1, n / 60),
+          Yn = lp(gy1, gy0, pr(n));
+        D(g, Xn, Yn, 2.8, K.wht);
+        TX(g, (pr(n) * 100).toFixed(0) + "%", Xn + (n > 48 ? -6 : 6), Yn - 8, 9, K.wht, n > 48 ? "right" : "left");
+      }
+      TX(g, "people  " + n, gx0, 138, 9, K.dim, "left");
+      g.globalAlpha = 1;
+      const msg = sg(t, 11.4, 12.4);
+      if (msg > 0) {
+        g.globalAlpha = msg;
+        TX(g, "23 people. even odds someone shares a birthday.", 22, 142, 9, K.gold, "left");
+        g.globalAlpha = 1;
+      }
     },
   },
   /* 9 · Ulam spiral of primes */
