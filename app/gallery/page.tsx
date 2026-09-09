@@ -104,6 +104,7 @@ const SECTIONS: Section[] = [
     set: "Calculus",
     heading: "Calculus & analysis",
     cards: [
+      { scene: "gradient", label: "Optimization", title: "Gradient descent", prompt: "“race plain descent against momentum downhill”" },
       { scene: "riemann", label: "Calculus", title: "Area under a curve", prompt: "“shade the Riemann sum under a parabola”" },
       { scene: "tangent", label: "Calculus", title: "Tangent line", prompt: "“sweep the tangent along a cubic”" },
       { scene: "taylor", label: "Calculus", title: "Taylor series", prompt: "“approximate sin(x) with polynomials”" },

@@ -237,6 +237,7 @@ export interface Scene {
   _knot?: number[][];
   _ben?: number[];
   _bday?: { d: number; hit: number }[];
+  _bg?: number;
   _D?: { P: number[]; G: number[]; N: number };
   _im?: Img;
   _ac?: Acc;
@@ -3398,6 +3399,91 @@ export const SCENES: Record<string, Scene> = {
         TX(g, "θ", cx + 15, cy - 9, 9, K.gold);
         g.globalAlpha = 1;
       }
+    },
+  },
+  /* gradient descent: two runners, one with momentum */
+  gradient: {
+    T: 16,
+    poster: 10,
+    draw(g, t) {
+      const W = 80,
+        H = 50,
+        im = IMG(this, W, H),
+        d = im.d.data;
+      const F = (u: number, v: number) => 0.62 * Math.sin(u * 1.35) * Math.cos(v * 1.15) + 0.3 * (u * u + v * v) * 0.32;
+      const GX = (u: number, v: number) => (F(u + 0.01, v) - F(u - 0.01, v)) / 0.02,
+        GY = (u: number, v: number) => (F(u, v + 0.01) - F(u, v - 0.01)) / 0.02;
+      if (!this._bg) {
+        /* the loss surface, banded so the contours read without drawing them */
+        for (let y = 0; y < H; y++)
+          for (let x = 0; x < W; x++) {
+            const u = ((x / W) * 2 - 1) * 2.6,
+              v = ((y / H) * 2 - 1) * 2.0,
+              f = F(u, v),
+              c = HSV(0.62 - 0.16 * cl((f + 1.2) / 3), 0.5, cl(0.18 + 0.4 * (1 - cl((f + 1.2) / 3))));
+            const band = Math.abs(((f * 4) % 1) - 0.5) < 0.06 ? 1.5 : 1,
+              i = (y * W + x) * 4;
+            d[i] = c[0] * band;
+            d[i + 1] = c[1] * band;
+            d[i + 2] = c[2] * band;
+            d[i + 3] = 255;
+          }
+        im.g.putImageData(im.d, 0, 0);
+        this._bg = 1;
+      }
+      g.globalAlpha = cl(sg(t, 0.2, 1)) * 0.62;
+      g.drawImage(im.c, 26, 20, 268, 116);
+      g.globalAlpha = cl(sg(t, 0.2, 1)) * 0.35;
+      g.fillStyle = "#07070b";
+      g.fillRect(26, 20, 268, 116);
+      g.globalAlpha = 1;
+      const X = (u: number) => 26 + ((u / 2.6 + 1) / 2) * 268,
+        Y = (v: number) => 20 + ((v / 2.0 + 1) / 2) * 116;
+      /* both runners are replayed from scratch each frame, so the path is exact */
+      const run = (mom: boolean, col: string, u0: number, v0: number) => {
+        let u = u0,
+          v = v0,
+          vu = 0,
+          vv = 0;
+        const P: number[][] = [[u, v]],
+          steps = Math.floor(cl((t - 1.2) / 9.4) * 260);
+        for (let k = 0; k < steps; k++) {
+          const gu = GX(u, v),
+            gv = GY(u, v);
+          if (mom) {
+            vu = vu * 0.9 - gu * 0.055;
+            vv = vv * 0.9 - gv * 0.055;
+            u += vu;
+            v += vv;
+          } else {
+            u -= gu * 0.115;
+            v -= gv * 0.115;
+          }
+          u = cl((u + 2.6) / 5.2) * 5.2 - 2.6;
+          v = cl((v + 2.0) / 4.0) * 4.0 - 2.0;
+          P.push([u, v]);
+        }
+        g.strokeStyle = col;
+        g.lineWidth = 1.7;
+        g.lineJoin = "round";
+        g.beginPath();
+        for (let k = 0; k < P.length; k++) {
+          const xx = X(P[k][0]),
+            yy = Y(P[k][1]);
+          if (k) g.lineTo(xx, yy);
+          else g.moveTo(xx, yy);
+        }
+        g.stroke();
+        const last = P[P.length - 1];
+        D(g, X(last[0]), Y(last[1]), 3.4, col);
+      };
+      run(false, K.gold, -2.1, 1.5);
+      run(true, K.green, -2.1, 1.5);
+      g.globalAlpha = sg(t, 1.2, 2);
+      TX(g, "plain descent", 34, 44, 9, K.gold, "left");
+      TX(g, "with momentum", 34, 56, 9, K.green, "left");
+      TX(g, "same start. same slope. different destiny.", 22, 142, 9, K.dim, "left");
+      g.globalAlpha = 1;
     },
   },
   /* 2 · Riemann sums refining under a parabola */
