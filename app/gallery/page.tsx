@@ -118,6 +118,7 @@ const SECTIONS: Section[] = [
     heading: "Circles & waves",
     cards: [
       { scene: "lissajous", label: "Trigonometry", title: "Lissajous sweep", prompt: "“sweep a Lissajous figure through every ratio”" },
+      { scene: "doppler", label: "Physics", title: "Sonic boom", prompt: "“circle a siren faster than its own sound”" },
       { scene: "sine", label: "Trigonometry", title: "Sine from a circle", prompt: "“trace a sine wave from a rotating circle”" },
       { scene: "fourier", label: "Trigonometry", title: "Square wave from circles", prompt: "“build a square wave by stacking spinning circles”" },
       { scene: "euler", label: "Trigonometry", title: "Euler's identity", prompt: "“walk e^iθ around the unit circle to −1”" },

@@ -3378,6 +3378,64 @@ export const SCENES: Record<string, Scene> = {
     },
   },
 
+  /* Doppler: a siren on a circular track, outrunning its own sound */
+  doppler: {
+    T: 14,
+    poster: 9,
+    draw(g, t) {
+      const c = 40,
+        R0 = 40,
+        cx = 160,
+        cy = 82,
+        om = (lp(0.22, 1.55, ss(cl((t - 1.4) / 9.6))) * c) / R0;
+      /* every ring is a wavefront, still centred where the siren was when it left */
+      const SP = (tt: number) => {
+        const a = om * tt;
+        return [cx + Math.cos(a) * R0, cy + Math.sin(a) * R0];
+      };
+      g.globalAlpha = 0.35;
+      DC(g, cx, cy, R0, K.grid2, 1, [3, 5], 0);
+      g.globalAlpha = 1;
+      for (let i = 0; i < 30; i++) {
+        const em = t - i * 0.34;
+        if (em < 0) continue;
+        const age = t - em,
+          r = c * age;
+        if (r > 200) continue;
+        const sa = SP(em);
+        g.globalAlpha = cl(0.6 - age * 0.11) * cl(sg(t, 0.2, 0.9));
+        g.strokeStyle = K.blue;
+        g.lineWidth = 1;
+        g.beginPath();
+        g.arc(sa[0], sa[1], r, 0, TAU);
+        g.stroke();
+      }
+      g.globalAlpha = 1;
+      const vr = (om * R0) / c,
+        p = SP(t);
+      /* past mach 1 the wavefronts have an envelope, and it is a cone */
+      if (vr > 1) {
+        g.globalAlpha = cl((vr - 1) * 3) * 0.85;
+        g.strokeStyle = K.gold;
+        g.lineWidth = 1.6;
+        const dir = om * t + Math.PI / 2,
+          half = Math.asin(cl(1 / vr));
+        g.beginPath();
+        g.moveTo(p[0], p[1]);
+        g.lineTo(p[0] - 190 * Math.cos(dir - half), p[1] - 190 * Math.sin(dir - half));
+        g.moveTo(p[0], p[1]);
+        g.lineTo(p[0] - 190 * Math.cos(dir + half), p[1] - 190 * Math.sin(dir + half));
+        g.stroke();
+        g.globalAlpha = 1;
+      }
+      D(g, p[0], p[1], 4.4, vr > 1 ? K.gold : K.wht);
+      g.globalAlpha = sg(t, 0.8, 1.6);
+      TX(g, "siren  " + vr.toFixed(2) + " × wave speed", 20, 44, 9.5, vr > 1 ? K.gold : K.dim, "left");
+      TX(g, vr > 1 ? "it outran its own sound" : "ahead: bunched up. behind: stretched out.", 20, 56, 9, vr > 1 ? K.gold : K.dim, "left");
+      g.globalAlpha = 1;
+    },
+  },
+
   /* 1 · sine traced from a rotating circle */
   sine: {
     T: 12,
