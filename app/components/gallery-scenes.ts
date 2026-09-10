@@ -238,6 +238,7 @@ export interface Scene {
   _ben?: number[];
   _bday?: { d: number; hit: number }[];
   _bg?: number;
+  _orb?: number[][];
   _D?: { P: number[]; G: number[]; N: number };
   _im?: Img;
   _ac?: Acc;
@@ -6369,6 +6370,71 @@ export const SCENES: Record<string, Scene> = {
         TX(g, "two chemicals, one skin", 308, 190, 9.5, "rgba(255,255,255,.65)", "right");
         g.globalAlpha = 1;
       }
+    },
+  },
+
+  /* a relativistic rosette: the orbit that never closes */
+  orbits: {
+    T: 18,
+    poster: 12,
+    draw(g, t) {
+      let i: number;
+      if (!this._orb) {
+        const P: number[][] = [],
+          dt = 0.0016,
+          L2 = 1.34,
+          rs = 0.1,
+          steps = 14000;
+        let r = 1,
+          th = 0,
+          vr = 0;
+        /* Newton's 1/r², plus the general-relativistic 1/r⁴ term that precesses it */
+        for (i = 0; i < steps; i++) {
+          const acc = -1 / (r * r) + L2 / (r * r * r) - (3 * rs * L2) / (2 * r * r * r * r);
+          vr += acc * dt * 3.4;
+          r += vr * dt * 3.4;
+          th += (Math.sqrt(L2) / (r * r)) * dt * 3.4;
+          if (r < 0.22) {
+            r = 0.22;
+            vr = Math.abs(vr);
+          }
+          if (i % 3 === 0) P.push([r * Math.cos(th), r * Math.sin(th)]);
+        }
+        this._orb = P;
+      }
+      const P = this._orb,
+        n = Math.max(2, Math.floor(P.length * ss(cl((t - 0.4) / 14.2)))),
+        S = 44;
+      g.globalAlpha = cl(sg(t, 0.2, 1));
+      const gr = g.createRadialGradient(160, 84, 2, 160, 84, 34);
+      gr.addColorStop(0, "rgba(224,169,74,.55)");
+      gr.addColorStop(1, "rgba(224,169,74,0)");
+      g.fillStyle = gr;
+      g.beginPath();
+      g.arc(160, 84, 34, 0, TAU);
+      g.fill();
+      D(g, 160, 84, 4.6, K.gold);
+      g.globalAlpha = 1;
+      g.lineJoin = "round";
+      g.lineCap = "round";
+      g.lineWidth = 1.15;
+      for (i = 1; i < n; i += 28) {
+        const e = Math.min(n, i + 29),
+          h = HSV(0.55 + 0.26 * (i / P.length), 0.5, 1);
+        g.strokeStyle = "rgb(" + h[0] + "," + h[1] + "," + h[2] + ")";
+        g.globalAlpha = 0.16 + 0.7 * cl((i - (n - 1400)) / 1400);
+        g.beginPath();
+        for (let j = i - 1; j < e; j++) {
+          if (j === i - 1) g.moveTo(160 + P[j][0] * S, 84 + P[j][1] * S);
+          else g.lineTo(160 + P[j][0] * S, 84 + P[j][1] * S);
+        }
+        g.stroke();
+      }
+      g.globalAlpha = 1;
+      D(g, 160 + P[n - 1][0] * S, 84 + P[n - 1][1] * S, 3, K.wht);
+      g.globalAlpha = sg(t, 1.2, 2);
+      TX(g, "Newton draws an ellipse. Einstein draws a flower.", 22, 44, 9, K.dim, "left");
+      g.globalAlpha = 1;
     },
   },
 

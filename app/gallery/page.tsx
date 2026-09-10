@@ -130,6 +130,7 @@ const SECTIONS: Section[] = [
     set: "Space",
     heading: "Space & physics",
     cards: [
+      { scene: "orbits", label: "Physics", title: "Precessing orbit", prompt: "“let an orbit precess into a flower”" },
       { scene: "galaxy", label: "Physics", title: "Galaxy collision", prompt: "“throw two galaxies through each other”" },
       { scene: "waves", label: "Physics", title: "Interference", prompt: "“ripple two waves through each other”" },
     ],
