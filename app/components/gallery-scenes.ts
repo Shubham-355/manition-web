@@ -3339,6 +3339,45 @@ export const SCENES: Record<string, Scene> = {
     },
   },
 
+  /* Lissajous: one curve, every ratio */
+  lissajous: {
+    T: 15,
+    poster: 8,
+    draw(g, t) {
+      const N = 900,
+        ra = 3,
+        rb = lp(2, 5, ss(cl((t - 1) / 11.5))),
+        ph = t * 0.5,
+        cx = 160,
+        cy = 80,
+        A = 104,
+        B = 58;
+      g.lineJoin = "round";
+      g.lineCap = "round";
+      g.lineWidth = 1.5;
+      g.globalAlpha = 0.22 + 0.78 * cl(sg(t, 0.2, 1.2));
+      for (let i = 1; i < N; i += 26) {
+        const e = Math.min(N, i + 27),
+          h = HSV(0.48 + 0.34 * (i / N) + 0.05 * Math.sin(t * 0.4), 0.6, 1);
+        g.strokeStyle = "rgb(" + h[0] + "," + h[1] + "," + h[2] + ")";
+        g.beginPath();
+        for (let j = i - 1; j < e; j++) {
+          const u = (j / N) * TAU,
+            px = cx + A * Math.sin(ra * u + ph),
+            py = cy + B * Math.sin(rb * u);
+          if (j === i - 1) g.moveTo(px, py);
+          else g.lineTo(px, py);
+        }
+        g.stroke();
+      }
+      g.globalAlpha = 1;
+      D(g, cx + A * Math.sin(ra * ph * 2 + ph), cy + B * Math.sin(rb * ph * 2), 2.8, K.wht);
+      g.globalAlpha = sg(t, 1, 1.8);
+      TX(g, "x : y  =  " + ra.toFixed(0) + " : " + rb.toFixed(2), 22, 44, 10, K.dim, "left");
+      g.globalAlpha = 1;
+    },
+  },
+
   /* 1 · sine traced from a rotating circle */
   sine: {
     T: 12,
