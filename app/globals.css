@@ -270,6 +270,7 @@ details[open] .pc-chev { transform:rotate(180deg); }
 .gv-wrap *, .gv-wrap *::before { box-sizing:border-box; }
 .gv-wrap:focus-visible { box-shadow:inset 0 0 0 2px rgba(59,98,224,.7); }
 .gv-canvas { position:absolute; inset:0; width:100%; height:100%; display:block; cursor:pointer; }
+video.gv-canvas { object-fit:cover; background:#0a0a0d; }
 .gv-tag { position:absolute; top:11px; left:12px; font:500 9.5px/1 "IBM Plex Mono",monospace; letter-spacing:.04em; color:#9a9aa2; background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.07); padding:4px 7px; border-radius:5px; pointer-events:none; }
 .gv-big { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.93); color:#16161a; border:0; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform .16s, opacity .18s; box-shadow:0 8px 22px rgba(0,0,0,.4); }
 .gv-big svg { margin-left:1px; }
