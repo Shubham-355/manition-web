@@ -4,4 +4,5 @@ export const RENDERED = new Set<string>([
   "stickhotel",
   "stickluck",
   "sticklane",
+  "stickdoors",
 ]);
