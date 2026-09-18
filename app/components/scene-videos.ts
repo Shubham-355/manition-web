@@ -7,4 +7,5 @@ export const RENDERED = new Set<string>([
   "stickdoors",
   "kaleido",
   "dejong",
+  "curl",
 ]);
