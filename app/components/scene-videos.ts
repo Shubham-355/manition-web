@@ -6,4 +6,5 @@ export const RENDERED = new Set<string>([
   "sticklane",
   "stickdoors",
   "kaleido",
+  "dejong",
 ]);
