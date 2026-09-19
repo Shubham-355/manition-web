@@ -9,4 +9,5 @@ export const RENDERED = new Set<string>([
   "dejong",
   "curl",
   "nebula",
+  "supernova",
 ]);
