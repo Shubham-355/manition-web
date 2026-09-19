@@ -8,4 +8,5 @@ export const RENDERED = new Set<string>([
   "kaleido",
   "dejong",
   "curl",
+  "nebula",
 ]);
