@@ -10,4 +10,5 @@ export const RENDERED = new Set<string>([
   "curl",
   "nebula",
   "supernova",
+  "terrain",
 ]);
