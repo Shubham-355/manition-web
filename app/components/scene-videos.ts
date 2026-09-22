@@ -12,4 +12,5 @@ export const RENDERED = new Set<string>([
   "supernova",
   "terrain",
   "tree",
+  "neural",
 ]);
