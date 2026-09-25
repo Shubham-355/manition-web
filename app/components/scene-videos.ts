@@ -15,4 +15,5 @@ export const RENDERED = new Set<string>([
   "neural",
   "aurora",
   "origin",
+  "stickhole",
 ]);
