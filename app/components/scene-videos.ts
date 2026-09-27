@@ -16,4 +16,10 @@ export const RENDERED = new Set<string>([
   "aurora",
   "origin",
   "stickhole",
+  "sierpinski",
+  "koch",
+  "dragon",
+  "hilbert",
+  "apollonian",
+  "chaosgame",
 ]);
