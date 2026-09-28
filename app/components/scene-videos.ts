@@ -22,4 +22,13 @@ export const RENDERED = new Set<string>([
   "hilbert",
   "apollonian",
   "chaosgame",
+  "lorenz",
+  "rossler",
+  "pendulum",
+  "logistic",
+  "threebody",
+  "standardmap",
+  "turing",
+  "gameoflife",
+  "boids",
 ]);
