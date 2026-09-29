@@ -31,4 +31,13 @@ export const RENDERED = new Set<string>([
   "turing",
   "gameoflife",
   "boids",
+  "mobius",
+  "torusknot",
+  "tesseract",
+  "vfield",
+  "eigen",
+  "matrix",
+  "pyth",
+  "fib",
+  "phyllo",
 ]);
