@@ -40,4 +40,13 @@ export const RENDERED = new Set<string>([
   "pyth",
   "fib",
   "phyllo",
+  "benford",
+  "birthday",
+  "primes",
+  "modular",
+  "collatz",
+  "sieve",
+  "bell",
+  "walk",
+  "montecarlo",
 ]);
