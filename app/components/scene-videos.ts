@@ -52,4 +52,6 @@ export const RENDERED = new Set<string>([
   "gradient",
   "riemann",
   "tangent",
+  "taylor",
+  "limit",
 ]);
