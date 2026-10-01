@@ -49,4 +49,7 @@ export const RENDERED = new Set<string>([
   "bell",
   "walk",
   "montecarlo",
+  "gradient",
+  "riemann",
+  "tangent",
 ]);
