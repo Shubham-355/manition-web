@@ -54,4 +54,9 @@ export const RENDERED = new Set<string>([
   "tangent",
   "taylor",
   "limit",
+  "lissajous",
+  "doppler",
+  "sine",
+  "fourier",
+  "euler",
 ]);
