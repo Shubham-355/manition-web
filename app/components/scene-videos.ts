@@ -59,4 +59,5 @@ export const RENDERED = new Set<string>([
   "sine",
   "fourier",
   "euler",
+  "orbits",
 ]);
