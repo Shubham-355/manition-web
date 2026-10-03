@@ -61,4 +61,6 @@ export const RENDERED = new Set<string>([
   "euler",
   "orbits",
   "blackhole",
+  "galaxy",
+  "waves",
 ]);
