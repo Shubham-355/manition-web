@@ -15,16 +15,6 @@ const arrow = (
   </svg>
 );
 
-const TICKER = [
-  "grow a tree from one seed and run it through four seasons",
-  "bend starlight around a black hole",
-  "explain entropy with a stick figure who just cleaned his room",
-  "fill a square with one unbroken line",
-  "put the aurora over a frozen lake and let it drift",
-  "throw two galaxies through each other",
-  "sweep a Lissajous figure through every ratio",
-];
-
 const STEPS = [
   {
     n: "01",
@@ -108,22 +98,6 @@ export default function Home() {
           </div>
         </Reveal>
       </section>
-
-      {/* ============ TICKER — repeating type as texture ============ */}
-      <div className="hm-ticker" aria-hidden="true">
-        <div className="mq">
-          <div className="mq-row">
-            {TICKER.map((t) => (
-              <span key={t}>{t}</span>
-            ))}
-          </div>
-          <div className="mq-row">
-            {TICKER.map((t) => (
-              <span key={t}>{t}</span>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* ============ STEPS — editorial rows, not a card grid ============ */}
       <section className="hm-band">
