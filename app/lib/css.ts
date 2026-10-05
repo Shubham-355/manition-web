@@ -20,7 +20,10 @@ function mapFontFamily(value: string): string {
   return value
     .replace(/'Space Grotesk'/g, "var(--font-space-grotesk)")
     .replace(/'IBM Plex Sans'/g, "var(--font-ibm-plex-sans)")
-    .replace(/'IBM Plex Mono'/g, "var(--font-ibm-plex-mono)");
+    .replace(/'IBM Plex Mono'/g, "var(--font-ibm-plex-mono)")
+    .replace(/'Instrument Serif'/g, "var(--font-instrument)")
+    .replace(/'Geist Mono'/g, "var(--font-geist-mono)")
+    .replace(/'Geist'/g, "var(--font-geist)");
 }
 
 /**
