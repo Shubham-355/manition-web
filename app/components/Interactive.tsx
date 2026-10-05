@@ -2,6 +2,7 @@
 
 import {
   useActionState,
+  useEffect,
   useState,
   type CSSProperties,
   type ElementType,
@@ -114,7 +115,23 @@ const TONES = {
     error: "#e0918a",
     align: "margin:0;",
   },
+  night: {
+    chip: "background:rgba(255,91,31,.08); border:1px solid rgba(255,91,31,.4); color:#EDEAE3; border-radius:100px;",
+    strong: "color:#EDEAE3;",
+    input: "background:#0A0A0B; border-width:1px; border-style:solid; border-color:rgba(237,234,227,.16); border-radius:100px; color:#EDEAE3;",
+    focus: { borderColor: "#FF5B1F", boxShadow: "0 0 0 3px rgba(255,91,31,.2)" },
+    button: "background:#FF5B1F; color:#0A0A0B; border-radius:100px; font-weight:500;",
+    buttonHover: "#EDEAE3",
+    error: "#ff9a7a",
+    align: "margin:32px 0 0; max-width:500px;",
+  },
 } as const;
+
+const CHECK: Record<keyof typeof TONES, string> = {
+  paper: "background:#2f7a4a; color:#fff;",
+  ink: "background:#2f7a4a; color:#fff;",
+  night: "background:#FF5B1F; color:#0A0A0B;",
+};
 
 /**
  * Waitlist form with the design's join → confirmed states (the `sc-if`
@@ -123,9 +140,12 @@ const TONES = {
 export function WaitlistForm({
   source = "/",
   tone = "paper",
+  onJoined,
 }: {
   source?: string;
   tone?: keyof typeof TONES;
+  /** Called once the server confirms the email is on the list. */
+  onJoined?: () => void;
 }) {
   const t = TONES[tone];
   const [state, formAction, pending] = useActionState<WaitlistState, FormData>(
@@ -134,6 +154,11 @@ export function WaitlistForm({
   );
   const [focused, setFocused] = useState(false);
   const [btnHover, setBtnHover] = useState(false);
+  const joined = state.status === "joined";
+
+  useEffect(() => {
+    if (joined) onJoined?.();
+  }, [joined, onJoined]);
 
   if (state.status === "joined") {
     return (
@@ -145,7 +170,7 @@ export function WaitlistForm({
       >
         <span
           style={parseStyle(
-            "flex:none; width:22px; height:22px; border-radius:50%; background:#2f7a4a; color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px;",
+            `flex:none; width:22px; height:22px; border-radius:50%; ${CHECK[tone]} display:flex; align-items:center; justify-content:center; font-size:13px;`,
           )}
         >
           ✓
