@@ -5,40 +5,13 @@ import { useEffect, useRef, type RefObject } from "react";
 /*
  * One requestAnimationFrame loop drives every moving part of the night page:
  * the hero type, the moon's angle, parallax, the swinging archive, the "How it
- * works" plate that plays with scroll, the bobbing props and the cursor dot.
+ * works" plate that plays with scroll, the bobbing props and the cursor dot. The nav and footer animate themselves.
  * Elements opt in with data-* attributes, so the markup stays plain.
  */
 
 const ease = (x: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 const cl = (x: number) => Math.min(1, Math.max(0, x));
 const nums = (s: string | null) => (s || "").split(",").map(Number);
-
-/* Lay each wordmark letter's reflection on the horizon, then sit the word on the sky's bottom edge. */
-function fitFooter(root: HTMLElement) {
-  const a = root.querySelector<HTMLElement>("[data-wm]");
-  const sky = root.querySelector<HTMLElement>("[data-sky]");
-  if (!a || !sky) return;
-  a.style.translate = "0 0";
-  const sp = a.querySelector<HTMLElement>("[data-sphere]");
-  if (sp) sp.style.translate = "0 0";
-  let base: number | null = null;
-  a.querySelectorAll<HTMLElement>("[data-letter]").forEach((L) => {
-    const m = L.querySelector("[data-base]");
-    if (!m) return;
-    const lb = m.getBoundingClientRect().top;
-    const r = L.getBoundingClientRect();
-    base = lb;
-    const oy = lb - r.top;
-    const ox = r.width / 2;
-    L.querySelectorAll<HTMLElement>("[data-fsh]").forEach((s) => {
-      s.style.transformOrigin = ox.toFixed(2) + "px " + oy.toFixed(2) + "px";
-      s.style.clipPath = "inset(-50px -50px " + Math.max(0, r.height - oy).toFixed(2) + "px -50px)";
-    });
-  });
-  if (base === null) return;
-  if (sp) sp.style.translate = "0 " + (base - sp.getBoundingClientRect().bottom).toFixed(2) + "px";
-  a.style.translate = "0 " + (sky.getBoundingClientRect().bottom - base).toFixed(2) + "px";
-}
 
 export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: boolean) {
   const joinedRef = useRef(joined);
@@ -68,7 +41,6 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       pborn: q<SVGElement>("[data-pborn]"),
       st: q<SVGElement>("[data-st]"),
       wave: q<SVGElement>("[data-wave]"),
-      nav: o("[data-nav]"),
       door: o("[data-door]"),
       strip: o("[data-strip]"),
       arch: o("[data-arch]"),
@@ -79,7 +51,6 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       grain: o("[data-grain]"),
       cur: o("[data-cursor]"),
       curL: o("[data-cursor-label]"),
-      orbit: o("[data-orbit]"),
       ring: o<SVGElement>("[data-ring]"),
       sun: o("[data-sun]"),
       moon: {} as Record<string, SVGElement>,
@@ -95,9 +66,6 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       m.mode = t?.closest ? (t.closest("[data-play]") ? "play" : t.closest("a,button,input") ? "link" : "dot") : "dot";
     };
     window.addEventListener("mousemove", onMove);
-    const onResize = () => fitFooter(root);
-    window.addEventListener("resize", onResize);
-    document.fonts?.ready.then(() => fitFooter(root));
 
     let frame = 0;
     let raf = 0;
@@ -111,14 +79,6 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       const mob = innerWidth < 768;
       const nx = m.x / innerWidth - 0.5;
       const ny = m.y / vh - 0.5;
-
-      if (els.nav) {
-        const nb = sy > 8;
-        els.nav.style.background = nb ? "rgba(10,10,11,.74)" : "transparent";
-        els.nav.style.backdropFilter = nb ? "blur(14px)" : "none";
-        els.nav.style.setProperty("-webkit-backdrop-filter", nb ? "blur(14px)" : "none");
-        els.nav.style.borderBottomColor = nb ? "rgba(237,234,227,.08)" : "transparent";
-      }
 
       /* hero: "Say it." types in, "Watch it move." floats up, and "move." peels off on scroll */
       els.type.forEach((e) => {
@@ -201,11 +161,6 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         const ay = cy - 52 * Math.sin(a);
         M.arc.setAttribute("d", "M" + (cx + 52) + " " + cy + " A52 52 0 " + (a > Math.PI ? 1 : 0) + " 0 " + ax + " " + ay);
       }
-      if (els.orbit && !reduce) {
-        const a = (t / 20) * Math.PI * 2;
-        els.orbit.style.transform = "translate(" + Math.cos(a) * 4 + "px," + Math.sin(a) * 4 + "px)";
-      }
-
       /* the door widens as it comes into view */
       if (els.door) {
         const r = els.door.getBoundingClientRect();
@@ -282,8 +237,6 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         }
       }
 
-      if (frame % 90 === 1) fitFooter(root);
-
       els.dot.forEach((e) => {
         if (reduce) return;
         const i = +(e.getAttribute("data-dot") || 0);
@@ -329,7 +282,6 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("resize", onResize);
     };
   }, [rootRef]);
 }

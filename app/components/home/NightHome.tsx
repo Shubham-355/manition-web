@@ -9,25 +9,9 @@ import { WaitlistForm } from "../Interactive";
 import { RENDERED } from "../scene-videos";
 import { WAVE_D } from "./wave-path";
 import { useNightMotion } from "./motion";
-import "./night.css";
-
-const NAV = [
-  { href: "/features", label: "Features" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/blog", label: "Blog" },
-  { href: "/docs", label: "Docs" },
-];
-
-const FOOT = [
-  { href: "/gallery", label: "Gallery" },
-  { href: "/features", label: "Features" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/docs", label: "Docs" },
-  { href: "/blog", label: "Blog" },
-  { href: "/about", label: "About" },
-  { href: "/editor", label: "Open the app" },
-];
+import NightNav from "../night/NightNav";
+import NightFooter from "../night/NightFooter";
+import "../night/night.css";
 
 /* ============ the floating archive ============ */
 
@@ -278,42 +262,6 @@ function ArchiveTile({ tile }: { tile: Tile }) {
 
 /* ============ footer wordmark ============ */
 
-const WORD = "Manition".split("");
-const SKEW = [-18, -13.5, -9, -4.5, 0, 4.5, 9, 13.5];
-const RIM = [0.57, 0.69, 0.82, 0.94, 0.94, 0.82, 0.69, 0.57];
-const RIM2 = [0.08, 0.16, 0.23, 0.31, 0.31, 0.23, 0.16, 0.08];
-
-function Wordmark() {
-  return (
-    <Link
-      data-wm="1"
-      href="/"
-      aria-label="Manition"
-      className="h3-wm"
-      style={css("position:relative; display:flex; align-items:flex-end; text-decoration:none; font-family:'Instrument Serif',serif; font-size:clamp(84px,20vw,300px); line-height:.74; letter-spacing:-0.05em; font-kerning:normal;")}
-    >
-      {WORD.map((ch, i) => {
-        const sk = `transform-origin:50% 95%; transform:perspective(4.5em) rotateX(42deg) skewX(${SKEW[i].toFixed(1)}deg) scaleY(-5);`;
-        return (
-          <span key={i} data-letter="1" aria-hidden="true" style={css("position:relative; display:inline-block;")}>
-            <span data-fsh="1" style={css(`position:absolute; left:0; top:0; z-index:0; color:#0E0A12; text-shadow:none; opacity:0.72; filter:blur(1px); ${sk} -webkit-mask-image:linear-gradient(0deg,#000 0%,rgba(0,0,0,0) 45%); mask-image:linear-gradient(0deg,#000 0%,rgba(0,0,0,0) 45%);`)}>{ch}</span>
-            <span data-fsh="1" style={css(`position:absolute; left:0; top:0; z-index:0; color:#0E0A12; text-shadow:none; opacity:0.5; filter:blur(7px); ${sk} -webkit-mask-image:linear-gradient(0deg,rgba(0,0,0,0) 12%,#000 38%,rgba(0,0,0,0) 100%); mask-image:linear-gradient(0deg,rgba(0,0,0,0) 12%,#000 38%,rgba(0,0,0,0) 100%);`)}>{ch}</span>
-            <span style={css(`position:relative; z-index:1; text-shadow:0 -1px 0 rgba(255,178,122,${RIM[i]}), 0 -2px 5px rgba(255,178,122,${RIM2[i]});`)}>
-              {ch}
-              <span data-base="1" style={css("display:inline-block; width:0; height:0;")} />
-            </span>
-          </span>
-        );
-      })}
-      <span data-sphere="1" className="h3-sphere" style={css("position:relative; display:inline-block; width:.16em; height:.16em; margin:0 0 0 .03em;")}>
-        <span aria-hidden="true" style={css("position:absolute; left:0; top:0; width:100%; height:100%; border-radius:50%; background:#0E0A12; opacity:.7; filter:blur(2px); transform-origin:50% 100%; transform:perspective(4.5em) rotateX(42deg) skewX(18deg) scaleY(-5); -webkit-mask-image:linear-gradient(0deg,#000,rgba(0,0,0,0)); mask-image:linear-gradient(0deg,#000,rgba(0,0,0,0));")} />
-        <span aria-hidden="true" style={css("position:absolute; left:20%; width:60%; bottom:-2px; height:4px; border-radius:50%; background:rgba(3,1,5,.95); filter:blur(1px);")} />
-        <span style={css("position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle at 62% 64%, #ff8a50, #FF5B1F 42%, #a8340a 100%); box-shadow:inset -.01em -.014em .02em rgba(255,210,170,.85);")} />
-      </span>
-    </Link>
-  );
-}
-
 /* ============ shared bits ============ */
 
 const STARS = (top: string, height: string, opacity: number, size = 900, pos = "") => (
@@ -351,27 +299,7 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
 
   return (
     <div ref={root} className={"h3 " + fontClass}>
-      {/* ============ NAV ============ */}
-      <nav data-nav="1" style={css("position:fixed; top:0; left:0; right:0; z-index:100; border-bottom:1px solid transparent; transition:background .5s, border-color .5s;")}>
-        <div style={css("max-width:1360px; margin:0 auto; padding:16px clamp(16px,4vw,40px); display:flex; align-items:center; justify-content:space-between; gap:24px;")}>
-          <Link href="/" style={css("display:flex; align-items:center; gap:10px; text-decoration:none; color:#EDEAE3;")}>
-            <span style={css("position:relative; width:22px; height:22px; border-radius:50%; border:1.5px solid #EDEAE3; box-sizing:border-box;")}>
-              <span data-orbit="1" style={css("position:absolute; left:50%; top:50%; width:7px; height:7px; margin:-3.5px 0 0 -3.5px; border-radius:50%; background:#FF5B1F;")} />
-            </span>
-            <span className="serif" style={css("font-size:24px; letter-spacing:-0.01em;")}>Manition</span>
-          </Link>
-          <div className="h3-navlinks" style={css("display:flex; align-items:center; gap:28px; font-size:14.5px;")}>
-            {NAV.map((n) => (
-              <Link key={n.href} href={n.href} className="h3-nl">
-                {n.label}
-              </Link>
-            ))}
-          </div>
-          <a href="#waitlist" className="h3-pill" style={css("gap:8px; font-size:14px; padding:10px 18px;")}>
-            Join waitlist {arrow}
-          </a>
-        </div>
-      </nav>
+      <NightNav waitlistHref="#waitlist" />
 
       {/* ============ HERO ============ */}
       <section style={css("position:relative; isolation:isolate; height:100vh; min-height:740px; max-height:1100px; overflow:hidden; background:linear-gradient(180deg,#0A0A0B 0%,#160f1a 26%,#2A1A2E 46%,#43243a 56%,#6b3a3e 64%);")}>
@@ -775,47 +703,7 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
         </div>
       </section>
 
-      {/* ============ LAST HORIZON ============ */}
-      <footer style={css("position:relative; isolation:isolate; overflow:hidden;")}>
-        <div data-sky="1" style={css("position:relative; background:linear-gradient(180deg,#0A0A0B 0%,#150e1a 30%,#2A1A2E 55%,#5c3040 80%,#B5655A 100%);")}>
-          {STARS("0", "70%", 0.55)}
-          <div aria-hidden="true" style={css("position:absolute; inset:0; overflow:hidden; pointer-events:none;")}>
-            <div style={css("position:absolute; left:50%; bottom:0; width:min(1100px,110vw); height:min(420px,40vw); transform:translateX(-50%); background:radial-gradient(ellipse 50% 100% at 50% 100%, rgba(255,150,90,.75) 0%, rgba(255,91,31,.4) 14%, rgba(255,91,31,.12) 42%, rgba(255,91,31,0) 75%);")} />
-            <div style={css("position:absolute; left:50%; bottom:0; width:100%; height:60px; transform:translateX(-50%); background:linear-gradient(180deg, rgba(255,140,80,0), rgba(255,140,80,.35));")} />
-            <div style={css("position:absolute; left:50%; bottom:calc(clamp(110px,12vw,190px) * -0.78); width:clamp(110px,12vw,190px); aspect-ratio:1; transform:translateX(-50%); border-radius:50%; background:radial-gradient(circle, #fff6e6 0%, #ffd1a6 45%, #ff8a4a 100%); box-shadow:0 0 40px 14px rgba(255,140,80,.65);")} />
-          </div>
-          <div className="h3-fhead" style={css("position:relative; z-index:2; max-width:1360px; margin:0 auto; padding:clamp(56px,7vw,96px) clamp(16px,4vw,40px) 0; display:flex; justify-content:space-between; gap:28px 40px;")}>
-            <p className="serif" style={css("margin:0; max-width:380px; font-size:clamp(28px,3vw,36px); line-height:1.12; color:#EDEAE3;")}>
-              Say what you want to explain. <span style={css("font-style:italic; color:#FF5B1F;")}>Get a video back.</span>
-            </p>
-            <div className="h3-flinks" style={css("display:flex; flex-wrap:nowrap; align-items:flex-start; gap:10px 20px; font-size:14px; white-space:nowrap;")}>
-              {FOOT.map((f) => (
-                <Link key={f.href} href={f.href} className="h3-fl">
-                  {f.label}
-                </Link>
-              ))}
-              <a href="#waitlist" style={css("text-decoration:none; font-weight:500;")}>
-                Join the waitlist
-              </a>
-            </div>
-          </div>
-          <div style={css("position:relative; z-index:3; display:flex; justify-content:center; padding-top:clamp(70px,9vw,140px);")}>
-            <Wordmark />
-          </div>
-        </div>
-        <div style={css("position:relative; z-index:1; height:clamp(230px,26vw,380px); overflow:hidden;")}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/v3/ground.webp" alt="" aria-hidden="true" style={css("position:absolute; left:50%; top:0; width:max(100%,1800px); transform:translateX(-50%); display:block;")} />
-          <div aria-hidden="true" style={css("position:absolute; inset:0; background:radial-gradient(ellipse 60% 70% at 50% 0%, rgba(255,91,31,.18), rgba(255,91,31,0) 70%);")} />
-          <div aria-hidden="true" style={css("position:absolute; left:50%; top:0; width:220%; height:100%; transform:translateX(-50%); background:repeating-conic-gradient(from 90deg at 50% 0%, rgba(255,130,70,.13) 0deg 2.2deg, rgba(255,130,70,0) 2.2deg 6.5deg); -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,0) 80%); mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,0) 80%);")} />
-          <div style={css("position:absolute; left:0; right:0; bottom:0;")}>
-            <div style={css("max-width:1360px; margin:0 auto; padding:16px clamp(16px,4vw,40px) 22px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px 28px; border-top:1px solid rgba(237,234,227,.1);")}>
-              <p className="mono" style={css("margin:0; font-size:12px; color:#9a978f;")}>© 2026 Manition</p>
-              <p className="mono" style={css("margin:0; font-size:12px; color:#9a978f;")}>Made for people who explain things.</p>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <NightFooter waitlistHref="#waitlist" />
 
       <div data-grain="1" className="h3-grain" aria-hidden="true" />
       <div data-cursor="1" className="h3-cursor" aria-hidden="true">
