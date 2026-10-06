@@ -116,7 +116,7 @@ const TONES = {
     align: "margin:0;",
   },
   night: {
-    chip: "background:rgba(255,91,31,.08); border:1px solid rgba(255,91,31,.4); color:#EDEAE3; border-radius:100px;",
+    chip: "margin-top:32px; background:rgba(255,91,31,.08); border:1px solid rgba(255,91,31,.4); color:#EDEAE3; border-radius:100px;",
     strong: "color:#EDEAE3;",
     input: "background:#0A0A0B; border-width:1px; border-style:solid; border-color:rgba(237,234,227,.16); border-radius:100px; color:#EDEAE3;",
     focus: { borderColor: "#FF5B1F", boxShadow: "0 0 0 3px rgba(255,91,31,.2)" },
