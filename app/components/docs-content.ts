@@ -8,15 +8,10 @@ export type Block =
 
 export type Guide = { title: string; read: string; blocks: Block[] };
 
-export type IconKind = "bolt" | "pen" | "code" | "video" | "chat" | "alert";
-
-type Category = {
+export type Category = {
   id: string;
   title: string;
   desc: string;
-  icon: IconKind;
-  bg: string;
-  fg: string;
   guides: Guide[];
 };
 
@@ -31,9 +26,6 @@ export const CATEGORIES: Category[] = [
     id: "start",
     title: "Getting started",
     desc: "Your first prompt, previewing a scene, and downloading the render.",
-    icon: "bolt",
-    bg: "#eef2fd",
-    fg: "#3b62e0",
     guides: [
       g("Writing your first prompt", "2 min read", [
         p("A prompt is just a plain-language description of the scene you want. Name the objects, say what should happen, and Manition writes the Manim code and renders it."),
@@ -91,9 +83,6 @@ export const CATEGORIES: Category[] = [
     id: "prompts",
     title: "Writing good prompts",
     desc: "Patterns that produce clear scenes - pacing, labels, emphasis and style.",
-    icon: "pen",
-    bg: "#f0eef8",
-    fg: "#5b46d9",
     guides: [
       g("Anatomy of a good prompt", "3 min read", [
         p("Clear prompts share a shape: what the objects are, what happens to them, and in what order. Everything else is style."),
@@ -168,9 +157,6 @@ export const CATEGORIES: Category[] = [
     id: "code",
     title: "Working with code",
     desc: "Reading, editing and exporting the generated Manim source.",
-    icon: "code",
-    bg: "#fbf3e4",
-    fg: "#c2913a",
     guides: [
       g("Reading the generated source", "2 min read", [
         p("Every scene has real Manim code behind it. Open the code panel to see exactly what produced the render."),
@@ -221,9 +207,6 @@ export const CATEGORIES: Category[] = [
     id: "render",
     title: "Rendering & exports",
     desc: "Resolutions, formats, transparent backgrounds and render queues.",
-    icon: "video",
-    bg: "#e9f5ec",
-    fg: "#2f7a4a",
     guides: [
       g("Choosing a resolution", "1 min read", [
         p("Pick a resolution based on where the clip will live."),
@@ -289,9 +272,6 @@ export const CATEGORIES: Category[] = [
     id: "library",
     title: "Chats & library",
     desc: "Organizing scenes, starring, searching and re-rendering old work.",
-    icon: "chat",
-    bg: "#eef2fd",
-    fg: "#3b62e0",
     guides: [
       g("Organizing your scenes", "2 min read", [
         p("Group related scenes into projects so shared style and context travel with them."),
@@ -331,9 +311,6 @@ export const CATEGORIES: Category[] = [
     id: "trouble",
     title: "Troubleshooting",
     desc: "Failed renders, scene errors, and what to do when a prompt goes sideways.",
-    icon: "alert",
-    bg: "#fdeeee",
-    fg: "#c2504f",
     guides: [
       g("When a render fails", "2 min read", [
         p("A failed render usually means the scene hit a code error. It's recoverable."),
