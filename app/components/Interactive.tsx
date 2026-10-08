@@ -1,80 +1,8 @@
 "use client";
 
-import {
-  useActionState,
-  useEffect,
-  useState,
-  type CSSProperties,
-  type ElementType,
-  type ReactNode,
-} from "react";
-import Link from "next/link";
+import { useActionState, useEffect, useState } from "react";
 import { parseStyle } from "../lib/css";
 import { joinWaitlist, type WaitlistState } from "../actions/waitlist";
-
-/**
- * A single element that merges a hover style over its base style while the
- * pointer is over it — the runtime equivalent of the design's `style-hover`.
- * Internal ("/…") hrefs render through next/link for client-side navigation.
- */
-// Split so React is never removing `borderColor` while a `border` shorthand stays.
-function splitBorder(base: CSSProperties, hoverStyle: CSSProperties): CSSProperties {
-  if (!("borderColor" in hoverStyle) || typeof base.border !== "string") return base;
-  const parts = /^(\S+)\s+(\S+)\s+(.+)$/.exec(base.border.trim());
-  if (!parts) return base;
-  const next = { ...base, borderWidth: parts[1], borderStyle: parts[2], borderColor: parts[3] };
-  delete next.border;
-  return next;
-}
-
-export function Hover({
-  as = "div",
-  style,
-  hoverStyle,
-  href,
-  title,
-  type,
-  onClick,
-  className,
-  ariaLabel,
-  ariaExpanded,
-  children,
-}: {
-  as?: ElementType;
-  style: string;
-  hoverStyle: CSSProperties;
-  href?: string;
-  title?: string;
-  type?: "button" | "submit";
-  onClick?: () => void;
-  className?: string;
-  ariaLabel?: string;
-  ariaExpanded?: boolean;
-  children?: ReactNode;
-}) {
-  const [hovered, setHovered] = useState(false);
-  const isInternal = typeof href === "string" && href.startsWith("/");
-  const Tag: ElementType = isInternal ? Link : as;
-  const base = splitBorder(parseStyle(style), hoverStyle);
-  return (
-    <Tag
-      href={href}
-      title={title}
-      type={type}
-      onClick={onClick}
-      className={className}
-      aria-label={ariaLabel}
-      aria-expanded={ariaExpanded}
-      style={hovered ? { ...base, ...hoverStyle } : base}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onFocus={() => setHovered(true)}
-      onBlur={() => setHovered(false)}
-    >
-      {children}
-    </Tag>
-  );
-}
 
 const arrowIcon = (
   <svg
@@ -95,26 +23,6 @@ const arrowIcon = (
 /* The input uses border longhands, not the `border` shorthand: React warns when a
    focus style removes `borderColor` while a shorthand still sets it. */
 const TONES = {
-  paper: {
-    chip: "background:#eef7f1; border:1px solid #cfe6d8; color:#276b45; border-radius:100px;",
-    strong: "color:#16161a;",
-    input: "background:#f7f6f3; border-width:1px; border-style:solid; border-color:#e2ded4; border-radius:100px; color:#16161a;",
-    focus: { borderColor: "#3b62e0", boxShadow: "0 0 0 3px rgba(59,98,224,0.16)" },
-    button: "background:#16161a; color:#f7f6f3; border-radius:100px;",
-    buttonHover: "#000",
-    error: "#c2564b",
-    align: "margin:26px auto 0;",
-  },
-  ink: {
-    chip: "background:#14211a; border:1px solid #2a4a35; color:#8fe0a6; border-radius:3px;",
-    strong: "color:#f4f2ed;",
-    input: "background:rgba(255,255,255,.05); border-width:1px; border-style:solid; border-color:#2c2a34; border-radius:2px; color:#f4f2ed;",
-    focus: { borderColor: "#3b62e0", boxShadow: "0 0 0 3px rgba(59,98,224,0.22)" },
-    button: "background:#f4f2ed; color:#16161a; border-radius:2px;",
-    buttonHover: "#fff",
-    error: "#e0918a",
-    align: "margin:0;",
-  },
   night: {
     chip: "margin-top:32px; background:rgba(255,91,31,.08); border:1px solid rgba(255,91,31,.4); color:#EDEAE3; border-radius:100px;",
     strong: "color:#EDEAE3;",
@@ -125,12 +33,22 @@ const TONES = {
     error: "#ff9a7a",
     align: "margin:32px 0 0; max-width:500px;",
   },
+  /* the night form sitting inside a card, flush with the copy above it */
+  nightCard: {
+    chip: "background:rgba(255,91,31,.08); border:1px solid rgba(255,91,31,.4); color:#EDEAE3; border-radius:100px;",
+    strong: "color:#EDEAE3;",
+    input: "background:#0A0A0B; border-width:1px; border-style:solid; border-color:rgba(237,234,227,.16); border-radius:100px; color:#EDEAE3;",
+    focus: { borderColor: "#FF5B1F", boxShadow: "0 0 0 2px rgba(255,91,31,.35)" },
+    button: "background:#FF5B1F; color:#0A0A0B; border-radius:100px;",
+    buttonHover: "#ff7d4a",
+    error: "#ff9a7a",
+    align: "margin:0; max-width:460px;",
+  },
 } as const;
 
 const CHECK: Record<keyof typeof TONES, string> = {
-  paper: "background:#2f7a4a; color:#fff;",
-  ink: "background:#2f7a4a; color:#fff;",
   night: "background:#FF5B1F; color:#0A0A0B;",
+  nightCard: "background:#FF5B1F; color:#0A0A0B;",
 };
 
 /**
@@ -139,7 +57,7 @@ const CHECK: Record<keyof typeof TONES, string> = {
  */
 export function WaitlistForm({
   source = "/",
-  tone = "paper",
+  tone = "night",
   onJoined,
 }: {
   source?: string;
@@ -254,4 +172,3 @@ export function WaitlistForm({
   );
 }
 
-export { arrowIcon };

@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { parseStyle } from "../lib/css";
 import { prisma } from "../lib/prisma";
-import Nav from "../components/Nav";
-import Footer from "../components/Footer";
+import NightShell from "../components/night/NightShell";
+import { GridBg } from "../components/night/parts";
+import { nightFonts } from "../lib/night-fonts";
 import UnsubscribeButton from "./UnsubscribeButton";
 
 export const metadata: Metadata = {
@@ -42,95 +43,46 @@ export default async function Unsubscribe({
   const token = Array.isArray(raw) ? raw[0] : raw;
   const result = await lookup(token);
 
+  const h1 = parseStyle("margin:0; font-family:'Instrument Serif',serif; font-weight:400; font-size:clamp(40px,5.6vw,64px); line-height:1; letter-spacing:-0.03em;");
+  const p = parseStyle("margin:20px 0 0; max-width:520px; font-size:16.5px; line-height:1.65; color:#a9a59d; text-wrap:pretty;");
+
   return (
-    <div
-      style={parseStyle(
-        "font-family:'IBM Plex Sans',ui-sans-serif,system-ui; color:#16161a; background:#f7f6f3; overflow-x:hidden; display:flex; flex-direction:column; min-height:100vh;",
-      )}
-    >
-      <Nav />
+    <NightShell fontClass={nightFonts} sky="#0A0A0B">
+      <GridBg>
+        <section style={parseStyle("position:relative; max-width:1160px; margin:0 auto; padding:clamp(140px,14vw,180px) clamp(16px,4vw,40px) clamp(110px,12vw,160px); min-height:56vh;")}>
+          <p style={parseStyle("margin:0 0 18px; font-family:'Geist Mono',monospace; font-size:12.5px; letter-spacing:.14em; color:#FF5B1F;")}>WAITLIST</p>
 
-      <section
-        style={parseStyle(
-          "flex:1; max-width:1120px; width:100%; margin:0 auto; padding:80px 30px 90px;",
-        )}
-      >
-        <p
-          style={parseStyle(
-            "font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#3b62e0; margin:0 0 16px;",
+          {result.kind === "found" && (
+            <>
+              <h1 style={h1}>
+                Leave the <span style={parseStyle("font-style:italic; color:#FF5B1F;")}>waitlist?</span>
+              </h1>
+              <p style={{ ...p, marginBottom: "30px" }}>
+                We will delete <strong style={parseStyle("font-weight:600; color:#EDEAE3;")}>{result.email}</strong> and you will not get an invite when a seat opens. You can always sign up again later.
+              </p>
+              <UnsubscribeButton token={token as string} />
+            </>
           )}
-        >
-          Waitlist
-        </p>
 
-        {result.kind === "found" && (
-          <>
-            <h1
-              style={parseStyle(
-                "margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(30px,5.6vw,44px); line-height:1.05; letter-spacing:-0.035em;",
-              )}
-            >
-              Leave the waitlist?
-            </h1>
-            <p
-              style={parseStyle(
-                "margin:18px 0 30px; max-width:520px; font-size:16.5px; line-height:1.65; color:#54545c; text-wrap:pretty;",
-              )}
-            >
-              We will delete{" "}
-              <strong style={parseStyle("font-weight:600; color:#16161a;")}>
-                {result.email}
-              </strong>{" "}
-              and you will not get an invite when a seat opens. You can always
-              sign up again later.
-            </p>
-            <UnsubscribeButton token={token as string} />
-          </>
-        )}
+          {result.kind === "already" && (
+            <>
+              <h1 style={h1}>You have already left.</h1>
+              <p style={p}>
+                That address is off the waitlist. Nothing more to do. <Link href="/">Back to the site</Link>.
+              </p>
+            </>
+          )}
 
-        {result.kind === "already" && (
-          <>
-            <h1
-              style={parseStyle(
-                "margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(30px,5.6vw,44px); line-height:1.05; letter-spacing:-0.035em;",
-              )}
-            >
-              You have already left.
-            </h1>
-            <p
-              style={parseStyle(
-                "margin:18px 0 0; max-width:520px; font-size:16.5px; line-height:1.65; color:#54545c;",
-              )}
-            >
-              That address is off the waitlist. Nothing more to do.{" "}
-              <Link href="/">Back to the site</Link>.
-            </p>
-          </>
-        )}
-
-        {(result.kind === "missing" || result.kind === "unknown") && (
-          <>
-            <h1
-              style={parseStyle(
-                "margin:0; font-family:'Space Grotesk'; font-weight:700; font-size:clamp(30px,5.6vw,44px); line-height:1.05; letter-spacing:-0.035em;",
-              )}
-            >
-              This link has expired.
-            </h1>
-            <p
-              style={parseStyle(
-                "margin:18px 0 0; max-width:520px; font-size:16.5px; line-height:1.65; color:#54545c; text-wrap:pretty;",
-              )}
-            >
-              We could not match it to anyone on the waitlist. Reply to the email
-              you received and we will remove you by hand.{" "}
-              <Link href="/">Back to the site</Link>.
-            </p>
-          </>
-        )}
-      </section>
-
-      <Footer />
-    </div>
+          {(result.kind === "missing" || result.kind === "unknown") && (
+            <>
+              <h1 style={h1}>This link has expired.</h1>
+              <p style={p}>
+                We could not match it to anyone on the waitlist. Reply to the email you received and we will remove you by hand. <Link href="/">Back to the site</Link>.
+              </p>
+            </>
+          )}
+        </section>
+      </GridBg>
+    </NightShell>
   );
 }

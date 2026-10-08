@@ -13,7 +13,7 @@ export default function UnsubscribeButton({ token }: { token: string }) {
     return (
       <p
         style={parseStyle(
-          "margin:0; font-size:15px; line-height:1.6; color:#2f7a4a; font-weight:500;",
+          "margin:0; font-size:15px; line-height:1.6; color:#EDEAE3; font-weight:500;",
         )}
       >
         Done. You have been removed from the waitlist and will not hear from us again.
@@ -36,9 +36,9 @@ export default function UnsubscribeButton({ token }: { token: string }) {
         }
         style={{
           ...parseStyle(
-            "background:#16161a; color:#f7f6f3; border:0; border-radius:12px; font-family:inherit; font-size:15px; font-weight:600; padding:14px 24px; cursor:pointer; transition:background .15s;",
+            "background:#FF5B1F; color:#0A0A0B; border:0; border-radius:100px; font-family:inherit; font-size:15px; font-weight:600; padding:14px 24px; cursor:pointer; transition:background .15s;",
           ),
-          ...(hover && !pending ? { background: "#2a2a31" } : {}),
+          ...(hover && !pending ? { background: "#ff7d4a" } : {}),
           ...(pending ? { opacity: 0.6, cursor: "progress" } : {}),
         }}
       >
@@ -48,7 +48,7 @@ export default function UnsubscribeButton({ token }: { token: string }) {
         <p
           role="alert"
           style={parseStyle(
-            "margin:14px 0 0; font-size:13.5px; color:#b4453a;",
+            "margin:14px 0 0; font-size:13.5px; color:#ff9a7a;",
           )}
         >
           That link is no longer valid. Reply to the email you received and we
