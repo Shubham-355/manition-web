@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState, type ReactNode } from "react";
+import { useCallback, useId, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { parseStyle as css } from "../../lib/css";
 import ManitionDemo from "../film/ManitionDemo";
@@ -175,14 +175,22 @@ function Framed({ tile, live }: { tile: Tile; live: boolean }) {
 }
 
 function Easel({ children }: { children: ReactNode }) {
+  const id = "easel" + useId().replace(/:/g, "");
   return (
     <>
       <div aria-hidden="true" style={css(CAST + " height:34%;")} />
       <div style={css(REFLECT)}>
-        <div aria-hidden="true" style={css("position:absolute; left:46%; top:-10%; bottom:3%; width:5px; background:linear-gradient(90deg,#4a3022,#2a1a12); transform:rotate(-12deg); transform-origin:top; z-index:0;")} />
-        <div aria-hidden="true" style={css("position:absolute; left:9%; top:-8%; bottom:0; width:7px; background:linear-gradient(90deg,#c99b6a,#8a6440 55%,#4a3022); transform:rotate(7deg); transform-origin:top; z-index:2;")} />
-        <div aria-hidden="true" style={css("position:absolute; right:9%; top:-8%; bottom:0; width:7px; background:linear-gradient(90deg,#b48a5e,#6e4c30 55%,#3e2a1c); transform:rotate(-7deg); transform-origin:top; z-index:2;")} />
-        <div aria-hidden="true" style={css("position:absolute; left:calc(50% - 4px); top:-12%; width:8px; height:14%; background:linear-gradient(90deg,#b48a5e,#4a3022); z-index:2;")} />
+        <svg aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none" style={css("position:absolute; left:0; right:0; top:-16%; bottom:0; width:100%; height:116%; z-index:0; overflow:visible;")}>
+          <defs>
+            <linearGradient id={`${id}L`} x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#d4a674" /><stop offset=".55" stopColor="#8a6440" /><stop offset="1" stopColor="#4a3022" /></linearGradient>
+            <linearGradient id={`${id}R`} x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#b48a5e" /><stop offset=".55" stopColor="#6e4c30" /><stop offset="1" stopColor="#3e2a1c" /></linearGradient>
+          </defs>
+          <polygon points="49,2 51.5,2 64,97 61,97" fill="#2a1a12" />
+          <polygon points="47,0 50,0 16,100 10.5,100" fill={`url(#${id}L)`} />
+          <polygon points="50,0 53,0 89.5,100 84,100" fill={`url(#${id}R)`} />
+          <polygon points="44,-2 56,-2 54,4 46,4" fill="#6e4c30" />
+          <polygon points="20,80 80,80 81,83.5 19,83.5" fill="#5a3c26" />
+        </svg>
         <div style={css("position:relative; z-index:1; margin:0 4%;")}>{children}</div>
         <div aria-hidden="true" style={css("position:relative; z-index:3; height:8px; margin:0 -2%; background:linear-gradient(180deg,#c99b6a,#6e4c30); box-shadow:0 3px 4px rgba(0,0,0,.5);")} />
         <div style={css("padding-top:34%;")} />
