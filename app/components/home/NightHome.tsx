@@ -369,15 +369,29 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
             <span data-leaf="1" style={css("position:absolute; left:44%; top:24%; width:8px; height:3px; border-radius:50%; background:#8cc08a;")} />
             <span data-leaf="2" style={css("position:absolute; left:40%; top:30%; width:7px; height:3px; border-radius:50%; background:#5f9e86;")} />
           </div>
-          <div className="h3-hide-m" style={css("position:absolute; right:5%; bottom:calc(25% + 40px); width:clamp(80px,7.5vw,116px);")}>
+          <div className="h3-hide-m" style={css("position:absolute; right:5%; bottom:calc(25% + 40px); width:clamp(84px,7.8vw,120px);")}>
             <div data-bob="5,10,1" style={css("position:relative;")}>
-              <img src="/v3/p-sphere.webp" alt="" style={css("display:block; width:100%;")} />
-              <svg viewBox="0 0 100 100" style={css("position:absolute; inset:0; width:100%; height:100%; overflow:visible;")}>
-                <ellipse cx="50" cy="52" rx="62" ry="13" fill="none" stroke="#FF5B1F" strokeOpacity=".35" strokeWidth="1.4" transform="rotate(-14 50 52)" />
-                <ellipse data-ring="1" cx="50" cy="52" rx="62" ry="13" fill="none" stroke="#FF5B1F" strokeWidth="2.4" strokeDasharray="60 400" strokeLinecap="round" transform="rotate(-14 50 52)" />
+              <svg viewBox="0 0 100 100" aria-hidden="true" style={css("position:absolute; inset:0; width:100%; height:100%; overflow:visible;")}>
+                <g transform="rotate(-12 50 54)">
+                  <path d="M -22 54 A 72 17 0 0 1 122 54" fill="none" stroke="#3e2a14" strokeWidth="7" />
+                  <path d="M -22 54 A 72 17 0 0 1 122 54" fill="none" stroke="#a8803f" strokeWidth="2" opacity=".55" transform="translate(0 -2)" />
+                </g>
+              </svg>
+              <img src="/v3/p-orb2.webp" alt="" style={css("position:relative; display:block; width:100%;")} />
+              <svg viewBox="0 0 100 100" aria-hidden="true" style={css("position:absolute; inset:0; width:100%; height:100%; overflow:visible;")}>
+                <defs>
+                  <linearGradient id="h3ringG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#ffe6ae" /><stop offset=".35" stopColor="#d9ac5e" /><stop offset=".75" stopColor="#8a6630" /><stop offset="1" stopColor="#4a3216" /></linearGradient>
+                </defs>
+                <g transform="rotate(-12 50 54)">
+                  <path d="M -22 54 A 72 17 0 0 0 122 54" fill="none" stroke="#2a1a0c" strokeWidth="7.5" transform="translate(0 1.2)" opacity=".7" />
+                  <path d="M -22 54 A 72 17 0 0 0 122 54" fill="none" stroke="url(#h3ringG)" strokeWidth="6.5" />
+                  <path d="M -22 54 A 72 17 0 0 0 122 54" fill="none" stroke="#fff3d6" strokeWidth="1" opacity=".75" transform="translate(0 -2.4)" />
+                  <path data-ring="1" d="M -22 54 A 72 17 0 0 0 122 54" fill="none" stroke="#FF5B1F" strokeWidth="3" strokeDasharray="26 124" strokeLinecap="round" />
+                </g>
               </svg>
             </div>
-            <div data-bobsh="1" style={css("position:absolute; left:30%; top:calc(100% + 46px); width:110%; height:12px; border-radius:50%; background:rgba(4,2,6,.7); filter:blur(5px); transform:skewX(-40deg);")} />
+            <div data-bobsh="1" style={css("position:absolute; left:18%; top:calc(100% + 46px); width:96%; height:12px; border-radius:50%; background:rgba(4,2,6,.75); filter:blur(5px); transform:skewX(-40deg);")} />
+            <div aria-hidden="true" style={css("position:absolute; left:-22%; top:calc(100% + 38px); width:52%; height:14px; border-radius:50%; background:radial-gradient(ellipse, rgba(255,190,130,.5), rgba(255,140,80,0) 70%); filter:blur(3px);")} />
           </div>
         </div>
         <div data-par="1" aria-hidden="true" className="h3-hide-m" style={css("position:absolute; inset:0; pointer-events:none;")}>
