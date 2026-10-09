@@ -360,7 +360,6 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
         <div aria-hidden="true" className="h3-hide-m" style={css("position:absolute; right:calc(3% + 14%); top:64%; width:8%; height:22%; background:linear-gradient(180deg, rgba(244,233,208,.12), rgba(244,233,208,0)); filter:blur(8px); pointer-events:none;")} />
         <div data-par="0.5" aria-hidden="true" style={css("position:absolute; inset:0; pointer-events:none;")}>
           {/* eslint-disable @next/next/no-img-element */}
-          <img src="/v3/protractor.webp" alt="" className="h3-hide-m" style={css("position:absolute; left:40%; top:79%; width:clamp(90px,9vw,140px); opacity:.75;")} />
           <div className="h3-board" style={css("position:absolute; left:63%; bottom:33%; width:clamp(380px,42vw,620px); transform:translateY(4.4%);")}>
             <img data-bob="0,1,0" src="/v3/p-board.webp" alt="" fetchPriority="high" style={css("display:block; width:100%;")} />
           </div>
