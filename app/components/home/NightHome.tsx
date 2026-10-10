@@ -360,11 +360,13 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
         <div aria-hidden="true" className="h3-hide-m" style={css("position:absolute; right:calc(3% + 14%); top:64%; width:8%; height:22%; background:linear-gradient(180deg, rgba(244,233,208,.12), rgba(244,233,208,0)); filter:blur(8px); pointer-events:none;")} />
         <div data-par="0.5" aria-hidden="true" style={css("position:absolute; inset:0; pointer-events:none;")}>
           {/* eslint-disable @next/next/no-img-element */}
-          <div className="h3-board" style={css("position:absolute; left:63%; bottom:33%; width:clamp(380px,42vw,620px); transform:translateY(4.4%);")}>
-            <img data-bob="0,1,0" src="/v3/p-board.webp" alt="" fetchPriority="high" style={css("display:block; width:100%;")} />
+          <div className="h3-board" data-tilt="0.7,4.4" style={css("position:absolute; left:63%; bottom:33%; width:clamp(380px,42vw,620px); transform:translateY(4.4%); transform-origin:50% 100%;")}>
+            <div aria-hidden="true" style={css("position:absolute; left:12%; right:4%; bottom:1%; height:7%; border-radius:50%; background:radial-gradient(ellipse, rgba(4,2,6,.8), rgba(4,2,6,0) 70%); filter:blur(8px);")} />
+            <img src="/v3/p-board.webp" alt="" fetchPriority="high" style={css("position:relative; display:block; width:100%;")} />
           </div>
-          <div className="h3-dice" style={css("position:absolute; left:46%; bottom:30%; width:clamp(170px,17vw,260px); transform:translateY(6.7%);")}>
-            <img src="/v3/p-dice.webp" alt="" fetchPriority="high" style={css("display:block; width:100%;")} />
+          <div className="h3-dice" data-tilt="1,6.7" style={css("position:absolute; left:46%; bottom:30%; width:clamp(170px,17vw,260px); transform:translateY(6.7%); transform-origin:50% 100%;")}>
+            <div aria-hidden="true" style={css("position:absolute; left:8%; right:8%; bottom:3%; height:9%; border-radius:50%; background:radial-gradient(ellipse, rgba(4,2,6,.85), rgba(4,2,6,0) 70%); filter:blur(6px);")} />
+            <img src="/v3/p-dice.webp" alt="" fetchPriority="high" style={css("position:relative; display:block; width:100%;")} />
             <span data-leaf="0" style={css("position:absolute; left:38%; top:16%; width:9px; height:4px; border-radius:50%; background:#6fae7c;")} />
             <span data-leaf="1" style={css("position:absolute; left:44%; top:24%; width:8px; height:3px; border-radius:50%; background:#8cc08a;")} />
             <span data-leaf="2" style={css("position:absolute; left:40%; top:30%; width:7px; height:3px; border-radius:50%; background:#5f9e86;")} />
@@ -377,7 +379,7 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
                   <path d="M -22 54 A 72 17 0 0 1 122 54" fill="none" stroke="#a8803f" strokeWidth="2" opacity=".55" transform="translate(0 -2)" />
                 </g>
               </svg>
-              <img src="/v3/p-orb2.webp" alt="" style={css("position:relative; display:block; width:100%;")} />
+              <img data-glow="1" src="/v3/p-orb2.webp" alt="" style={css("position:relative; display:block; width:100%;")} />
               <svg viewBox="0 0 100 100" aria-hidden="true" style={css("position:absolute; inset:0; width:100%; height:100%; overflow:visible;")}>
                 <defs>
                   <linearGradient id="h3ringG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#ffe6ae" /><stop offset=".35" stopColor="#d9ac5e" /><stop offset=".75" stopColor="#8a6630" /><stop offset="1" stopColor="#4a3216" /></linearGradient>

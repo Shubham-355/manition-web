@@ -5,7 +5,7 @@ import { useEffect, useRef, type RefObject } from "react";
 /*
  * One requestAnimationFrame loop drives every moving part of the night page:
  * the hero type, the moon's angle, parallax, the swinging archive, the "How it
- * works" plate that plays with scroll, the bobbing props and the cursor dot. The nav and footer animate themselves.
+ * works" plate that plays with scroll, the bobbing and tilting props and the cursor dot. The nav and footer animate themselves.
  * Elements opt in with data-* attributes, so the markup stays plain.
  */
 
@@ -32,6 +32,8 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       bob: q("[data-bob]"),
       dot: q("[data-dot]"),
       par: q("[data-par]"),
+      tilt: q("[data-tilt]"),
+      glow: q("[data-glow]"),
       leaf: q("[data-leaf]"),
       bubble: q("[data-bubble]"),
       col: q("[data-col]"),
@@ -67,6 +69,7 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
     };
     window.addEventListener("mousemove", onMove);
 
+    const near0 = new WeakMap<Element, number>();
     let frame = 0;
     let raf = 0;
     const t0 = performance.now();
@@ -111,6 +114,23 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         e.style.transform = "translate(" + (px + (d > 0.4 ? out * d * 40 : 0)) + "px," + (py + lift) + "px)";
         e.style.opacity = String(1 - out * 0.9);
       });
+
+      /* the board and dice lean toward the pointer and warm up as it comes near */
+      els.tilt.forEach((e) => {
+        const [d, base] = nums(e.getAttribute("data-tilt"));
+        const r = e.getBoundingClientRect();
+        const dx = (m.x - (r.left + r.width / 2)) / r.width;
+        const dy = (m.y - (r.top + r.height / 2)) / r.height;
+        const near = m.seen && !mob ? cl(1 - Math.hypot(dx, dy) / 1.1) : 0;
+        const n = (near0.get(e) || 0) + (near - (near0.get(e) || 0)) * 0.08;
+        near0.set(e, n);
+        const k = reduce ? 0 : 1;
+        const ry = nx * d * 9 * k, rx = -ny * d * 5 * k, lift = -n * 8 * k;
+        e.style.transform = "translateY(" + base + "%) perspective(1100px) rotateX(" + rx.toFixed(2) + "deg) rotateY(" + ry.toFixed(2) + "deg) translateY(" + lift.toFixed(1) + "px)";
+        const img = e.querySelector("img");
+        if (img) img.style.filter = "drop-shadow(0 0 " + (16 + n * 26).toFixed(0) + "px rgba(255,120,60," + (0.1 + n * 0.24).toFixed(2) + ")) brightness(" + (1 + n * 0.08).toFixed(3) + ")";
+      });
+      els.glow.forEach((e) => (e.style.filter = "drop-shadow(0 0 " + (14 + 6 * Math.sin(t * 1.3)).toFixed(1) + "px rgba(255,200,140,.28))"));
 
       els.bob.forEach((e) => {
         const [a, per, ph] = nums(e.getAttribute("data-bob"));
