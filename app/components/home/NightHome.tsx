@@ -133,10 +133,11 @@ const REFLECT = "position:relative; -webkit-box-reflect:below 0px linear-gradien
 const CAST =
   "position:absolute; left:6%; bottom:0; width:110%; background:linear-gradient(0deg, rgba(4,2,8,.55), rgba(4,2,8,0)); transform:skewX(-58deg); transform-origin:bottom left; filter:blur(5px); pointer-events:none;";
 
-function Pic({ tile, live }: { tile: Tile; live: boolean }) {
+function Pic({ tile, live, sheen }: { tile: Tile; live: boolean; sheen?: boolean }) {
   return (
     <div style={css("position:relative; aspect-ratio:4/3; overflow:hidden; background:#24182c;")}>
       <div className="h3-shim" style={css("position:absolute; inset:0; background:linear-gradient(115deg,#1f1528 0%,#2f1f36 45%,#3a2742 50%,#2f1f36 55%,#1f1528 100%); background-size:300% 100%;")} />
+      {sheen ? <div style={css("position:absolute; inset:0; z-index:2; background:linear-gradient(125deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,0) 38%); pointer-events:none;")} /> : null}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={tile.poster} alt="" loading="lazy" style={css("position:absolute; inset:0; width:100%; height:100%; object-fit:cover;")} />
       {live && RENDERED.has(tile.scene) ? <video src={`/scenes/${tile.scene}.mp4`} autoPlay muted loop playsInline /> : null}
@@ -152,8 +153,8 @@ const CORNER = (
   />
 );
 
-function Framed({ tile, live }: { tile: Tile; live: boolean }) {
-  const pic = <Pic tile={tile} live={live} />;
+function Framed({ tile, live, lean }: { tile: Tile; live: boolean; lean?: boolean }) {
+  const pic = <Pic tile={tile} live={live} sheen={lean} />;
   if (tile.frame === "gold")
     return (
       <div style={css("position:relative; padding:9px; background:linear-gradient(35deg,#f3d696 0%,#b8904a 26%,#6e5020 48%,#d9b46a 70%,#4e3618 100%); border:1px solid #241608; box-shadow:inset 0 0 0 2px rgba(255,232,180,.22), inset 0 0 0 5px rgba(60,38,12,.45), 0 30px 50px -24px rgba(0,0,0,.9);")}>
@@ -162,7 +163,7 @@ function Framed({ tile, live }: { tile: Tile; live: boolean }) {
     );
   if (tile.frame === "plaster")
     return (
-      <div style={css("position:relative; padding:7px; background:linear-gradient(35deg,#f6eedd 0%,#d8cdb8 55%,#9d917b 100%); border:1px solid rgba(40,28,20,.85); box-shadow:inset 1px -1px 0 rgba(255,255,255,.45), inset -1px 1px 0 rgba(60,40,25,.35), 0 30px 50px -24px rgba(0,0,0,.9);")}>
+      <div style={css("position:relative; padding:7px; background:linear-gradient(35deg,#f6eedd 0%,#d8cdb8 55%,#9d917b 100%); border:1px solid rgba(40,28,20,.85); box-shadow:inset 1px -1px 0 rgba(255,255,255,.45), inset -1px 1px 0 rgba(60,40,25,.35), " + (lean ? "-10px 34px 46px -20px rgba(0,0,0,.95), 6px 0 0 -1px #8f826b;" : "0 30px 50px -24px rgba(0,0,0,.9);"))}>
         <div style={css("padding:6px; background:#ebe3d1 url(/v3/plaster.webp) center/160px; background-blend-mode:multiply; box-shadow:inset 1px 1px 0 rgba(80,60,40,.4), inset -1px -1px 0 rgba(255,255,255,.5);")}>{pic}</div>
       </div>
     );
@@ -239,9 +240,18 @@ function ArchiveTile({ tile }: { tile: Tile }) {
     body = (
       <>
         <div aria-hidden="true" style={css(CAST + " height:40%;")} />
-        <div aria-hidden="true" style={css("position:absolute; left:calc(100% - 8px); bottom:0; width:36%; aspect-ratio:1/.86; background:url(/v3/plaster.webp) center/90px, linear-gradient(35deg,#d9cdb4 0%,#a89a82 50%,#5e554a 100%); background-blend-mode:multiply; clip-path:polygon(0 8%, 74% 0, 100% 14%, 100% 100%, 0 100%); box-shadow:inset 0 3px 0 rgba(255,250,235,.35);")} />
-        <div style={css(REFLECT)}>
-          <div style={css("transform:rotate(6deg); transform-origin:0 100%;")}>{framed}</div>
+        <div aria-hidden="true" style={css("position:absolute; left:calc(100% - 12px); bottom:0; width:40%; aspect-ratio:1/.9;")}>
+          <div style={css("position:absolute; left:-6%; right:-14%; bottom:-4%; height:22%; border-radius:50%; background:rgba(3,1,5,.8); filter:blur(6px);")} />
+          <div style={css("position:absolute; inset:0; clip-path:polygon(0 24%, 76% 24%, 76% 100%, 0 100%); background:url(/v3/plaster.webp) center/80px, linear-gradient(180deg,#b9ab92 0%,#8a7d68 100%); background-blend-mode:multiply;")} />
+          <div style={css("position:absolute; inset:0; clip-path:polygon(0 24%, 20% 0, 100% 0, 76% 24%); background:url(/v3/plaster.webp) center/80px, linear-gradient(90deg,#efe4cc,#d8ccb2); background-blend-mode:multiply;")} />
+          <div style={css("position:absolute; inset:0; clip-path:polygon(76% 24%, 100% 0, 100% 78%, 76% 100%); background:url(/v3/plaster.webp) center/80px, linear-gradient(180deg,#6b6053,#3e362e); background-blend-mode:multiply;")} />
+          <div style={css("position:absolute; left:0; top:24%; width:76%; height:1px; background:rgba(255,248,230,.55);")} />
+          <div style={css("position:absolute; left:6%; top:24%; width:70%; height:76%; background:radial-gradient(ellipse at 100% 0%, rgba(255,140,80,.18), rgba(255,140,80,0) 60%);")} />
+        </div>
+        <div style={css("position:relative; -webkit-box-reflect:below 2px linear-gradient(transparent 62%, rgba(255,255,255,.1));")}>
+          <div style={css("transform:perspective(900px) rotateY(-10deg) rotate(7deg); transform-origin:0 100%;")}>
+            <Framed tile={tile} live={live} lean />
+          </div>
         </div>
         <div aria-hidden="true" style={css(SKID + " left:0%; width:70%;")} />
         <div aria-hidden="true" style={css(SKID + " left:100%; width:34%;")} />
