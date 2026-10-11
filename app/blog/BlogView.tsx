@@ -24,8 +24,6 @@ const BIRDS: [string, string, string, string, string, string, number][] = [
   ["32%", "-8%", "16%", "4,11,1.2,3", "b-birdhalf", "rotate(-24deg) scaleX(-1)", 1],
   ["14%", "-34%", "14%", "5,10,2,4", "b-bird", "rotate(-18deg) scaleX(-1)", 1],
   ["-8%", "-52%", "12%", "5,12,3,5", "b-bird", "rotate(-8deg) scaleX(-1)", 0.92],
-  ["-30%", "-46%", "10%", "4,13,4,4", "b-bird", "rotate(4deg) scaleX(-1)", 0.8],
-  ["-50%", "-28%", "8%", "3,14,5,3", "b-bird", "rotate(12deg) scaleX(-1)", 0.65],
 ];
 
 const H2 = "margin:0 0 20px; font-family:'Instrument Serif',serif; font-weight:400; font-size:clamp(30px,3.2vw,40px); letter-spacing:-0.025em;";
@@ -74,7 +72,7 @@ export default function BlogView({ fontClass }: { fontClass: string }) {
             <div aria-hidden="true" style={css("position:relative; min-height:320px; overflow:hidden; background:linear-gradient(180deg,#141426 0%,#2a2340 55%,#3a2c4a 62%,#16121a 63%,#0e0d10 100%);")}>
               <div style={css("position:absolute; left:0; right:0; top:62%; bottom:0; background-image:linear-gradient(rgba(237,234,227,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(237,234,227,.07) 1px, transparent 1px); background-size:34px 18px; -webkit-mask-image:linear-gradient(180deg,#000,transparent); mask-image:linear-gradient(180deg,#000,transparent);")} />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/v3/b-bell.webp" alt="" style={css("position:absolute; left:6%; bottom:16%; width:82%;")} />
+              <img src="/v3/b-bell-oak2.webp" alt="" style={css("position:absolute; left:6%; bottom:16%; width:82%;")} />
             </div>
             <div style={css("padding:clamp(28px,4vw,52px); display:flex; flex-direction:column; justify-content:center;")}>
               <p style={css(`margin:0 0 16px; font-size:11.5px; ${EYEBROW}`)}>FEATURED · DEEP DIVE</p>
