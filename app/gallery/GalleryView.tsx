@@ -34,7 +34,7 @@ const CORRIDOR = [
   { x: "50%", y: "66%", w: "clamp(24px,2.6vw,40px)", src: "g-frame-gilt", ar: "480/380", sc: "", po: 0, br: 0.45, bob: "1,10,6,0.3" },
 ];
 
-const STRING = "position:absolute; bottom:96%; width:1px; height:900px; background:linear-gradient(0deg, rgba(237,234,227,.32), rgba(237,234,227,0) 60%);";
+const STRING = "position:absolute; bottom:96%; width:1px; background:linear-gradient(0deg, rgba(237,234,227,.32), rgba(237,234,227,0) 100%);";
 
 /**
  * One framed clip. The poster covers the player until the pointer arrives, the
@@ -148,8 +148,8 @@ export default function GalleryView({ fontClass }: { fontClass: string }) {
         <div data-par="0.5" className="gl-corr" aria-hidden="true" style={css("position:absolute; inset:0; pointer-events:none;")}>
           {CORRIDOR.map((f, i) => (
             <div key={i} style={css(`position:absolute; left:${f.x}; top:${f.y}; width:${f.w};`)}>
-              <span style={css(`${STRING} left:30%;`)} />
-              <span style={css(`${STRING} right:30%;`)} />
+              <span style={css(`${STRING} left:30%; height:260px;`)} />
+              <span style={css(`${STRING} right:30%; height:310px;`)} />
               <div data-bob={f.bob} style={css(`position:relative; aspect-ratio:${f.ar};`)}>
                 {f.sc && (
                   // eslint-disable-next-line @next/next/no-img-element

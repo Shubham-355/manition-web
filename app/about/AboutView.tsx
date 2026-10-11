@@ -54,7 +54,7 @@ export default function AboutView({ fontClass }: { fontClass: string }) {
               <div style={css("position:absolute; inset:0; box-shadow:inset 0 0 30px rgba(255,255,255,.4);")} />
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/v3/a-wall.webp" alt="" style={css("position:absolute; inset:0; width:100%; height:100%; filter:brightness(.3) saturate(.8) sepia(.25); -webkit-mask-image:linear-gradient(90deg, transparent 0%, transparent 18%, #000 40%, #000 92%, transparent 100%); mask-image:linear-gradient(90deg, transparent 0%, transparent 18%, #000 40%, #000 92%, transparent 100%);")} />
+            <img src="/v3/a-wall.webp" alt="" style={css("position:absolute; inset:0; width:100%; height:100%; filter:brightness(.3) saturate(.8) sepia(.25); -webkit-mask-image:linear-gradient(90deg, transparent 0%, transparent 28%, #000 42%, #000 92%, transparent 100%); mask-image:linear-gradient(90deg, transparent 0%, transparent 28%, #000 42%, #000 92%, transparent 100%);")} />
             <div style={css("position:absolute; left:44.6%; top:95.5%; width:30%; height:30%; background:linear-gradient(100deg, rgba(255,150,80,.45), rgba(255,91,31,0) 80%); transform:skewX(-50deg); transform-origin:0 0; filter:blur(6px);")} />
           </div>
         </div>
@@ -93,7 +93,7 @@ export default function AboutView({ fontClass }: { fontClass: string }) {
         <section style={css("position:relative; max-width:1160px; margin:0 auto; padding:clamp(40px,5vw,64px) clamp(16px,4vw,40px);")}>
           <div className="ab-pr" style={css("display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:clamp(14px,2vw,24px);")}>
             <div data-reveal="1" style={css(`${CARD} border-radius:22px; padding:28px;`)}>
-              <svg aria-hidden="true" width="64" height="64" viewBox="0 0 64 64">
+              <svg aria-hidden="true" width="64" height="64" viewBox="0 0 64 64" style={css("display:block;")}>
                 <defs>
                   <radialGradient id="ablens" cx="40%" cy="60%" r="60%">
                     <stop offset="0" stopColor="#fff6e6" stopOpacity=".9" />
@@ -110,7 +110,7 @@ export default function AboutView({ fontClass }: { fontClass: string }) {
               <p style={css(BODY)}>An animation earns its runtime. We optimize for the moment a concept clicks, not for flashiness.</p>
             </div>
             <div data-reveal="1" style={css(`${CARD} border-radius:22px; padding:28px;`)}>
-              <svg aria-hidden="true" width="64" height="64" viewBox="0 0 64 64">
+              <svg aria-hidden="true" width="64" height="64" viewBox="0 0 64 64" style={css("display:block;")}>
                 <ellipse cx="36" cy="58" rx="24" ry="3" fill="#000" opacity=".5" />
                 <path d="M10 26 L30 18 L54 26 L54 52 L30 58 L10 52 Z" fill="rgba(207,214,255,.08)" stroke="rgba(237,234,227,.55)" strokeWidth="1.5" />
                 <path d="M10 26 L34 32 L54 26 M34 32 L34 58" stroke="rgba(237,234,227,.4)" strokeWidth="1.2" fill="none" />
