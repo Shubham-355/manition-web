@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useId, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { parseStyle as css } from "../../lib/css";
 import ManitionDemo from "../film/ManitionDemo";
@@ -9,6 +9,7 @@ import { WaitlistForm } from "../Interactive";
 import { RENDERED } from "../scene-videos";
 import { WAVE_D } from "./wave-path";
 import { useNightMotion } from "./motion";
+import { PROPS, fernPaint, type PropKind } from "./props";
 import NightNav from "../night/NightNav";
 import NightFooter from "../night/NightFooter";
 import "../night/night.css";
@@ -202,6 +203,15 @@ function Easel({ children }: { children: ReactNode }) {
   );
 }
 
+/* a prop drawn in code (see props.ts); the dice also grow a fern on a canvas once mounted */
+function Prop({ kind, style }: { kind: PropKind; style: string }) {
+  const host = useRef<HTMLDivElement>(null);
+  const u = "mn" + useId().replace(/[^a-zA-Z0-9]/g, "") + "_";
+  const html = useMemo(() => ({ __html: PROPS[kind](u) }), [kind, u]);
+  useEffect(() => (kind === "dice" && host.current ? fernPaint(host.current) : undefined), [kind]);
+  return <div ref={host} aria-hidden="true" style={css(style)} dangerouslySetInnerHTML={html} />;
+}
+
 function ArchiveTile({ tile }: { tile: Tile }) {
   const [live, setLive] = useState(false);
   const m = tile.mount;
@@ -307,6 +317,9 @@ function Ground({ at, glow, line, tint, fade = 180 }: { at: string; glow: string
 
 const arrow = <span>→</span>;
 
+const BUBBLE =
+  "M 252 300 C 246 205 330 152 432 152 C 545 152 618 212 616 292 C 614 372 540 420 432 420 C 396 420 366 416 340 408 C 312 436 262 462 206 470 C 244 446 270 418 280 392 C 262 368 254 336 252 300 Z";
+
 /* ============ the page ============ */
 
 export default function NightHome({ fontClass }: { fontClass: string }) {
@@ -342,15 +355,22 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
                 </filter>
               </defs>
               <circle cx="300" cy="270" r="330" fill="url(#h3halo)" />
-              <image href="/v3/moon.webp" x="50" y="20" width="500" height="500" opacity=".35" clipPath="url(#h3moonclip)" preserveAspectRatio="xMidYMid slice" />
+              <radialGradient id="h3disc" cx="38%" cy="34%" r="70%">
+                <stop offset="0" stopColor="#F4E9D0" stopOpacity=".2" />
+                <stop offset=".7" stopColor="#b9a6c4" stopOpacity=".08" />
+                <stop offset="1" stopColor="#2a1d36" stopOpacity=".02" />
+              </radialGradient>
+              <circle cx="300" cy="270" r="250" fill="url(#h3disc)" />
+              <image href="/v3/moon.webp" x="50" y="20" width="500" height="500" opacity=".78" clipPath="url(#h3moonclip)" preserveAspectRatio="xMidYMid slice" />
               <line x1="40" y1="270" x2="560" y2="270" stroke="#EDEAE3" strokeOpacity=".2" strokeWidth="1" />
               <line x1="300" y1="10" x2="300" y2="530" stroke="#EDEAE3" strokeOpacity=".2" strokeWidth="1" />
-              <circle cx="300" cy="270" r="250" fill="none" stroke="#EDEAE3" strokeWidth="1.8" />
+              <circle cx="300" cy="270" r="250" fill="none" stroke="#EDEAE3" strokeOpacity=".85" strokeWidth="1.5" />
+              <circle cx="300" cy="270" r="252" fill="none" stroke="#F4E9D0" strokeOpacity=".12" strokeWidth="8" filter="url(#h3glow)" />
               <path data-moon="arc" d="" fill="none" stroke="#FF5B1F" strokeWidth="2" />
-              <line data-moon="cos" x1="300" y1="270" x2="300" y2="270" stroke="#EDEAE3" strokeOpacity=".55" strokeWidth="2" />
-              <rect data-moon="dripglow" x="296" y="270" width="8" height="370" fill="#FF5B1F" opacity=".5" filter="url(#h3glow)" />
-              <rect data-moon="drip" x="299" y="270" width="2.2" height="370" fill="url(#h3drip)" />
-              <ellipse data-moon="ripple" cx="300" cy="640" rx="10" ry="2.5" fill="none" stroke="#FF5B1F" strokeWidth="1.5" />
+              <line data-moon="cos" x1="300" y1="270" x2="550" y2="270" stroke="#EDEAE3" strokeOpacity=".55" strokeWidth="2" />
+              <rect data-moon="dripglow" x="546" y="270" width="8" height="370" fill="#FF5B1F" opacity=".5" filter="url(#h3glow)" />
+              <rect data-moon="drip" x="548.9" y="270" width="2.2" height="370" fill="url(#h3drip)" />
+              <ellipse data-moon="ripple" cx="550" cy="640" rx="10" ry="2.5" fill="none" stroke="#FF5B1F" strokeWidth="1.5" />
               <line data-moon="r" x1="300" y1="270" x2="550" y2="270" stroke="#F4E9D0" strokeWidth="2" />
               <circle data-moon="pt" cx="550" cy="270" r="6" fill="#FF5B1F" />
               <text x="352" y="256" fill="#F4E9D0" fontFamily="var(--font-instrument), serif" fontStyle="italic" fontSize="24">
@@ -369,46 +389,27 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
         </div>
         <div aria-hidden="true" className="h3-hide-m" style={css("position:absolute; right:calc(3% + 14%); top:64%; width:8%; height:22%; background:linear-gradient(180deg, rgba(244,233,208,.12), rgba(244,233,208,0)); filter:blur(8px); pointer-events:none;")} />
         <div data-par="0.5" aria-hidden="true" style={css("position:absolute; inset:0; pointer-events:none;")}>
-          {/* eslint-disable @next/next/no-img-element */}
           <div className="h3-board" data-tilt="0.7,4.4" style={css("position:absolute; left:63%; bottom:33%; width:clamp(380px,42vw,620px); transform:translateY(4.4%); transform-origin:50% 100%;")}>
             <div aria-hidden="true" style={css("position:absolute; left:12%; right:4%; bottom:1%; height:7%; border-radius:50%; background:radial-gradient(ellipse, rgba(4,2,6,.8), rgba(4,2,6,0) 70%); filter:blur(8px);")} />
-            <img src="/v3/p-board.webp" alt="" fetchPriority="high" style={css("position:relative; display:block; width:100%;")} />
+            <Prop kind="easel" style="position:relative; display:block; width:100%;" />
           </div>
           <div className="h3-dice" data-tilt="1,6.7" style={css("position:absolute; left:46%; bottom:30%; width:clamp(170px,17vw,260px); transform:translateY(6.7%); transform-origin:50% 100%;")}>
             <div aria-hidden="true" style={css("position:absolute; left:8%; right:8%; bottom:3%; height:9%; border-radius:50%; background:radial-gradient(ellipse, rgba(4,2,6,.85), rgba(4,2,6,0) 70%); filter:blur(6px);")} />
-            <img src="/v3/p-dice.webp" alt="" fetchPriority="high" style={css("position:relative; display:block; width:100%;")} />
+            <Prop kind="dice" style="position:relative; display:block; width:100%;" />
             <span data-leaf="0" style={css("position:absolute; left:38%; top:16%; width:9px; height:4px; border-radius:50%; background:#6fae7c;")} />
             <span data-leaf="1" style={css("position:absolute; left:44%; top:24%; width:8px; height:3px; border-radius:50%; background:#8cc08a;")} />
             <span data-leaf="2" style={css("position:absolute; left:40%; top:30%; width:7px; height:3px; border-radius:50%; background:#5f9e86;")} />
           </div>
           <div className="h3-hide-m" style={css("position:absolute; right:5%; bottom:calc(25% + 40px); width:clamp(84px,7.8vw,120px);")}>
             <div data-bob="5,10,1" style={css("position:relative;")}>
-              <svg viewBox="0 0 100 100" aria-hidden="true" style={css("position:absolute; inset:0; width:100%; height:100%; overflow:visible;")}>
-                <g transform="rotate(-12 50 54)">
-                  <path d="M -22 54 A 72 17 0 0 1 122 54" fill="none" stroke="#3e2a14" strokeWidth="7" />
-                  <path d="M -22 54 A 72 17 0 0 1 122 54" fill="none" stroke="#a8803f" strokeWidth="2" opacity=".55" transform="translate(0 -2)" />
-                </g>
-              </svg>
-              <img data-glow="1" src="/v3/p-orb2.webp" alt="" style={css("position:relative; display:block; width:100%;")} />
-              <svg viewBox="0 0 100 100" aria-hidden="true" style={css("position:absolute; inset:0; width:100%; height:100%; overflow:visible;")}>
-                <defs>
-                  <linearGradient id="h3ringG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#ffe6ae" /><stop offset=".35" stopColor="#d9ac5e" /><stop offset=".75" stopColor="#8a6630" /><stop offset="1" stopColor="#4a3216" /></linearGradient>
-                </defs>
-                <g transform="rotate(-12 50 54)">
-                  <path d="M -22 54 A 72 17 0 0 0 122 54" fill="none" stroke="#2a1a0c" strokeWidth="7.5" transform="translate(0 1.2)" opacity=".7" />
-                  <path d="M -22 54 A 72 17 0 0 0 122 54" fill="none" stroke="url(#h3ringG)" strokeWidth="6.5" />
-                  <path d="M -22 54 A 72 17 0 0 0 122 54" fill="none" stroke="#fff3d6" strokeWidth="1" opacity=".75" transform="translate(0 -2.4)" />
-                  <path data-ring="1" d="M -22 54 A 72 17 0 0 0 122 54" fill="none" stroke="#FF5B1F" strokeWidth="3" strokeDasharray="26 124" strokeLinecap="round" />
-                </g>
-              </svg>
+              <Prop kind="orb" style="position:relative; display:block; width:100%;" />
             </div>
             <div data-bobsh="1" style={css("position:absolute; left:18%; top:calc(100% + 46px); width:96%; height:12px; border-radius:50%; background:rgba(4,2,6,.75); filter:blur(5px); transform:skewX(-40deg);")} />
             <div aria-hidden="true" style={css("position:absolute; left:-22%; top:calc(100% + 38px); width:52%; height:14px; border-radius:50%; background:radial-gradient(ellipse, rgba(255,190,130,.5), rgba(255,140,80,0) 70%); filter:blur(3px);")} />
           </div>
         </div>
         <div data-par="1" aria-hidden="true" className="h3-hide-m" style={css("position:absolute; inset:0; pointer-events:none;")}>
-          <img src="/v3/p-chalk.webp" alt="" style={css("position:absolute; right:-16%; bottom:-3%; width:clamp(520px,58vw,900px);")} />
-          {/* eslint-enable @next/next/no-img-element */}
+          <Prop kind="chalk" style="position:absolute; right:2%; bottom:3%; width:clamp(300px,34vw,520px);" />
         </div>
         <div aria-hidden="true" style={css("position:absolute; left:0; top:0; bottom:0; width:70%; background:radial-gradient(ellipse at 18% 48%, rgba(10,10,11,.62), rgba(10,10,11,0) 62%); pointer-events:none;")} />
         <div style={css("position:relative; z-index:5; max-width:1360px; height:100%; margin:0 auto; padding:clamp(100px,15vh,170px) clamp(16px,4vw,40px) 0; box-sizing:border-box;")}>
@@ -509,7 +510,7 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
             <div aria-hidden="true" style={css("position:absolute; left:50%; top:56.6%; width:max(100vw,1800px); height:1px; transform:translateX(-50%); background:rgba(200,170,210,.32); pointer-events:none;")} />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/v3/rooms-plate.webp"
+              src="/v3/rooms-plate-nb.webp"
               alt="A plaster speech bubble lets out the words 'show how a wave is born'; they enter a glowing lantern and leave as one orange sine wave that folds into a paper plane"
               style={css("position:absolute; inset:0; width:100%; height:100%;")}
             />
@@ -525,15 +526,48 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
                   <stop offset="0" stopColor="#ffd38a" stopOpacity=".9" />
                   <stop offset="1" stopColor="#FF5B1F" stopOpacity="0" />
                 </radialGradient>
-                <linearGradient id="h3strip" gradientUnits="userSpaceOnUse" x1="1692" y1="0" x2="1790" y2="0">
-                  <stop offset="0" stopColor="#FF5B1F" />
-                  <stop offset="1" stopColor="#f6efe2" />
-                </linearGradient>
                 <filter id="h3blur" x="-20%" y="-50%" width="140%" height="200%">
                   <feGaussianBlur stdDeviation="7" />
                 </filter>
                 <path id="h3ribbon" d="M 568 300 C 770 150, 990 330, 1168 446" />
+                <radialGradient id="h3bubF" gradientUnits="userSpaceOnUse" cx="360" cy="215" r="300">
+                  <stop offset="0" stopColor="#fbf8f0" />
+                  <stop offset=".55" stopColor="#ebe3d2" />
+                  <stop offset="1" stopColor="#b8ab94" />
+                </radialGradient>
+                <linearGradient id="h3bubRim" gradientUnits="userSpaceOnUse" x1="300" y1="0" x2="620" y2="0">
+                  <stop offset="0" stopColor="#ffb27a" stopOpacity="0" />
+                  <stop offset=".7" stopColor="#ffb27a" stopOpacity=".25" />
+                  <stop offset="1" stopColor="#ff9a55" stopOpacity=".85" />
+                </linearGradient>
+                <radialGradient id="h3bubSh" cx=".5" cy=".5" r=".5">
+                  <stop offset="0" stopColor="#030105" stopOpacity=".85" />
+                  <stop offset="1" stopColor="#030105" stopOpacity="0" />
+                </radialGradient>
+                <pattern id="h3plaster" patternUnits="userSpaceOnUse" width="240" height="240">
+                  <image href="/v3/plaster.webp" width="240" height="240" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+                <clipPath id="h3bubClip">
+                  <path d={BUBBLE} />
+                </clipPath>
               </defs>
+              {/* the plaster speech bubble floats over its own shadow */}
+              <ellipse data-bubsh="1" cx="440" cy="590" rx="170" ry="20" fill="url(#h3bubSh)" />
+              <g data-bob="12,7,0.4">
+                <g clipPath="url(#h3bubClip)">
+                  <rect x="190" y="140" width="440" height="340" fill="url(#h3bubF)" />
+                  <rect x="190" y="140" width="440" height="340" fill="url(#h3plaster)" opacity=".35" style={css("mix-blend-mode:multiply;")} />
+                  <ellipse cx="440" cy="440" rx="230" ry="70" fill="#6b5e4c" opacity=".35" filter="url(#h3blur)" />
+                  <ellipse cx="370" cy="200" rx="110" ry="34" fill="#ffffff" opacity=".55" filter="url(#h3blur)" />
+                </g>
+                <path d={BUBBLE} fill="none" stroke="url(#h3bubRim)" strokeWidth="5" />
+                <path d="M 300 205 C 340 168 390 158 432 157" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" opacity=".8" />
+                <g fill="#8a7b64" opacity=".5">
+                  <circle cx="400" cy="290" r="9" />
+                  <circle cx="440" cy="290" r="9" />
+                  <circle cx="480" cy="290" r="9" />
+                </g>
+              </g>
               <text fontFamily="var(--font-instrument), serif" fontStyle="italic" fill="#F4EEE0" wordSpacing="10">
                 <textPath href="#h3ribbon">
                   {["show", " how", " a", " wave", " is", " born"].map((w, i) => (
@@ -556,26 +590,8 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
               </g>
               <path data-wave="1" d={WAVE_D} fill="none" stroke="#FF5B1F" strokeWidth="16" strokeOpacity=".4" strokeLinecap="round" filter="url(#h3blur)" pathLength="1" strokeDasharray="1" strokeDashoffset="1" />
               <path data-wave="1" d={WAVE_D} fill="none" stroke="#FF6a2e" strokeWidth="5.5" strokeLinecap="round" pathLength="1" strokeDasharray="1" strokeDashoffset="1" />
-              <g data-st="0" opacity="0">
-                <polygon points="1689,394 1812,364 1816,380 1694,409" fill="url(#h3strip)" />
-                <polygon points="1812,364 1816,380 1820,374" fill="#c9bfae" />
-              </g>
-              <g data-st="1" opacity="0">
-                <polygon points="1846,350 1980,312 1932,344" fill="#f8f2e6" />
-                <polygon points="1846,350 1932,344 1904,372" fill="#a99d89" />
-                <line x1="1846" y1="350" x2="1980" y2="312" stroke="#8d806c" strokeWidth="1.5" />
-              </g>
-              <ellipse data-st="2" cx="2120" cy="608" rx="66" ry="7" fill="#050307" opacity="0" filter="url(#h3blur)" />
-              <g data-glide="1">
-                <g data-st="2" opacity="0">
-                  <polygon points="2200,226 2014,284 2096,292" fill="#fbf6ea" />
-                  <polygon points="2200,226 2096,292 2078,304" fill="#e3d9c7" />
-                  <polygon points="2200,226 2096,292 2104,334" fill="#9c9080" />
-                  <line x1="2200" y1="226" x2="2096" y2="292" stroke="#7d715f" strokeWidth="1.4" />
-                  <path d="M2212 220 Q 2300 170 2392 76" fill="none" stroke="#F4E9D0" strokeOpacity=".5" strokeWidth="3" strokeDasharray="2 14" strokeLinecap="round" />
-                </g>
-              </g>
             </svg>
+            <Prop kind="fold" style="position:absolute; inset:0;" />
           </div>
           <div className="h3-steps" style={css("position:relative; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:clamp(24px,3vw,48px); margin-top:clamp(8px,1vw,16px);")}>
             {[
@@ -651,11 +667,22 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
         <div aria-hidden="true" style={css("position:absolute; left:26%; top:80%; width:56%; height:90px; background:radial-gradient(ellipse at 50% 50%, rgba(255,200,140,.16), rgba(255,200,140,0) 70%); filter:blur(8px); pointer-events:none;")} />
         {/* eslint-disable @next/next/no-img-element */}
         <img src="/v3/q-board.webp" alt="" aria-hidden="true" className="h3-hide-t" style={css("position:absolute; right:1.5%; top:44%; width:20vw; max-width:360px; opacity:.24; pointer-events:none; -webkit-mask-image:linear-gradient(90deg, #000 0%, rgba(0,0,0,.75) 100%);")} />
-        <img src="/v3/q-chair.webp" alt="" aria-hidden="true" className="h3-hide-t" style={css("position:absolute; right:14%; top:6%; width:140px; opacity:.3; transform:rotate(15deg); pointer-events:none;")} />
-        <div aria-hidden="true" className="h3-hide-t" style={css("position:absolute; right:calc(14% - 20px); top:40%; width:140px; height:12px; border-radius:50%; background:rgba(4,2,8,.55); filter:blur(7px); transform:skewX(-40deg); pointer-events:none;")} />
+        <div aria-hidden="true" className="h3-hide-t" style={css("position:absolute; right:14%; top:8%; width:clamp(120px,10vw,160px); pointer-events:none;")}>
+          <div data-bob="10,8,0.7">
+            <div style={css("position:relative; transform:rotate(12deg);")}>
+              <div style={css("position:absolute; inset:-30%; border-radius:50%; background:radial-gradient(circle, rgba(255,200,140,.1), rgba(255,200,140,0) 65%);")} />
+              <img src="/v3/q-chair.webp" alt="" style={css("position:relative; display:block; width:100%; opacity:.92; filter:brightness(1.05) sepia(.25) drop-shadow(-3px 0 0 rgba(255,205,150,.18)) drop-shadow(0 18px 24px rgba(0,0,0,.6));")} />
+            </div>
+          </div>
+        </div>
+        <div aria-hidden="true" className="h3-hide-t" style={css("position:absolute; right:calc(14% - 20px); top:40%; width:140px; height:12px; border-radius:50%; background:rgba(4,2,8,.8); filter:blur(7px); transform:skewX(-40deg); pointer-events:none;")} />
         <div className="h3-hide-t" aria-hidden="true" style={css("position:absolute; left:clamp(-40px,-1vw,0px); bottom:3%; height:min(64%,520px); aspect-ratio:600/1100; pointer-events:none;")}>
-          <div style={css("position:absolute; left:62.3%; top:23.8%; width:92vw; height:52vh; transform-origin:0 50%; transform:translateY(-50%) rotate(27deg); background:radial-gradient(ellipse 100% 50% at 0% 50%, rgba(244,233,208,.22), rgba(244,233,208,.07) 45%, rgba(244,233,208,0) 72%); filter:blur(40px);")} />
-          <img src="/v3/q-lamp2.webp" alt="" style={css("position:relative; display:block; height:100%; width:100%; opacity:.4;")} />
+          <div style={css("position:absolute; left:62.3%; top:23.8%; width:92vw; height:52vh; transform-origin:0 50%; transform:translateY(-50%) rotate(27deg); background:radial-gradient(ellipse 100% 50% at 0% 50%, rgba(255,214,160,.26), rgba(255,214,160,.08) 45%, rgba(255,214,160,0) 72%); filter:blur(40px);")} />
+          <div style={css("position:absolute; left:62.3%; top:23.8%; width:150%; height:120%; transform-origin:0 0; transform:rotate(-6deg); background:conic-gradient(from 118deg at 0 0, rgba(255,214,160,0) 0deg, rgba(255,214,160,.16) 14deg, rgba(255,214,160,.2) 24deg, rgba(255,214,160,.16) 34deg, rgba(255,214,160,0) 48deg); -webkit-mask-image:radial-gradient(circle at 0 0, #000 0%, rgba(0,0,0,.5) 55%, transparent 85%); mask-image:radial-gradient(circle at 0 0, #000 0%, rgba(0,0,0,.5) 55%, transparent 85%); filter:blur(6px);")} />
+          <div style={css("position:absolute; left:70%; bottom:-4%; width:170%; height:12%; border-radius:50%; background:radial-gradient(ellipse, rgba(255,205,150,.2), rgba(255,205,150,.06) 50%, rgba(255,205,150,0) 72%); filter:blur(6px);")} />
+          <div style={css("position:absolute; left:-6%; right:30%; bottom:-1.5%; height:4%; border-radius:50%; background:rgba(3,1,5,.75); filter:blur(5px);")} />
+          <img src="/v3/q-lamp2.webp" alt="" style={css("position:relative; display:block; height:100%; width:100%; opacity:.85; filter:brightness(.7) sepia(.15);")} />
+          <div style={css("position:absolute; left:56%; top:20%; width:16%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle, rgba(255,240,210,.95) 0%, rgba(255,210,150,.5) 30%, rgba(255,190,120,0) 70%); filter:blur(3px);")} />
         </div>
         {/* eslint-enable @next/next/no-img-element */}
         <div style={css("position:relative; width:100%; max-width:1360px; margin:0 auto;")}>

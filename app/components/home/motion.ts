@@ -41,7 +41,7 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       word: q<SVGElement>("[data-word]"),
       pex: q<SVGElement>("[data-pex]"),
       pborn: q<SVGElement>("[data-pborn]"),
-      st: q<SVGElement>("[data-st]"),
+      fs: q<SVGElement>("[data-fs]"),
       wave: q<SVGElement>("[data-wave]"),
       door: o("[data-door]"),
       strip: o("[data-strip]"),
@@ -49,7 +49,7 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       shoot: o("[data-shoot]"),
       fglow: o<SVGElement>("[data-fglow]"),
       flame: o<SVGElement>("[data-flame]"),
-      glide: o<SVGElement>("[data-glide]"),
+      glide: o<SVGElement>("[data-fglide]"),
       grain: o("[data-grain]"),
       cur: o("[data-cursor]"),
       curL: o("[data-cursor-label]"),
@@ -127,7 +127,7 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         const k = reduce ? 0 : 1;
         const ry = nx * d * 9 * k, rx = -ny * d * 5 * k, lift = -n * 8 * k;
         e.style.transform = "translateY(" + base + "%) perspective(1100px) rotateX(" + rx.toFixed(2) + "deg) rotateY(" + ry.toFixed(2) + "deg) translateY(" + lift.toFixed(1) + "px)";
-        const img = e.querySelector("img");
+        const img = e.querySelector<HTMLElement>("img,[data-prop]");
         if (img) img.style.filter = "drop-shadow(0 0 " + (16 + n * 26).toFixed(0) + "px rgba(255,120,60," + (0.1 + n * 0.24).toFixed(2) + ")) brightness(" + (1 + n * 0.08).toFixed(3) + ")";
       });
       els.glow.forEach((e) => (e.style.filter = "drop-shadow(0 0 " + (14 + 6 * Math.sin(t * 1.3)).toFixed(1) + "px rgba(255,200,140,.28))"));
@@ -191,7 +191,7 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       /* How it works: scroll through the plate - words, lantern, wave, plane */
       if (els.strip) {
         const r = els.strip.getBoundingClientRect();
-        const p = reduce ? 1 : cl((vh * 0.9 - r.top) / (vh * 1.5));
+        const p = reduce ? 1 : cl((vh * 0.9 - r.top) / (vh * 0.95));
         els.word.forEach((e) => {
           const i = +(e.getAttribute("data-word") || 0);
           e.setAttribute("fill-opacity", p > 0.03 + i * 0.05 ? (1 - i * 0.05).toFixed(2) : "0");
@@ -215,9 +215,9 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         }
         const wp = cl((p - 0.42) / 0.24);
         els.wave.forEach((e) => e.setAttribute("stroke-dashoffset", (1 - wp).toFixed(3)));
-        els.st.forEach((e) => {
-          const i = +(e.getAttribute("data-st") || 0);
-          e.setAttribute("opacity", cl((p - [0.67, 0.75, 0.83][i]) / 0.06).toFixed(2));
+        els.fs.forEach((e) => {
+          const i = +(e.getAttribute("data-fs") || 0);
+          e.setAttribute("opacity", cl((p - [0.67, 0.75, 0.83][i]) / 0.035).toFixed(2));
         });
         if (els.glide) {
           const g = cl((p - 0.9) / 0.1);
