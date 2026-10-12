@@ -34,6 +34,8 @@ html:has(.h3), html:has(.h3) body { background:#0A0A0B; }
 /* a hovered archive tile shows its prompt */
 .h3 .h3-cap { opacity:0; transition:opacity .4s; }
 .h3 .h3-tile:hover .h3-cap, .h3 .h3-tile:focus-within .h3-cap { opacity:1; }
+.h3 .h3-spot { filter:saturate(.8) brightness(.95); transition:transform .5s cubic-bezier(.2,.7,.1,1), filter .5s; }
+.h3 .h3-spot:hover { transform:translateY(-4px) scale(1.06); filter:saturate(1) brightness(1.1); }
 .h3 .h3-tile video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none; }
 
 /* placeholder shimmer under each archive poster */

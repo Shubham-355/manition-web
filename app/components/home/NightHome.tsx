@@ -34,6 +34,10 @@ type Tile = {
   place: string;
   hideM?: boolean;
   shadow?: string;
+  /* a second, softer floor shadow drawn under the tile */
+  shadow2?: string;
+  /* lit from above: a light cone, a warm pool on the floor, a glow on the frame */
+  spot?: boolean;
 };
 
 const T = (n: string) => `/scenes/${n}.jpg`;
@@ -57,7 +61,7 @@ const TILES: Tile[] = [
     key: "nebula", scene: "nebula", poster: T("nebula"), frame: "paper", hideM: true,
     prompt: "\"let a gas cloud collapse until a star lights up\"",
     mount: { kind: "hang", hang: "0.2,10,2.1", string: 86, rot: -4 },
-    place: "left:46%; top:calc(120px + 1%); width:clamp(80px,8.5vw,130px); z-index:4; filter:blur(1.2px) brightness(.8);",
+    place: "left:46%; top:calc(120px + 1%); width:clamp(80px,8.5vw,130px); z-index:4; filter:brightness(.82) saturate(.85);",
     shadow: "left:calc(46% + 50px); top:74%; width:clamp(80px,8.5vw,130px);",
   },
   {
@@ -85,14 +89,15 @@ const TILES: Tile[] = [
     key: "hilbert", scene: "hilbert", poster: T("hilbert"), frame: "paper", hideM: true,
     prompt: "\"fill a square with one line that never crosses itself\"",
     mount: { kind: "hang", hang: "0.2,10.5,0.9", string: 250, rot: 5 },
-    place: "left:2.5%; top:calc(120px + 40%); width:clamp(80px,8vw,125px); z-index:4; filter:blur(1.2px) brightness(.8);",
-    shadow: "left:calc(2.5% + 50px); top:75%; width:clamp(80px,8vw,125px);",
+    place: "left:4.5%; top:calc(120px + 30%); width:clamp(80px,8vw,125px); z-index:4; filter:brightness(.82) saturate(.85);",
+    shadow: "left:calc(4.5% + 50px); top:75%; width:clamp(80px,8vw,125px);",
   },
   {
     key: "rossler", scene: "rossler", poster: T("rossler"), frame: "plaster", hideM: true,
     prompt: "\"trace the Rössler band for a minute\"",
     mount: { kind: "float", bob: "7,9,1.2", rot: -7 },
     place: "left:36.5%; top:calc(120px + 25%); width:clamp(80px,7.4vw,112px); z-index:14;",
+    shadow2: "left:calc(36.5% + 24px); top:76%; width:clamp(80px,7.4vw,112px); height:9px; background:rgba(4,2,8,.5); filter:blur(7px);",
     shadow: "left:calc(36.5% + 60px); top:79%; width:clamp(80px,7.4vw,112px); height:9px; background:rgba(4,2,8,.55); filter:blur(6px);",
   },
   {
@@ -110,8 +115,8 @@ const TILES: Tile[] = [
   {
     key: "apollonian", scene: "apollonian", poster: T("apollonian"), frame: "gold", hideM: true,
     prompt: "\"fill a circle with circles that touch\"",
-    mount: { kind: "easel" },
-    place: "left:58.5%; bottom:23.5%; width:clamp(70px,7vw,108px); z-index:4; filter:blur(.8px) brightness(.85);",
+    mount: { kind: "easel" }, spot: true,
+    place: "left:58.5%; bottom:23.5%; width:clamp(80px,7.6vw,118px); z-index:4;",
   },
   {
     key: "waves", scene: "waves", poster: T("waves"), frame: "paper", hideM: true,
@@ -134,11 +139,11 @@ const REFLECT = "position:relative; -webkit-box-reflect:below 0px linear-gradien
 const CAST =
   "position:absolute; left:6%; bottom:0; width:110%; background:linear-gradient(0deg, rgba(4,2,8,.55), rgba(4,2,8,0)); transform:skewX(-58deg); transform-origin:bottom left; filter:blur(5px); pointer-events:none;";
 
-function Pic({ tile, live, sheen }: { tile: Tile; live: boolean; sheen?: boolean }) {
+function Pic({ tile, live, sheen }: { tile: Tile; live: boolean; sheen?: string }) {
   return (
     <div style={css("position:relative; aspect-ratio:4/3; overflow:hidden; background:#24182c;")}>
       <div className="h3-shim" style={css("position:absolute; inset:0; background:linear-gradient(115deg,#1f1528 0%,#2f1f36 45%,#3a2742 50%,#2f1f36 55%,#1f1528 100%); background-size:300% 100%;")} />
-      {sheen ? <div style={css("position:absolute; inset:0; z-index:2; background:linear-gradient(125deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,0) 38%); pointer-events:none;")} /> : null}
+      {sheen ? <div style={css(`position:absolute; inset:0; z-index:2; background:${sheen}; pointer-events:none;`)} /> : null}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={tile.poster} alt="" loading="lazy" style={css("position:absolute; inset:0; width:100%; height:100%; object-fit:cover;")} />
       {live && RENDERED.has(tile.scene) ? <video src={`/scenes/${tile.scene}.mp4`} autoPlay muted loop playsInline /> : null}
@@ -155,10 +160,15 @@ const CORNER = (
 );
 
 function Framed({ tile, live, lean }: { tile: Tile; live: boolean; lean?: boolean }) {
-  const pic = <Pic tile={tile} live={live} sheen={lean} />;
+  const sheen = lean
+    ? "linear-gradient(125deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,0) 38%)"
+    : tile.spot
+      ? "linear-gradient(160deg, rgba(255,240,210,.16) 0%, rgba(255,240,210,0) 45%)"
+      : undefined;
+  const pic = <Pic tile={tile} live={live} sheen={sheen} />;
   if (tile.frame === "gold")
     return (
-      <div style={css("position:relative; padding:9px; background:linear-gradient(35deg,#f3d696 0%,#b8904a 26%,#6e5020 48%,#d9b46a 70%,#4e3618 100%); border:1px solid #241608; box-shadow:inset 0 0 0 2px rgba(255,232,180,.22), inset 0 0 0 5px rgba(60,38,12,.45), 0 30px 50px -24px rgba(0,0,0,.9);")}>
+      <div style={css("position:relative; padding:9px; background:linear-gradient(35deg,#f3d696 0%,#b8904a 26%,#6e5020 48%,#d9b46a 70%,#4e3618 100%); border:1px solid #241608; box-shadow:inset 0 0 0 2px rgba(255,232,180,.22), inset 0 0 0 5px rgba(60,38,12,.45), 0 30px 50px -24px rgba(0,0,0,.9)" + (tile.spot ? ", 0 0 26px rgba(255,190,120,.18);" : ";"))}>
         <div style={css("padding:2px; background:#3a2810;")}>{pic}</div>
       </div>
     );
@@ -245,6 +255,14 @@ function ArchiveTile({ tile }: { tile: Tile }) {
   } else if (m.kind === "easel") {
     capTop = "top:calc(100% + 22px);";
     body = <Easel>{framed}</Easel>;
+    if (tile.spot)
+      body = (
+        <>
+          <div aria-hidden="true" style={css("position:absolute; left:-55%; right:-55%; top:-150%; bottom:-6%; background:conic-gradient(from 180deg at 50% 0%, rgba(255,214,160,0) 0deg, rgba(255,214,160,0) 164deg, rgba(255,214,160,.13) 172deg, rgba(255,214,160,.2) 180deg, rgba(255,214,160,.13) 188deg, rgba(255,214,160,0) 196deg); -webkit-mask-image:linear-gradient(180deg, transparent 0%, #000 40%, #000 90%, transparent 100%); mask-image:linear-gradient(180deg, transparent 0%, #000 40%, #000 90%, transparent 100%); filter:blur(4px); pointer-events:none;")} />
+          <div aria-hidden="true" style={css("position:absolute; left:-40%; right:-40%; bottom:-14%; height:26%; border-radius:50%; background:radial-gradient(ellipse, rgba(255,200,140,.22), rgba(255,200,140,0) 70%); pointer-events:none;")} />
+          {body}
+        </>
+      );
   } else if (m.kind === "lean") {
     capTop = "top:calc(100% + 18px);";
     body = (
@@ -279,7 +297,8 @@ function ArchiveTile({ tile }: { tile: Tile }) {
 
   return (
     <>
-      <div {...extra} {...hover} className={hide + "h3-tile"} style={css(rootStyle)}>
+      {tile.shadow2 ? <div aria-hidden="true" className={tile.hideM ? "h3-hide-m" : undefined} style={css(FLOOR_SHADOW + " " + tile.shadow2)} /> : null}
+      <div {...extra} {...hover} className={hide + "h3-tile" + (tile.spot ? " h3-spot" : "")} style={css(rootStyle)}>
         {body}
         <p className="h3-cap" style={css(CAP + " " + capTop)}>{tile.prompt}</p>
       </div>
