@@ -9,7 +9,7 @@ import { WaitlistForm } from "../Interactive";
 import { RENDERED } from "../scene-videos";
 import { WAVE_D } from "./wave-path";
 import { useNightMotion } from "./motion";
-import { PROPS, fernPaint, type PropKind } from "./props";
+import { PROPS, diceMount, type PropKind } from "./props";
 import NightNav from "../night/NightNav";
 import NightFooter from "../night/NightFooter";
 import "../night/night.css";
@@ -213,13 +213,14 @@ function Easel({ children }: { children: ReactNode }) {
   );
 }
 
-/* a prop drawn in code (see props.ts); the dice also grow a fern on a canvas once mounted */
-function Prop({ kind, style }: { kind: PropKind; style: string }) {
+/* a prop drawn in code (see props.ts); the dice's fern sways once mounted */
+function Prop({ kind, style, label }: { kind: PropKind; style: string; label?: string }) {
   const host = useRef<HTMLDivElement>(null);
   const u = "mn" + useId().replace(/[^a-zA-Z0-9]/g, "") + "_";
   const html = useMemo(() => ({ __html: PROPS[kind](u) }), [kind, u]);
-  useEffect(() => (kind === "dice" && host.current ? fernPaint(host.current) : undefined), [kind]);
-  return <div ref={host} aria-hidden="true" style={css(style)} dangerouslySetInnerHTML={html} />;
+  useEffect(() => (kind === "dice" && host.current ? diceMount(host.current) : undefined), [kind]);
+  const a11y = label ? { role: "img", "aria-label": label } : { "aria-hidden": true };
+  return <div ref={host} {...a11y} style={css(style)} dangerouslySetInnerHTML={html} />;
 }
 
 function ArchiveTile({ tile }: { tile: Tile }) {
@@ -412,23 +413,16 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
             <div aria-hidden="true" style={css("position:absolute; left:12%; right:4%; bottom:1%; height:7%; border-radius:50%; background:radial-gradient(ellipse, rgba(4,2,6,.8), rgba(4,2,6,0) 70%); filter:blur(8px);")} />
             <Prop kind="easel" style="position:relative; display:block; width:100%;" />
           </div>
-          <div className="h3-dice" data-tilt="1,6.7" style={css("position:absolute; left:46%; bottom:30%; width:clamp(170px,17vw,260px); transform:translateY(6.7%); transform-origin:50% 100%;")}>
-            <div aria-hidden="true" style={css("position:absolute; left:8%; right:8%; bottom:3%; height:9%; border-radius:50%; background:radial-gradient(ellipse, rgba(4,2,6,.85), rgba(4,2,6,0) 70%); filter:blur(6px);")} />
+          <div className="h3-dice" data-tilt="1,0" style={css("position:absolute; left:46%; bottom:18%; width:clamp(240px,min(28vw,44.8vh),420px); transform-origin:21% 87%;")}>
             <Prop kind="dice" style="position:relative; display:block; width:100%;" />
-            <span data-leaf="0" style={css("position:absolute; left:38%; top:16%; width:9px; height:4px; border-radius:50%; background:#6fae7c;")} />
-            <span data-leaf="1" style={css("position:absolute; left:44%; top:24%; width:8px; height:3px; border-radius:50%; background:#8cc08a;")} />
-            <span data-leaf="2" style={css("position:absolute; left:40%; top:30%; width:7px; height:3px; border-radius:50%; background:#5f9e86;")} />
           </div>
-          <div className="h3-hide-m" style={css("position:absolute; right:5%; bottom:calc(25% + 40px); width:clamp(84px,7.8vw,120px);")}>
+          <div className="h3-hide-m" style={css("position:absolute; right:calc(5% + 24px); bottom:25%; width:clamp(84px,7.8vw,120px);")}>
             <div data-bob="5,10,1" style={css("position:relative;")}>
               <Prop kind="orb" style="position:relative; display:block; width:100%;" />
             </div>
             <div data-bobsh="1" style={css("position:absolute; left:18%; top:calc(100% + 46px); width:96%; height:12px; border-radius:50%; background:rgba(4,2,6,.75); filter:blur(5px); transform:skewX(-40deg);")} />
             <div aria-hidden="true" style={css("position:absolute; left:-22%; top:calc(100% + 38px); width:52%; height:14px; border-radius:50%; background:radial-gradient(ellipse, rgba(255,190,130,.5), rgba(255,140,80,0) 70%); filter:blur(3px);")} />
           </div>
-        </div>
-        <div data-par="1" aria-hidden="true" className="h3-hide-m" style={css("position:absolute; inset:0; pointer-events:none;")}>
-          <Prop kind="chalk" style="position:absolute; right:2%; bottom:3%; width:clamp(300px,34vw,520px);" />
         </div>
         <div aria-hidden="true" style={css("position:absolute; left:0; top:0; bottom:0; width:70%; background:radial-gradient(ellipse at 18% 48%, rgba(10,10,11,.62), rgba(10,10,11,0) 62%); pointer-events:none;")} />
         <div style={css("position:relative; z-index:5; max-width:1360px; height:100%; margin:0 auto; padding:clamp(100px,15vh,170px) clamp(16px,4vw,40px) 0; box-sizing:border-box;")}>
