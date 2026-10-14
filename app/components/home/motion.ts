@@ -34,7 +34,6 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       par: q("[data-par]"),
       tilt: q("[data-tilt]"),
       glow: q("[data-glow]"),
-      leaf: q("[data-leaf]"),
       bubble: q("[data-bubble]"),
       col: q("[data-col]"),
       hang: q("[data-hang]"),
@@ -54,7 +53,8 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       cur: o("[data-cursor]"),
       curL: o("[data-cursor-label]"),
       ring: o<SVGElement>("[data-ring]"),
-      sun: o("[data-sun]"),
+      glass: o("[data-prop=\"I1-I3\"]"),
+      qlight: o<SVGSVGElement>("[data-qlight]"),
       moon: {} as Record<string, SVGElement>,
     };
     q<SVGElement>("[data-moon]").forEach((e) => (els.moon[e.getAttribute("data-moon") || ""] = e));
@@ -70,6 +70,8 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
     window.addEventListener("mousemove", onMove);
 
     const near0 = new WeakMap<Element, number>();
+    let rise = 0;
+    let ql: Light | null = null;
     let frame = 0;
     let raf = 0;
     const t0 = performance.now();
@@ -143,13 +145,6 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         }
       });
       if (els.ring && !reduce) els.ring.style.strokeDashoffset = String(-(t * 60) % 460);
-      els.leaf.forEach((e) => {
-        if (reduce) return;
-        const i = +(e.getAttribute("data-leaf") || 0);
-        const f = (t / 7 + i * 0.33) % 1;
-        e.style.transform = "translate(" + f * 120 + "px," + (-f * 60 + Math.sin(f * 12 + i) * 8) + "px) rotate(" + f * 300 + "deg)";
-        e.style.opacity = String(f < 0.1 ? f * 10 : 1 - f);
-      });
 
       /* the moon is a unit circle: the radius turns, its cosine drips to the ground */
       const M = els.moon;
@@ -194,7 +189,7 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         const p = reduce ? 1 : cl((vh * 0.9 - r.top) / (vh * 0.95));
         els.word.forEach((e) => {
           const i = +(e.getAttribute("data-word") || 0);
-          e.setAttribute("fill-opacity", p > 0.03 + i * 0.05 ? (1 - i * 0.05).toFixed(2) : "0");
+          e.setAttribute("fill-opacity", p > 0.03 + i * 0.05 ? (i === 5 ? 0.75 : 1 - i * 0.05).toFixed(2) : "0");
         });
         els.pex.forEach((e, i) => {
           const f = reduce ? 0.3 : (t / 2.4 + i * 0.25) % 1;
@@ -203,9 +198,9 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         });
         const bp = cl((p - 0.31) / 0.08);
         els.pborn.forEach((e, i) => {
-          const f = reduce ? 1 : (t / 1.8 + i * 0.2) % 1;
-          e.setAttribute("transform", "translate(" + f * 26 + "," + (-f * 14 + Math.sin(f * 6 + i) * 5) + ")");
-          e.setAttribute("opacity", (bp * (1 - f) * 0.9).toFixed(2));
+          const f = reduce ? 0.5 : (t / 1.8 + i * 0.13) % 1;
+          e.setAttribute("transform", "translate(" + f * 34 + "," + (Math.sin(f * 6 + i) * 6 - f * 4) + ")");
+          e.setAttribute("opacity", (bp * (1 - f) * 0.95).toFixed(2));
         });
         els.fglow?.setAttribute("opacity", (0.35 + 0.65 * cl((p - 0.33) / 0.1)).toFixed(2));
         if (els.flame && !reduce) {
@@ -264,12 +259,13 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         const l = c - i * 0.3;
         let y = 0;
         let op = 1;
-        if (c > 5.4) op = (c - 5.4) / 0.4;
-        else if (l >= 0 && l < 1.2) {
+        if (l >= 0 && l < 1.2) {
           const k = l / 1.2;
-          y = -24 * k;
-          op = 1 - k;
-        } else if (l >= 1.2) op = 0;
+          if (k < 0.6) {
+            y = -24 * (k / 0.6);
+            op = 1 - k / 0.6;
+          } else op = (k - 0.6) / 0.4;
+        }
         e.style.transform = "translateY(" + y.toFixed(1) + "px)";
         e.style.opacity = op.toFixed(2);
       });
@@ -280,7 +276,15 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         e.style.transform = "translate(" + Math.sin(f * 9 + i) * 3 + "px," + -f * 70 + "px)";
         e.style.opacity = String(f > 0.85 ? (1 - f) / 0.15 : 0.9);
       });
-      if (els.sun && !reduce && !joinedRef.current) els.sun.style.translate = "0 " + (Math.sin((t / 6) * 6.28) * 3).toFixed(2) + "px";
+      /* the sun bobs in the glass, and rises out of the water once you join */
+      if (els.glass) {
+        const j = joinedRef.current;
+        rise += ((j ? 1 : 0) - rise) * (reduce ? 1 : 0.03);
+        const y = (-396 * rise + (reduce || j ? 0 : Math.sin((t / 6) * 6.28) * 8)).toFixed(1);
+        els.glass.querySelectorAll("[data-sunmove]").forEach((g) => g.setAttribute("transform", "translate(0 " + y + ")"));
+      }
+      if (frame % 90 === 1) ql = layoutLight(els.qlight);
+      if (ql) driftMotes(ql, reduce ? 0 : t);
       if (els.grain && !reduce && frame % 5 === 0) els.grain.style.transform = "translate(" + ((Math.random() * 40) | 0) + "px," + ((Math.random() * 40) | 0) + "px)";
 
       if (els.cur) {
@@ -304,4 +308,55 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       window.removeEventListener("mousemove", onMove);
     };
   }, [rootRef]);
+}
+
+type P2 = [number, number];
+type Light = { C: P2; U: P2; L: P2; pc: P2; rx: number; motes: SVGElement[] };
+
+/*
+ * Lays the quiet room's lamp light out in section pixels: a cone from the shade opening (taken from
+ * the lamp drawing's own geometry) to a pool on the floor below the text, a soft glow behind the
+ * text and a spill at the lamp's foot. Re-run now and then so it follows resizes.
+ */
+function layoutLight(svg: SVGSVGElement | null): Light | null {
+  const sec = svg?.parentElement;
+  const box = sec?.querySelector<HTMLElement>("[data-qlamp]");
+  const txt = sec?.querySelector<HTMLElement>(".h3-qtext");
+  if (!svg || !sec || !box || !txt || !box.offsetWidth || !svg.getBoundingClientRect().width) return null;
+  const sr = sec.getBoundingClientRect(), k = sec.offsetWidth / sr.width, W = sec.offsetWidth, H = sec.offsetHeight;
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  const lr = box.getBoundingClientRect(), tr = txt.getBoundingClientRect();
+  const lx = (lr.left - sr.left) * k, ly = (lr.top - sr.top) * k, ls = (lr.width * k) / 600;
+  const P = (x: number, y: number): P2 => [lx + x * ls, ly + y * ls];
+  // shade opening in lamp units: ellipse (374,262) rx112 at -24deg, inside rotate(-38 272 146)
+  const A = (-38 * Math.PI) / 180, ca = Math.cos(A), sa = Math.sin(A);
+  const ox = 272 + 102 * ca - 116 * sa, oy = 146 + 102 * sa + 116 * ca;
+  const B = (-62 * Math.PI) / 180, ex = 112 * Math.cos(B), ey = 112 * Math.sin(B);
+  const U = P(ox + ex, oy + ey), L = P(ox - ex, oy - ey), C = P(ox, oy);
+  const tx = (tr.left - sr.left) * k, ty = (tr.top - sr.top) * k, tw = tr.width * k, th = tr.height * k;
+  const rx = Math.max(140, tw * 0.4), ry = rx / 3.5, px = tx + tw * 0.58, py = Math.min(H - ry * 0.6, ty + th + ry * 0.75);
+  const el = (s: string) => svg.querySelector('[data-ql="' + s + '"]');
+  const set = (e: Element | null, o: Record<string, number>) => Object.keys(o).forEach((a) => e?.setAttribute(a, o[a].toFixed(1)));
+  el("cone")?.setAttribute("points", [U, [px + rx, py], [px - rx, py], L].map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" "));
+  set(el("axis"), { x1: C[0], y1: C[1], x2: px, y2: py });
+  set(el("fall"), { cx: C[0], cy: C[1], r: Math.hypot(px - C[0], py - C[1]) * 1.1 });
+  set(el("pool"), { cx: px, cy: py, rx, ry });
+  set(el("text"), { cx: tx + tw * 0.33, cy: ty + th * 0.68, r: 600 * Math.min(1, W / 1440) });
+  const base = P(166, 1066), sp = P(ox + 60, 1066);
+  set(el("spill"), { cx: (base[0] + sp[0]) / 2 + 30 * ls, cy: base[1], rx: 150 * ls * 1.6, ry: 22 * ls * 1.6 });
+  return { C, U, L, pc: [px, py], rx, motes: Array.from(svg.querySelectorAll<SVGElement>("[data-mote]")) };
+}
+
+/* dust drifting slowly down the cone, brightest mid-beam */
+function driftMotes(q: Light, t: number) {
+  const ax = q.pc[0] - q.C[0], ay = q.pc[1] - q.C[1], len = Math.hypot(ax, ay), nx = -ay / len, ny = ax / len;
+  const w0 = Math.hypot(q.U[0] - q.L[0], q.U[1] - q.L[1]) / 2;
+  q.motes.forEach((m, i) => {
+    const s = 0.1 + (((i * 0.618) % 1 + t * 0.006 * (1 + (i % 3))) % 1) * 0.78;
+    const half = w0 + (q.rx - w0) * s, lat = (((i * 0.37) % 1) - 0.5) * 0.6 + 0.06 * Math.sin(t * 0.35 + i * 1.7);
+    const x = q.C[0] + ax * s + nx * lat * half, y = q.C[1] + ay * s + ny * lat * half + 6 * Math.sin(t * 0.2 + i);
+    m.setAttribute("cx", x.toFixed(1));
+    m.setAttribute("cy", y.toFixed(1));
+    m.setAttribute("opacity", ((0.2 + ((i * 3) % 5) * 0.05) * Math.sin(Math.PI * ((s - 0.1) / 0.78))).toFixed(2));
+  });
 }
