@@ -611,51 +611,17 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
         <div aria-hidden="true" className="h3-hide-t" style={css("position:absolute; right:30%; top:8%; width:clamp(120px,10vw,160px); pointer-events:none;")}>
           <div data-bob="10,8,0.7">
             <div style={css("position:relative; transform:rotate(12deg);")}>
-              <div style={css("position:absolute; inset:-30%; border-radius:50%; background:radial-gradient(circle, rgba(255,200,140,.1), rgba(255,200,140,0) 65%);")} />
               <Prop kind="chair" style="position:relative; display:block; width:100%;" />
             </div>
           </div>
         </div>
         <div aria-hidden="true" className="h3-hide-t" style={css("position:absolute; right:calc(30% - 22px); top:38%; width:130px; height:11px; border-radius:50%; background:rgba(4,2,8,.75); filter:blur(7px); transform:skewX(-40deg); pointer-events:none;")} />
-        {/* the lamp's light: a cone from the shade opening down past the text, a pool on the floor, drifting dust (laid out in motion.ts) */}
+        {/* the lamp's light: a conic cone aimed from the shade at the floor under "explain", a pool, drifting dust (laid out in motion.ts) */}
+        <div data-qbeam="1" className="h3-hide-t" aria-hidden="true" style={css("position:absolute; inset:0; pointer-events:none;")}>
+          <div data-qcone="1" style={css("position:absolute; left:0; top:0; width:0; height:0; transform-origin:50% 0;")} />
+          <div data-qpool="1" style={css("position:absolute; left:0; top:0; width:0; height:0; border-radius:50%;")} />
+        </div>
         <svg data-qlight="1" className="h3-hide-t" aria-hidden="true" style={css("position:absolute; left:0; top:0; width:100%; height:100%; overflow:visible; pointer-events:none;")}>
-          <defs>
-            <linearGradient id="qlAxis" data-ql="axis" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stopColor="#F4E9D0" stopOpacity=".22" />
-              <stop offset=".5" stopColor="#F4E9D0" stopOpacity=".13" />
-              <stop offset="1" stopColor="#F4E9D0" stopOpacity=".06" />
-            </linearGradient>
-            <radialGradient id="qlFall">
-              <stop offset="0" stopColor="#fff" stopOpacity="1" />
-              <stop offset="1" stopColor="#fff" stopOpacity=".6" />
-            </radialGradient>
-            <mask id="qlMask" maskUnits="userSpaceOnUse" x="-2000" y="-2000" width="6000" height="6000">
-              <circle data-ql="fall" cx="0" cy="0" r="1" fill="url(#qlFall)" />
-            </mask>
-            <radialGradient id="qlPool">
-              <stop offset="0" stopColor="#F4E9D0" stopOpacity=".14" />
-              <stop offset=".5" stopColor="#F4E9D0" stopOpacity=".06" />
-              <stop offset="1" stopColor="#F4E9D0" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient id="qlText">
-              <stop offset="0" stopColor="#F4E9D0" stopOpacity=".07" />
-              <stop offset="1" stopColor="#F4E9D0" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient id="qlSpill">
-              <stop offset="0" stopColor="#F4E9D0" stopOpacity=".04" />
-              <stop offset="1" stopColor="#F4E9D0" stopOpacity="0" />
-            </radialGradient>
-            <filter id="qlFeather" x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur stdDeviation="22" />
-            </filter>
-            <filter id="qlSoft" x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur stdDeviation="6" />
-            </filter>
-          </defs>
-          <circle data-ql="text" cx="0" cy="0" r="0" fill="url(#qlText)" />
-          <ellipse data-ql="spill" cx="0" cy="0" rx="0" ry="0" fill="url(#qlSpill)" filter="url(#qlSoft)" />
-          <ellipse data-ql="pool" cx="0" cy="0" rx="0" ry="0" fill="url(#qlPool)" filter="url(#qlSoft)" />
-          <polygon data-ql="cone" points="0,0 0,0 0,0" fill="url(#qlAxis)" mask="url(#qlMask)" filter="url(#qlFeather)" />
           <g fill="#F4E9D0">
             {Array.from({ length: 14 }, (_, i) => (
               <circle key={i} data-mote={i} cx="0" cy="0" r={[1, 1.5, 2][i % 3]} opacity="0" />
@@ -665,7 +631,7 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
         <div data-qlamp="1" className="h3-hide-t" aria-hidden="true" style={css("position:absolute; left:clamp(-40px,-1vw,0px); bottom:3%; height:min(64%,520px); aspect-ratio:600/1100; pointer-events:none;")}>
           <div style={css("position:absolute; left:-6%; right:30%; bottom:-1.5%; height:4%; border-radius:50%; background:rgba(3,1,5,.75); filter:blur(5px);")} />
           <Prop kind="lamp" style="position:relative; display:block; height:100%; width:100%;" />
-          <div style={css("position:absolute; left:63%; top:10.9%; width:16%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle, rgba(255,240,210,.95) 0%, rgba(255,210,150,.5) 30%, rgba(255,190,120,0) 70%); filter:blur(3px);")} />
+          <div data-qglow="1" style={css("position:absolute; left:63%; top:10.9%; width:16%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle, rgba(255,240,210,.95) 0%, rgba(255,210,150,.5) 30%, rgba(255,190,120,0) 70%); filter:blur(3px);")} />
         </div>
         <div style={css("position:relative; width:100%; max-width:1360px; margin:0 auto;")}>
           <p className="h3-qtext serif" style={css("margin:0 0 0 clamp(0px,21vw,320px); max-width:56%; font-size:clamp(34px,5vw,68px); line-height:1.06; letter-spacing:-0.025em; color:#EDEAE3; text-wrap:balance;")}>
