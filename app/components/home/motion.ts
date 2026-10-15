@@ -311,12 +311,12 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
 }
 
 type P2 = [number, number];
-type Light = { C: P2; U: P2; L: P2; pc: P2; rx: number; motes: SVGElement[] };
+type Light = { C: P2; U: P2; L: P2; pc: P2; rx: number; tb: [number, number, number, number]; motes: SVGElement[] };
 
 /*
- * Lays the quiet room's lamp light out in section pixels: a cone from the shade opening (taken from
- * the lamp drawing's own geometry) to a pool on the floor below the text, a soft glow behind the
- * text and a spill at the lamp's foot. Re-run now and then so it follows resizes.
+ * Lays the quiet room's lamp light out in section pixels. The shade turns (25-30deg beam) so its centre
+ * line lands on the floor under "explain"; a conic cone runs from the shade opening to a pool there.
+ * Re-run now and then so it follows resizes.
  */
 function layoutLight(svg: SVGSVGElement | null): Light | null {
   const sec = svg?.parentElement;
@@ -328,23 +328,79 @@ function layoutLight(svg: SVGSVGElement | null): Light | null {
   const lr = box.getBoundingClientRect(), tr = txt.getBoundingClientRect();
   const lx = (lr.left - sr.left) * k, ly = (lr.top - sr.top) * k, ls = (lr.width * k) / 600;
   const P = (x: number, y: number): P2 => [lx + x * ls, ly + y * ls];
-  // shade opening in lamp units: ellipse (374,262) rx112 at -24deg, inside rotate(-38 272 146)
-  const A = (-38 * Math.PI) / 180, ca = Math.cos(A), sa = Math.sin(A);
-  const ox = 272 + 102 * ca - 116 * sa, oy = 146 + 102 * sa + 116 * ca;
-  const B = (-62 * Math.PI) / 180, ex = 112 * Math.cos(B), ey = 112 * Math.sin(B);
-  const U = P(ox + ex, oy + ey), L = P(ox - ex, oy - ey), C = P(ox, oy);
   const tx = (tr.left - sr.left) * k, ty = (tr.top - sr.top) * k, tw = tr.width * k, th = tr.height * k;
-  const rx = Math.max(140, tw * 0.4), ry = rx / 3.5, px = tx + tw * 0.58, py = Math.min(H - ry * 0.6, ty + th + ry * 0.75);
-  const el = (s: string) => svg.querySelector('[data-ql="' + s + '"]');
-  const set = (e: Element | null, o: Record<string, number>) => Object.keys(o).forEach((a) => e?.setAttribute(a, o[a].toFixed(1)));
-  el("cone")?.setAttribute("points", [U, [px + rx, py], [px - rx, py], L].map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" "));
-  set(el("axis"), { x1: C[0], y1: C[1], x2: px, y2: py });
-  set(el("fall"), { cx: C[0], cy: C[1], r: Math.hypot(px - C[0], py - C[1]) * 1.1 });
-  set(el("pool"), { cx: px, cy: py, rx, ry });
-  set(el("text"), { cx: tx + tw * 0.33, cy: ty + th * 0.68, r: 600 * Math.min(1, W / 1440) });
-  const base = P(166, 1066), sp = P(ox + 60, 1066);
-  set(el("spill"), { cx: (base[0] + sp[0]) / 2 + 30 * ls, cy: base[1], rx: 150 * ls * 1.6, ry: 22 * ls * 1.6 });
-  return { C, U, L, pc: [px, py], rx, motes: Array.from(svg.querySelectorAll<SVGElement>("[data-mote]")) };
+  // target: the floor point centred under "explain"
+  let px = tx + tw * 0.45;
+  const tn = Array.from(txt.querySelectorAll("span")).map((e) => e.firstChild).find((n) => n?.nodeType === 3 && n.textContent?.includes("explain"));
+  if (tn) {
+    const r = document.createRange(), i = tn.textContent!.indexOf("explain");
+    r.setStart(tn, i);
+    r.setEnd(tn, i + 7);
+    const rr = r.getBoundingClientRect();
+    px = (rr.left + rr.width / 2 - sr.left) * k;
+  }
+  const rx = Math.max(120, tw * 0.28), ry = rx / 3.5, floorMax = H - ry * 0.7, minY = ty + th + ry * 0.6;
+  // the shade turns about the arm joint; its beam centre line sits deg + 66 below horizontal
+  const open = (deg: number) => {
+    const A = (deg * Math.PI) / 180, ca = Math.cos(A), sa = Math.sin(A);
+    return { ox: 272 + 102 * ca - 116 * sa, oy: 146 + 102 * sa + 116 * ca, B: ((deg + 14) * Math.PI) / 180 };
+  };
+  const tan = (d: number) => Math.tan((d * Math.PI) / 180);
+  let beam = 28, o = open(beam - 66), C = P(o.ox, o.oy), py = C[1] + (px - C[0]) * tan(beam);
+  for (let it = 0; it < 8; it++) {
+    o = open(beam - 66);
+    C = P(o.ox, o.oy);
+    const need = (Math.atan2(Math.max(minY, Math.min(floorMax, py)) - C[1], px - C[0]) * 180) / Math.PI;
+    beam = Math.max(25, Math.min(30, need));
+    py = C[1] + (px - C[0]) * tan(beam);
+  }
+  py = Math.max(minY, Math.min(floorMax, py));
+  const ex = 112 * Math.cos(o.B), ey = 112 * Math.sin(o.B);
+  box.querySelector("[data-shade]")?.setAttribute("transform", "rotate(" + (beam - 66).toFixed(2) + " 272 146)");
+  const gl = box.querySelector<HTMLElement>("[data-qglow]");
+  if (gl) {
+    gl.style.left = ((o.ox - 48) / 6).toFixed(2) + "%";
+    gl.style.top = ((o.oy - 48) / 11).toFixed(2) + "%";
+  }
+  const U = P(o.ox + ex, o.oy + ey), L = P(o.ox - ex, o.oy - ey);
+  const pc: P2 = [C[0] + (py - C[1]) / tan(beam), py];
+  layoutCone(sec, U, L, rx, pc, ry);
+  return { C, U, L, pc, rx, tb: [tx - 24, ty - 24, tx + tw + 24, ty + th + 24], motes: Array.from(svg.querySelectorAll<SVGElement>("[data-mote]")) };
+}
+
+/* the cone is a conic gradient from a virtual apex behind the shade, so it is as wide as the shade there and as the pool at the floor */
+function layoutCone(sec: HTMLElement, U: P2, L: P2, rx: number, pc: P2, ry: number) {
+  const el = sec.querySelector<HTMLElement>("[data-qcone]");
+  if (!el) return;
+  const C = [(U[0] + L[0]) / 2, (U[1] + L[1]) / 2], w0 = Math.hypot(U[0] - L[0], U[1] - L[1]) / 2;
+  const cx = pc[0] - C[0], cy = pc[1] - C[1], k0 = w0 / Math.max(1, rx - w0);
+  const O = [C[0] - cx * k0, C[1] - cy * k0];
+  const ax = pc[0] - O[0], ay = pc[1] - O[1], D = Math.hypot(ax, ay), ux = ax / D, uy = ay / D;
+  const h = (Math.atan(rx / D) * 180) / Math.PI;
+  const dS = Math.hypot(C[0] - O[0], C[1] - O[1]);
+  const f = Math.min(h * 0.6, ((36 / ((dS + D) / 2)) * 180) / Math.PI); // ~70px feather across each side mid-beam
+  const R = D + ry * 2 + 40, c = "#F4E9D0", z = "rgba(244,233,208,0)";
+  Object.assign(el.style, {
+    left: O[0] - R + "px",
+    top: O[1] + "px",
+    width: 2 * R + "px",
+    height: R + "px",
+    transform: "rotate(" + Math.atan2(-ux, uy) + "rad)",
+    background: "conic-gradient(from " + (180 - h - f) + "deg at 50% 0%, " + z + " 0deg, " + c + " " + 2 * f + "deg, " + c + " " + 2 * h + "deg, " + z + " " + (2 * h + 2 * f) + "deg, " + z + " 360deg)",
+  });
+  const pct = (v: number) => ((Math.max(0, Math.min(R, v)) / R) * 100).toFixed(2) + "%";
+  const m = "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) " + pct(dS - 4) + ", rgba(0,0,0,.22) " + pct(dS + 14) + ", rgba(0,0,0,.14) " + pct((dS + D) / 2) + ", rgba(0,0,0,.08) " + pct(D) + ", rgba(0,0,0,0) " + pct(D + ry * 1.8) + ")";
+  el.style.webkitMaskImage = m;
+  el.style.maskImage = m;
+  const pool = sec.querySelector<HTMLElement>("[data-qpool]");
+  if (pool)
+    Object.assign(pool.style, {
+      left: pc[0] - rx * 1.25 + "px",
+      top: pc[1] - ry * 1.25 + "px",
+      width: rx * 2.5 + "px",
+      height: ry * 2.5 + "px",
+      background: "radial-gradient(closest-side, rgba(244,233,208,.10), rgba(244,233,208,.06) 45%, rgba(244,233,208,.02) 75%, rgba(244,233,208,0))",
+    });
 }
 
 /* dust drifting slowly down the cone, brightest mid-beam */
@@ -357,6 +413,8 @@ function driftMotes(q: Light, t: number) {
     const x = q.C[0] + ax * s + nx * lat * half, y = q.C[1] + ay * s + ny * lat * half + 6 * Math.sin(t * 0.2 + i);
     m.setAttribute("cx", x.toFixed(1));
     m.setAttribute("cy", y.toFixed(1));
-    m.setAttribute("opacity", ((0.2 + ((i * 3) % 5) * 0.05) * Math.sin(Math.PI * ((s - 0.1) / 0.78))).toFixed(2));
+    // motes fade out over the text so they never sit on the letters
+    const b = q.tb, dx = Math.max(b[0] - x, 0, x - b[2]), dy = Math.max(b[1] - y, 0, y - b[3]), away = Math.min(1, Math.hypot(dx, dy) / 30);
+    m.setAttribute("opacity", ((0.2 + ((i * 3) % 5) * 0.05) * Math.sin(Math.PI * ((s - 0.1) / 0.78)) * away).toFixed(2));
   });
 }

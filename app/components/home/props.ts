@@ -585,7 +585,7 @@ function lamp(u: string) {
     <path d="M160 258 C 160 190, 210 152, 278 150" fill="none" stroke="#5a3c18" stroke-width="15" stroke-linecap="round"/>
     <path d="M160 258 C 160 190, 210 152, 278 150" fill="none" stroke="url(#${u}brV)" stroke-width="11" stroke-linecap="round"/>
     <path d="M155 250 C 156 196, 200 160, 260 154" fill="none" stroke="#fff0c4" stroke-width="1.6" opacity=".8"/>
-    <g transform="rotate(-38 272 146)">
+    <g data-shade="1" transform="rotate(-38 272 146)">
     <path d="M266 140 L356 104 L478 212 C 450 252 330 314 270 310 Z" fill="url(#${u}sh)" filter="url(#${u}linen)"/>
     <path d="M266 140 L356 104 L478 212 C 450 252 330 314 270 310 Z" fill="url(#${u}rim)"/>
     <path d="M266 140 L270 310" stroke="#fff6dc" stroke-width="1.6" opacity=".7"/>
