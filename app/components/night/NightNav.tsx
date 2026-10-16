@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { parseStyle as css } from "../../lib/css";
 
@@ -17,10 +17,25 @@ const LINKS: { key: NavKey; href: string; label: string }[] = [
 const DOT =
   "position:absolute; left:50%; bottom:-9px; width:5px; height:5px; margin-left:-2.5px; border-radius:50%; background:#FF5B1F; box-shadow:0 0 8px rgba(255,91,31,.8);";
 
-/** Fixed top bar: clear over the hero, frosted once the page scrolls; the orange dot circles the logo ring. */
+/** Fixed top bar: clear over the hero, frosted once the page scrolls; the orange dot circles the logo ring. Under 900px the links fold into a menu. */
 export default function NightNav({ active = "", waitlistHref = "/#waitlist" }: { active?: NavKey; waitlistHref?: string }) {
   const nav = useRef<HTMLElement>(null);
   const orbit = useRef<HTMLSpanElement>(null);
+  const [open, setOpen] = useState(false);
+  const openRef = useRef(false);
+
+  useEffect(() => {
+    openRef.current = open;
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const onWide = () => window.innerWidth > 900 && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("resize", onWide);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", onWide);
+    };
+  }, [open]);
 
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -29,7 +44,7 @@ export default function NightNav({ active = "", waitlistHref = "/#waitlist" }: {
     const tick = () => {
       const n = nav.current;
       if (n) {
-        const nb = window.scrollY > 8;
+        const nb = window.scrollY > 8 || openRef.current;
         n.style.background = nb ? "rgba(10,10,11,.74)" : "transparent";
         n.style.backdropFilter = nb ? "blur(14px)" : "none";
         n.style.setProperty("-webkit-backdrop-filter", nb ? "blur(14px)" : "none");
@@ -45,10 +60,12 @@ export default function NightNav({ active = "", waitlistHref = "/#waitlist" }: {
     return () => cancelAnimationFrame(raf);
   }, []);
 
+  const close = () => setOpen(false);
+
   return (
     <nav ref={nav} style={css("position:fixed; top:0; left:0; right:0; z-index:100; border-bottom:1px solid transparent; transition:background .5s, border-color .5s;")}>
       <div style={css("max-width:1360px; margin:0 auto; padding:16px clamp(16px,4vw,40px); display:flex; align-items:center; justify-content:space-between; gap:24px;")}>
-        <Link href="/" style={css("display:flex; align-items:center; gap:10px; text-decoration:none; color:#EDEAE3;")}>
+        <Link href="/" onClick={close} style={css("display:flex; align-items:center; gap:10px; text-decoration:none; color:#EDEAE3;")}>
           <span style={css("position:relative; width:22px; height:22px; border-radius:50%; border:1.5px solid #EDEAE3; box-sizing:border-box;")}>
             <span ref={orbit} style={css("position:absolute; left:50%; top:50%; width:7px; height:7px; margin:-3.5px 0 0 -3.5px; border-radius:50%; background:#FF5B1F;")} />
           </span>
@@ -62,8 +79,24 @@ export default function NightNav({ active = "", waitlistHref = "/#waitlist" }: {
             </Link>
           ))}
         </div>
-        <Link href={waitlistHref} className="h3-pill" style={css("gap:8px; font-size:14px; padding:10px 18px;")}>
-          Join waitlist <span>→</span>
+        <div style={css("display:flex; align-items:center; gap:10px;")}>
+          <Link href={waitlistHref} onClick={close} className="h3-pill h3-navcta" style={css("gap:8px; font-size:14px; padding:10px 18px; white-space:nowrap;")}>
+            Join waitlist <span>→</span>
+          </Link>
+          <button type="button" className={"h3-burger" + (open ? " on" : "")} aria-expanded={open} aria-controls="h3-menu" aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen((o) => !o)}>
+            <span />
+            <span />
+          </button>
+        </div>
+      </div>
+      <div id="h3-menu" className={"h3-menu" + (open ? " on" : "")} hidden={!open}>
+        {LINKS.map((n) => (
+          <Link key={n.key} href={n.href} onClick={close} className={"h3-nl serif" + (n.key === active ? " on" : "")} aria-current={n.key === active ? "page" : undefined}>
+            {n.label}
+          </Link>
+        ))}
+        <Link href="/about" onClick={close} className="h3-nl serif">
+          About
         </Link>
       </div>
     </nav>
