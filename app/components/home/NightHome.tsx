@@ -466,7 +466,7 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
           <h2 className="serif" style={css("margin:14px 0 0; font-size:clamp(44px,6.4vw,92px); line-height:.92; letter-spacing:-0.03em;")}>
             Step through <span style={css("font-style:italic; color:#FF5B1F;")}>one sentence.</span>
           </h2>
-          <div data-door="1" style={css("position:relative; margin:clamp(36px,5vw,64px) auto 0; max-width:66%;")}>
+          <div data-door="1" className="h3-door" style={css("position:relative; margin:clamp(36px,5vw,64px) auto 0; max-width:66%;")}>
             <div style={css("position:absolute; left:8%; right:-4%; bottom:-34px; height:44px; border-radius:50%; background:rgba(0,0,0,.85); filter:blur(18px); transform:skewX(-35deg);")} />
             <div style={css("position:absolute; inset:-18% -10% -10%; background:radial-gradient(ellipse at 50% 70%, rgba(255,91,31,.22), rgba(194,65,12,0) 60%); pointer-events:none;")} />
             <div style={css("position:relative; padding:clamp(10px,1.2vw,16px); border-radius:clamp(120px,22vw,280px) clamp(120px,22vw,280px) 22px 22px / 46% 46% 22px 22px; background:linear-gradient(35deg,#F4E9D0 0%,#d8cfbd 45%,#8f8676 100%); box-shadow:inset 0 2px 0 rgba(255,255,255,.6), inset 0 -6px 14px rgba(60,40,30,.35), 0 40px 100px -40px rgba(255,91,31,.4);")}>
@@ -598,7 +598,7 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
       </section>
 
       {/* ============ QUIET ROOM ============ */}
-      <section style={css("position:relative; isolation:isolate; overflow:hidden; min-height:clamp(680px,60vw,880px); display:flex; align-items:center; padding:clamp(90px,10vw,140px) clamp(16px,4vw,40px); box-sizing:border-box; background:linear-gradient(180deg,#0A0A0B 0%,#0d0a10 22%,#151019 35%);")}>
+      <section className="h3-quiet" style={css("position:relative; isolation:isolate; overflow:hidden; min-height:clamp(680px,60vw,880px); display:flex; align-items:center; padding:clamp(90px,10vw,140px) clamp(16px,4vw,40px); box-sizing:border-box; background:linear-gradient(180deg,#0A0A0B 0%,#0d0a10 22%,#151019 35%);")}>
         {STARS("0", "35%", 0.22)}
         <div aria-hidden="true" style={css("position:absolute; left:0; right:0; top:35%; bottom:0; overflow:hidden; pointer-events:none; -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 14%); mask-image:linear-gradient(180deg, transparent 0, #000 14%);")}>
           {/* eslint-disable-next-line @next/next/no-img-element */}

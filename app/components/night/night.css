@@ -86,6 +86,12 @@ html:has(.h3), html:has(.h3) body { background:#0A0A0B; }
   .h3 .h3-navlinks { display:none !important; }
   .h3 .h3-burger { display:block; }
   .h3 .h3-wall { width:100% !important; }
+  .h3 .h3-door { max-width:84% !important; }
+  /* the lamp and chair are gone here, so the quiet room only needs room for its line */
+  .h3 .h3-quiet { min-height:0 !important; }
+}
+@media (max-width:640px){
+  .h3 .h3-door { max-width:100% !important; }
 }
 @media (max-width:768px){
   .h3 .h3-hide-m { display:none !important; }
