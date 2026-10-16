@@ -80,7 +80,7 @@ html:has(.h3), html:has(.h3) body { background:#0A0A0B; }
 @media (max-width:900px){
   .h3 .h3-hide-t { display:none !important; }
   .h3 .h3-qtext { margin-left:0 !important; max-width:100% !important; }
-  .h3 .h3-steps, .h3 .h3-win { grid-template-columns:1fr !important; }
+  .h3 .h3-win { padding-left:18px !important; padding-right:18px !important; }
   .h3 .h3-wl { grid-template-columns:1fr !important; }
   .h3 .h3-head { flex-direction:column !important; align-items:flex-start !important; }
   .h3 .h3-navlinks { display:none !important; }
@@ -92,6 +92,7 @@ html:has(.h3), html:has(.h3) body { background:#0A0A0B; }
 }
 @media (max-width:640px){
   .h3 .h3-door { max-width:100% !important; }
+  .h3 .h3-steps, .h3 .h3-win { grid-template-columns:1fr !important; }
 }
 @media (max-width:768px){
   .h3 .h3-hide-m { display:none !important; }
