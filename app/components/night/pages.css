@@ -34,7 +34,12 @@
   .h3 .bl-head{ padding-top:100px !important; }
   .h3 .bl-hidem{ display:none !important; }
 }
-@media (max-width:600px){ .h3 .bl-posts{ grid-template-columns:1fr !important; } }
+@media (max-width:600px){
+  .h3 .bl-posts{ grid-template-columns:1fr !important; }
+  /* the highest birds and the moon would sit on the words: keep the corner for the moon, drop two birds */
+  .h3 .bl-hidep{ display:none !important; }
+  .h3 .bl-moon{ right:-14% !important; top:4% !important; }
+}
 
 /* ===== Features ===== */
 .h3 .ft-tab:hover { background:rgba(237,234,227,.03) !important; }

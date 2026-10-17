@@ -37,17 +37,17 @@ export default function BlogView({ fontClass }: { fontClass: string }) {
       <section style={css("position:relative; isolation:isolate; height:clamp(580px,46vw,620px); overflow:hidden; background:linear-gradient(180deg,#0A0A0B 0%,#121426 30%,#1f1c36 54%,#352a48 70%,#4a3656 76%);")}>
         <Stars place="left:0; right:0; top:0; height:70%;" opacity={0.5} mask="-webkit-mask-image:linear-gradient(180deg,#000 30%,transparent); mask-image:linear-gradient(180deg,#000 30%,transparent);" />
         <div data-par="0.2" aria-hidden="true" style={css("position:absolute; inset:0; pointer-events:none;")}>
-          <div style={css("position:absolute; right:14%; top:12%; width:clamp(200px,22vw,320px); aspect-ratio:1; border-radius:50%; background:radial-gradient(circle, rgba(244,233,208,.18), rgba(244,233,208,0) 70%); transform:scale(1.7);")} />
+          <div className="bl-moon" style={css("position:absolute; right:14%; top:12%; width:clamp(200px,22vw,320px); aspect-ratio:1; border-radius:50%; background:radial-gradient(circle, rgba(244,233,208,.18), rgba(244,233,208,0) 70%); transform:scale(1.7);")} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/v3/moon.webp" alt="" style={css("position:absolute; right:14%; top:12%; width:clamp(200px,22vw,320px); opacity:.9; filter:drop-shadow(0 0 30px rgba(244,233,208,.35));")} />
+          <img className="bl-moon" src="/v3/moon.webp" alt="" style={css("position:absolute; right:14%; top:12%; width:clamp(200px,22vw,320px); opacity:.9; filter:drop-shadow(0 0 30px rgba(244,233,208,.35));")} />
         </div>
         <Ground top="76%" tint="radial-gradient(ellipse 30% 60% at 72% 0%, rgba(207,214,255,.14), rgba(207,214,255,0) 70%)" />
         <div data-par="0.6" aria-hidden="true" style={css("position:absolute; inset:0; pointer-events:none;")}>
           <div className="bl-book" style={css("position:absolute; right:6%; bottom:14%; width:min(620px,48%); aspect-ratio:1400/700;")}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/v3/b-book.webp" alt="" style={css("position:absolute; inset:0; width:100%; height:100%;")} />
-            {BIRDS.map(([l, t, w, bob, img, tf, op]) => (
-              <div key={l + t} data-bob={bob} style={css(`position:absolute; left:${l}; top:${t}; width:${w};`)}>
+            {BIRDS.map(([l, t, w, bob, img, tf, op], i) => (
+              <div key={l + t} data-bob={bob} className={i > 1 ? "bl-hidep" : undefined} style={css(`position:absolute; left:${l}; top:${t}; width:${w};`)}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={`/v3/${img}.webp`} alt="" style={css(`width:100%; display:block; transform:${tf}; opacity:${op};`)} />
               </div>
