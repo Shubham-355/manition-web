@@ -45,9 +45,12 @@
   .h3 .ft-stage{ border-left:0 !important; border-top:1px solid rgba(237,234,227,.08) !important; }
   .h3 .ft-prev{ position:static !important; transform:none !important; margin:14px 0 0 !important; grid-column:1 / -1 !important; }
   .h3 .ft-thread{ display:none !important; }
+  /* the bench moves under the words: the header grows to hold both */
+  .h3 .ft-hero{ height:auto !important; }
+  .h3 .ft-head{ padding-bottom:calc(46vw + 40px) !important; }
+  .h3 .ft-bench{ right:auto !important; left:-4% !important; width:108% !important; bottom:3% !important; }
 }
 @media (max-width:768px){
-  .h3 .ft-bench{ left:-62% !important; width:190% !important; bottom:8% !important; }
   .h3 .ft-head{ padding-top:96px !important; }
   .h3 .ft-hidem{ display:none !important; }
   .h3 .ft-cap{ grid-template-columns:32px 1fr !important; }

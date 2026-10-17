@@ -238,7 +238,7 @@ export default function FeaturesView({ fontClass }: { fontClass: string }) {
   return (
     <NightShell fontClass={fontClass} active="features" sky="#2A1A2E" onTick={onTick}>
       {/* ============ HEADER: the workshop ============ */}
-      <section style={css("position:relative; isolation:isolate; height:clamp(560px,46vw,620px); overflow:hidden; background:linear-gradient(180deg,#0A0A0B 0%,#1d1220 22%,#2A1A2E 40%,#5a2f3a 58%,#B5655A 72%,#d98a5c 76%);")}>
+      <section className="ft-hero" style={css("position:relative; isolation:isolate; height:clamp(560px,46vw,620px); overflow:hidden; background:linear-gradient(180deg,#0A0A0B 0%,#1d1220 22%,#2A1A2E 40%,#5a2f3a 58%,#B5655A 72%,#d98a5c 76%);")}>
         <Stars place="left:0; right:0; top:0; height:45%;" opacity={0.3} />
         <div data-par="0.2" aria-hidden="true" style={css("position:absolute; inset:0; pointer-events:none;")}>
           <div style={css("position:absolute; left:-6%; top:50%; width:60%; height:52%; background:radial-gradient(ellipse 50% 50% at 30% 100%, rgba(255,190,120,.55), rgba(255,120,60,.18) 45%, rgba(255,91,31,0) 75%);")} />
