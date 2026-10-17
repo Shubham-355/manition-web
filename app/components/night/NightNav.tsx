@@ -98,6 +98,9 @@ export default function NightNav({ active = "", waitlistHref = "/#waitlist" }: {
         <Link href="/about" onClick={close} className="h3-nl serif">
           About
         </Link>
+        <Link href={waitlistHref} onClick={close} className="h3-nl serif h3-menu-wl">
+          Join the waitlist →
+        </Link>
       </div>
     </nav>
   );

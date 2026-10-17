@@ -424,7 +424,7 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
         </div>
         <div aria-hidden="true" style={css("position:absolute; left:0; top:0; bottom:0; width:70%; background:radial-gradient(ellipse at 18% 48%, rgba(10,10,11,.62), rgba(10,10,11,0) 62%); pointer-events:none;")} />
         <div style={css("position:relative; z-index:5; max-width:1360px; height:100%; margin:0 auto; padding:clamp(100px,15vh,170px) clamp(16px,4vw,40px) 0; box-sizing:border-box;")}>
-          <h1 aria-label="Say it. Watch it move." className="serif" style={css("margin:0; font-size:clamp(64px,10.5vw,172px); line-height:0.86; letter-spacing:-0.035em;")}>
+          <h1 aria-label="Say it. Watch it move." className="serif h3-hero-h" style={css("margin:0; font-size:clamp(64px,10.5vw,172px); line-height:0.86; letter-spacing:-0.035em;")}>
             <span aria-hidden="true" style={css("display:block;")}>
               {"Say it.".split("").map((ch, i) => (
                 <span key={i} data-type={i} style={{ opacity: 0 }}>
