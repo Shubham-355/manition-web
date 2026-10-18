@@ -17,7 +17,7 @@ const LINKS: { key: NavKey; href: string; label: string }[] = [
 const DOT =
   "position:absolute; left:50%; bottom:-9px; width:5px; height:5px; margin-left:-2.5px; border-radius:50%; background:#FF5B1F; box-shadow:0 0 8px rgba(255,91,31,.8);";
 
-/** Fixed top bar: clear over the hero, frosted once the page scrolls; the orange dot circles the logo ring. Under 900px the links fold into a menu. */
+/** Fixed top bar: clear over the hero, frosted once the page scrolls; the orange dot circles the logo ring. Under 900px the links fold into a full-screen menu. */
 export default function NightNav({ active = "", waitlistHref = "/#waitlist" }: { active?: NavKey; waitlistHref?: string }) {
   const nav = useRef<HTMLElement>(null);
   const orbit = useRef<HTMLSpanElement>(null);
@@ -27,6 +27,9 @@ export default function NightNav({ active = "", waitlistHref = "/#waitlist" }: {
   useEffect(() => {
     openRef.current = open;
     if (!open) return;
+    const html = document.documentElement;
+    const was = html.style.overflow;
+    html.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     const onWide = () => window.innerWidth > 900 && setOpen(false);
     window.addEventListener("keydown", onKey);
@@ -34,6 +37,7 @@ export default function NightNav({ active = "", waitlistHref = "/#waitlist" }: {
     return () => {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("resize", onWide);
+      html.style.overflow = was;
     };
   }, [open]);
 
@@ -89,17 +93,14 @@ export default function NightNav({ active = "", waitlistHref = "/#waitlist" }: {
           </button>
         </div>
       </div>
-      <div id="h3-menu" className={"h3-menu" + (open ? " on" : "")} hidden={!open}>
+      <div id="h3-menu" className="h3-mmenu" hidden={!open}>
         {LINKS.map((n) => (
-          <Link key={n.key} href={n.href} onClick={close} className={"h3-nl serif" + (n.key === active ? " on" : "")} aria-current={n.key === active ? "page" : undefined}>
+          <Link key={n.key} href={n.href} onClick={close} className={"serif" + (n.key === active ? " on" : "")} aria-current={n.key === active ? "page" : undefined}>
             {n.label}
           </Link>
         ))}
-        <Link href="/about" onClick={close} className="h3-nl serif">
-          About
-        </Link>
-        <Link href={waitlistHref} onClick={close} className="h3-nl serif h3-menu-wl">
-          Join the waitlist →
+        <Link href={waitlistHref} onClick={close} className="h3-pill h3-mmenu-cta">
+          Join the waitlist <span>→</span>
         </Link>
       </div>
     </nav>
