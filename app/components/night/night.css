@@ -39,7 +39,7 @@ html:has(.h3), html:has(.h3) body { background:#0A0A0B; }
 .h3 .h3-burger span:last-child { top:22px; }
 .h3 .h3-burger.on span:first-child { transform:translateY(3px) rotate(45deg); }
 .h3 .h3-burger.on span:last-child { transform:translateY(-3px) rotate(-45deg); }
-.h3 .h3-menu { display:flex; flex-direction:column; padding:6px clamp(16px,4vw,40px) 26px; }
+.h3 .h3-menu { display:flex; flex-direction:column; padding:6px clamp(16px,4vw,40px) 26px; max-height:calc(100dvh - 73px); overflow-y:auto; overscroll-behavior:contain; }
 .h3 .h3-menu[hidden] { display:none; }
 .h3 .h3-menu a { padding:10px 0; font-size:32px; line-height:1.1; letter-spacing:-0.02em; border-bottom:1px solid rgba(237,234,227,.08); }
 .h3 .h3-menu a.on { color:#FF5B1F; }
