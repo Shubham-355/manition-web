@@ -65,7 +65,7 @@ const TILES: Tile[] = [
     shadow: "left:calc(46% + 50px); top:74%; width:clamp(80px,8.5vw,130px);",
   },
   {
-    key: "julia", scene: "julia", poster: "/film/julia.jpg", frame: "gold",
+    key: "julia", scene: "julia", poster: "/film/julia.jpg", frame: "gold", hideM: true,
     prompt: "\"draw the Julia set for c = -0.8 + 0.156i\"",
     mount: { kind: "hang", hang: "0.5,11,0.6", string: 200, rot: -2 },
     place: "left:51%; top:calc(120px + 13%); width:clamp(120px,13vw,210px); z-index:10;",
@@ -299,11 +299,11 @@ function ArchiveTile({ tile }: { tile: Tile }) {
   return (
     <>
       {tile.shadow2 ? <div aria-hidden="true" className={tile.hideM ? "h3-hide-m" : undefined} style={css(FLOOR_SHADOW + " " + tile.shadow2)} /> : null}
-      <div {...extra} {...hover} className={hide + "h3-tile" + (tile.spot ? " h3-spot" : "")} style={css(rootStyle)}>
+      <div {...extra} {...hover} className={hide + "h3-tile h3-a-" + tile.key + (tile.spot ? " h3-spot" : "")} style={css(rootStyle)}>
         {body}
         <p className="h3-cap" style={css(CAP + " " + capTop)}>{tile.prompt}</p>
       </div>
-      {tile.shadow ? <div aria-hidden="true" className={tile.hideM ? "h3-hide-m" : undefined} style={css(FLOOR_SHADOW + " " + tile.shadow)} /> : null}
+      {tile.shadow ? <div aria-hidden="true" className={tile.hideM ? "h3-hide-m" : "h3-a-" + tile.key + "sh"} style={css(FLOOR_SHADOW + " " + tile.shadow)} /> : null}
     </>
   );
 }
@@ -351,7 +351,7 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
       <NightNav waitlistHref="#waitlist" />
 
       {/* ============ HERO ============ */}
-      <section style={css("position:relative; isolation:isolate; height:100vh; min-height:740px; max-height:1100px; overflow:hidden; background:linear-gradient(180deg,#0A0A0B 0%,#160f1a 26%,#2A1A2E 46%,#43243a 56%,#6b3a3e 64%);")}>
+      <section className="h3-hero" style={css("position:relative; isolation:isolate; height:100vh; min-height:740px; max-height:1100px; overflow:hidden; background:linear-gradient(180deg,#0A0A0B 0%,#160f1a 26%,#2A1A2E 46%,#43243a 56%,#6b3a3e 64%);")}>
         {STARS("0", "60%", 0.45)}
         <div data-par="0.2" aria-hidden="true" style={css("position:absolute; inset:0; pointer-events:none;")}>
           <div className="h3-moon" style={css("position:absolute; right:3%; top:6%; height:58%; aspect-ratio:600/640;")}>
@@ -448,7 +448,7 @@ export default function NightHome({ fontClass }: { fontClass: string }) {
               })}
             </span>
           </h1>
-          <div style={css("display:flex; flex-wrap:wrap; gap:12px; margin-top:clamp(32px,3.6vw,48px);")}>
+          <div className="h3-ctas" style={css("display:flex; flex-wrap:wrap; gap:12px; margin-top:clamp(32px,3.6vw,48px);")}>
             <a href="#waitlist" className="h3-pill lift" style={css("gap:10px; font-size:16px; padding:16px 28px;")}>
               Join the waitlist {arrow}
             </a>
