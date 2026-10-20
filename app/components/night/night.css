@@ -98,6 +98,9 @@ html:has(.h3), html:has(.h3) body { background:#0A0A0B; }
   .h3 .h3-a-galaxy { left:auto !important; right:5% !important; top:230px !important; width:40vw !important; }
   .h3 .h3-a-galaxysh { left:auto !important; right:5% !important; width:40vw !important; }
   .h3 .h3-a-turing { left:auto !important; right:12% !important; }
+  /* a tapped tile's prompt stays on screen: the right-hand tiles hang theirs from the right edge */
+  .h3 .h3-a-galaxy .h3-cap, .h3 .h3-a-turing .h3-cap { left:auto !important; right:0; text-align:right; transform-origin:right top !important; }
+  .h3 .h3-a-fern .h3-cap { left:14% !important; }
   .h3 .hm-wl-form { flex-direction:column !important; }
   .h3 .hm-wl-form button { justify-content:center; padding:16px 28px !important; }
   .h3 .h3-flinks { grid-template-columns:repeat(4,auto) !important; gap:10px 18px !important; }
