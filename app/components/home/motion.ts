@@ -343,7 +343,7 @@ function layoutLight(svg: SVGSVGElement | null): Light | null {
   // the shade turns about the arm joint; its beam centre line sits deg + 66 below horizontal
   const open = (deg: number) => {
     const A = (deg * Math.PI) / 180, ca = Math.cos(A), sa = Math.sin(A);
-    return { ox: 272 + 102 * ca - 116 * sa, oy: 146 + 102 * sa + 116 * ca, B: ((deg + 14) * Math.PI) / 180 };
+    return { ox: 272 + 102 * ca - 116 * sa, oy: 146 + 102 * sa + 116 * ca, B: ((deg - 24) * Math.PI) / 180 };
   };
   const tan = (d: number) => Math.tan((d * Math.PI) / 180);
   let beam = 28, o = open(beam - 66), C = P(o.ox, o.oy), py = C[1] + (px - C[0]) * tan(beam);
