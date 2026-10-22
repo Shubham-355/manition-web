@@ -13,6 +13,9 @@ html:has(.h3), html:has(.h3) body { background:#0A0A0B; }
 /* links and buttons: the design's style-hover states */
 .h3 .h3-nl { text-decoration:none; color:#bdbab3; transition:color .2s; }
 .h3 .h3-nl:hover, .h3 .h3-nl.on { color:#EDEAE3; }
+@keyframes h3Orbit { from { transform:rotate(0deg) translateX(4px); } to { transform:rotate(360deg) translateX(4px); } }
+.h3 .h3-orbit { animation:h3Orbit 20s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .h3 .h3-orbit { animation:none; } }
 .h3 .h3-fl { text-decoration:none; color:#c9c6bf; transition:color .2s; }
 .h3 .h3-fl:hover { color:#EDEAE3; }
 .h3 .h3-pill { display:inline-flex; align-items:center; text-decoration:none; background:#EDEAE3; color:#0A0A0B; font-weight:500; border-radius:100px; transition:background .2s, color .2s, transform .2s; }

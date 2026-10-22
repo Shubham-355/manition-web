@@ -20,12 +20,9 @@ const DOT =
 /** Fixed top bar: clear over the hero, frosted once the page scrolls; the orange dot circles the logo ring. Under 900px the links fold into a full-screen menu. */
 export default function NightNav({ active = "", waitlistHref = "/#waitlist" }: { active?: NavKey; waitlistHref?: string }) {
   const nav = useRef<HTMLElement>(null);
-  const orbit = useRef<HTMLSpanElement>(null);
   const [open, setOpen] = useState(false);
-  const openRef = useRef(false);
 
   useEffect(() => {
-    openRef.current = open;
     if (!open) return;
     const html = document.documentElement;
     const was = html.style.overflow;
@@ -41,28 +38,22 @@ export default function NightNav({ active = "", waitlistHref = "/#waitlist" }: {
     };
   }, [open]);
 
+  // frosted once scrolled or with the menu open; only touches the styles when that flips
   useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const t0 = performance.now();
-    let raf = 0;
-    const tick = () => {
-      const n = nav.current;
-      if (n) {
-        const nb = window.scrollY > 8 || openRef.current;
-        n.style.background = nb ? "rgba(10,10,11,.74)" : "transparent";
-        n.style.backdropFilter = nb ? "blur(14px)" : "none";
-        n.style.setProperty("-webkit-backdrop-filter", nb ? "blur(14px)" : "none");
-        n.style.borderBottomColor = nb ? "rgba(237,234,227,.08)" : "transparent";
-      }
-      if (orbit.current && !reduce) {
-        const a = ((performance.now() - t0) / 20000) * Math.PI * 2;
-        orbit.current.style.transform = "translate(" + Math.cos(a) * 4 + "px," + Math.sin(a) * 4 + "px)";
-      }
-      raf = requestAnimationFrame(tick);
+    let was: boolean | null = null;
+    const sync = () => {
+      const n = nav.current, nb = window.scrollY > 8 || open;
+      if (!n || nb === was) return;
+      was = nb;
+      n.style.background = nb ? "rgba(10,10,11,.74)" : "transparent";
+      n.style.backdropFilter = nb ? "blur(14px)" : "none";
+      n.style.setProperty("-webkit-backdrop-filter", nb ? "blur(14px)" : "none");
+      n.style.borderBottomColor = nb ? "rgba(237,234,227,.08)" : "transparent";
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
+    sync();
+    window.addEventListener("scroll", sync, { passive: true });
+    return () => window.removeEventListener("scroll", sync);
+  }, [open]);
 
   const close = () => setOpen(false);
 
@@ -71,7 +62,7 @@ export default function NightNav({ active = "", waitlistHref = "/#waitlist" }: {
       <div style={css("max-width:1360px; margin:0 auto; padding:16px clamp(16px,4vw,40px); display:flex; align-items:center; justify-content:space-between; gap:24px;")}>
         <Link href="/" onClick={close} style={css("display:flex; align-items:center; gap:10px; text-decoration:none; color:#EDEAE3;")}>
           <span style={css("position:relative; width:22px; height:22px; border-radius:50%; border:1.5px solid #EDEAE3; box-sizing:border-box;")}>
-            <span ref={orbit} style={css("position:absolute; left:50%; top:50%; width:7px; height:7px; margin:-3.5px 0 0 -3.5px; border-radius:50%; background:#FF5B1F;")} />
+            <span className="h3-orbit" style={css("position:absolute; left:50%; top:50%; width:7px; height:7px; margin:-3.5px 0 0 -3.5px; border-radius:50%; background:#FF5B1F;")} />
           </span>
           <span className="serif" style={css("font-size:24px; letter-spacing:-0.01em;")}>Manition</span>
         </Link>
