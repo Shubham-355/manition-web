@@ -69,9 +69,17 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
     };
     window.addEventListener("mousemove", onMove);
 
+    /* sections more than 200px off screen skip their work, so the frame stops measuring what nobody sees */
+    const hero = o(".h3-hero"), quiet = els.qlight?.closest("section"), wl = els.glass?.closest("section") ?? null;
+    const vis = new Set<Element>();
+    const io = new IntersectionObserver((en) => en.forEach((x) => (x.isIntersecting ? vis.add(x.target) : vis.delete(x.target))), { rootMargin: "200px 0px" });
+    [hero, els.door, els.strip, els.arch, quiet, wl].forEach((e) => e && io.observe(e));
+    const live = (e: Element | null | undefined) => !!e && vis.has(e);
+
     const near0 = new WeakMap<Element, number>();
     let rise = 0;
     let ql: Light | null = null;
+    let qlAt = -90;
     let frame = 0;
     let raf = 0;
     const t0 = performance.now();
@@ -86,105 +94,107 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       const ny = m.y / vh - 0.5;
 
       /* hero: "Say it." types in, "Watch it move." floats up, and "move." peels off on scroll */
-      els.type.forEach((e) => {
-        const i = +(e.getAttribute("data-type") || 0);
-        e.style.opacity = reduce || t > 0.2 + i * 0.09 ? "1" : "0";
-      });
-      els.float.forEach((e) => {
-        const i = +(e.getAttribute("data-float") || 0);
-        const p = reduce ? 1 : ease((t - (0.95 + i * 0.05)) / 1.3);
-        let y = (1 - p) * 46 + (reduce ? 0 : Math.sin(t * (0.5 + (i % 5) * 0.11) + i * 1.7) * 3.2);
-        let r = 0;
-        let op = p;
-        const pl = e.getAttribute("data-peel");
-        if (pl !== null && !reduce) {
-          const k = Math.max(0, sy - 30) * (0.5 + +pl * 0.28);
-          y -= k;
-          r = -k * 0.06 * (+pl % 2 ? 1 : -1);
-          op *= cl(1 - k / (vh * 0.5));
+      if (live(hero)) {
+        els.type.forEach((e) => {
+          const i = +(e.getAttribute("data-type") || 0);
+          e.style.opacity = reduce || t > 0.2 + i * 0.09 ? "1" : "0";
+        });
+        els.float.forEach((e) => {
+          const i = +(e.getAttribute("data-float") || 0);
+          const p = reduce ? 1 : ease((t - (0.95 + i * 0.05)) / 1.3);
+          let y = (1 - p) * 46 + (reduce ? 0 : Math.sin(t * (0.5 + (i % 5) * 0.11) + i * 1.7) * 3.2);
+          let r = 0;
+          let op = p;
+          const pl = e.getAttribute("data-peel");
+          if (pl !== null && !reduce) {
+            const k = Math.max(0, sy - 30) * (0.5 + +pl * 0.28);
+            y -= k;
+            r = -k * 0.06 * (+pl % 2 ? 1 : -1);
+            op *= cl(1 - k / (vh * 0.5));
+          }
+          e.style.transform = "translateY(" + y + "px) rotate(" + r + "deg)";
+          e.style.opacity = String(op);
+        });
+
+        const out = cl(sy / (vh * 0.75));
+        els.par.forEach((e) => {
+          const d = +(e.getAttribute("data-par") || 0);
+          const px = reduce ? 0 : -nx * d * 26;
+          const py = reduce ? 0 : -ny * d * 14;
+          const lift = reduce ? 0 : -sy * d * 0.35;
+          e.style.transform = "translate(" + (px + (d > 0.4 ? out * d * 40 : 0)) + "px," + (py + lift) + "px)";
+          e.style.opacity = String(1 - out * 0.9);
+        });
+
+        /* the board and dice lean toward the pointer and warm up as it comes near */
+        els.tilt.forEach((e) => {
+          const [d, base] = nums(e.getAttribute("data-tilt"));
+          const r = e.getBoundingClientRect();
+          const dx = (m.x - (r.left + r.width / 2)) / r.width;
+          const dy = (m.y - (r.top + r.height / 2)) / r.height;
+          const near = m.seen && !mob ? cl(1 - Math.hypot(dx, dy) / 1.1) : 0;
+          const n = (near0.get(e) || 0) + (near - (near0.get(e) || 0)) * 0.08;
+          near0.set(e, n);
+          const k = reduce ? 0 : 1;
+          const ry = nx * d * 9 * k, rx = -ny * d * 5 * k, lift = -n * 8 * k;
+          e.style.transform = "translateY(" + base + "%) perspective(1100px) rotateX(" + rx.toFixed(2) + "deg) rotateY(" + ry.toFixed(2) + "deg) translateY(" + lift.toFixed(1) + "px)";
+          const img = e.querySelector<HTMLElement>("img,[data-prop]");
+          if (img) img.style.filter = "drop-shadow(0 0 " + (16 + n * 26).toFixed(0) + "px rgba(255,120,60," + (0.1 + n * 0.24).toFixed(2) + ")) brightness(" + (1 + n * 0.08).toFixed(3) + ")";
+        });
+        els.glow.forEach((e) => (e.style.filter = "drop-shadow(0 0 " + (14 + 6 * Math.sin(t * 1.3)).toFixed(1) + "px rgba(255,200,140,.28))"));
+
+        els.bob.forEach((e) => {
+          const [a, per, ph] = nums(e.getAttribute("data-bob"));
+          const y = reduce ? 0 : Math.sin((t / per) * Math.PI * 2 + ph) * a;
+          e.style.transform = "translateY(" + y + "px)";
+          const sh = e.nextElementSibling as HTMLElement | null;
+          if (sh?.hasAttribute("data-bobsh")) {
+            sh.style.transform = "skewX(-40deg) scale(" + (1 - y / 40) + ")";
+            sh.style.opacity = String(0.6 + y / 30);
+          }
+        });
+        if (els.ring && !reduce) els.ring.style.strokeDashoffset = String(-(t * 60) % 460);
+
+        /* the moon is a unit circle: the radius turns, its cosine drips to the ground */
+        const M = els.moon;
+        if (M.r) {
+          const th = reduce ? 0.9 : 0.35 + t * 0.2;
+          const cx = 300, cy = 270, R = 250;
+          const px = cx + R * Math.cos(th);
+          const py = cy - R * Math.sin(th);
+          M.r.setAttribute("x2", String(px));
+          M.r.setAttribute("y2", String(py));
+          M.pt.setAttribute("cx", String(px));
+          M.pt.setAttribute("cy", String(py));
+          M.cos.setAttribute("x2", String(px));
+          const top = Math.min(py, 640);
+          const h = String(Math.max(0, 640 - top));
+          M.drip.setAttribute("x", String(px - 1.1));
+          M.drip.setAttribute("y", String(top));
+          M.drip.setAttribute("height", h);
+          M.dripglow.setAttribute("x", String(px - 4));
+          M.dripglow.setAttribute("y", String(top));
+          M.dripglow.setAttribute("height", h);
+          const rp = reduce ? 0.5 : (t * 0.6) % 1;
+          M.ripple.setAttribute("cx", String(px));
+          M.ripple.setAttribute("rx", String(4 + rp * 26));
+          M.ripple.setAttribute("ry", String(1 + rp * 5));
+          M.ripple.setAttribute("stroke-opacity", String(1 - rp));
+          const a = th % (Math.PI * 2);
+          const ax = cx + 52 * Math.cos(a);
+          const ay = cy - 52 * Math.sin(a);
+          M.arc.setAttribute("d", "M" + (cx + 52) + " " + cy + " A52 52 0 " + (a > Math.PI ? 1 : 0) + " 0 " + ax + " " + ay);
         }
-        e.style.transform = "translateY(" + y + "px) rotate(" + r + "deg)";
-        e.style.opacity = String(op);
-      });
-
-      const out = cl(sy / (vh * 0.75));
-      els.par.forEach((e) => {
-        const d = +(e.getAttribute("data-par") || 0);
-        const px = reduce ? 0 : -nx * d * 26;
-        const py = reduce ? 0 : -ny * d * 14;
-        const lift = reduce ? 0 : -sy * d * 0.35;
-        e.style.transform = "translate(" + (px + (d > 0.4 ? out * d * 40 : 0)) + "px," + (py + lift) + "px)";
-        e.style.opacity = String(1 - out * 0.9);
-      });
-
-      /* the board and dice lean toward the pointer and warm up as it comes near */
-      els.tilt.forEach((e) => {
-        const [d, base] = nums(e.getAttribute("data-tilt"));
-        const r = e.getBoundingClientRect();
-        const dx = (m.x - (r.left + r.width / 2)) / r.width;
-        const dy = (m.y - (r.top + r.height / 2)) / r.height;
-        const near = m.seen && !mob ? cl(1 - Math.hypot(dx, dy) / 1.1) : 0;
-        const n = (near0.get(e) || 0) + (near - (near0.get(e) || 0)) * 0.08;
-        near0.set(e, n);
-        const k = reduce ? 0 : 1;
-        const ry = nx * d * 9 * k, rx = -ny * d * 5 * k, lift = -n * 8 * k;
-        e.style.transform = "translateY(" + base + "%) perspective(1100px) rotateX(" + rx.toFixed(2) + "deg) rotateY(" + ry.toFixed(2) + "deg) translateY(" + lift.toFixed(1) + "px)";
-        const img = e.querySelector<HTMLElement>("img,[data-prop]");
-        if (img) img.style.filter = "drop-shadow(0 0 " + (16 + n * 26).toFixed(0) + "px rgba(255,120,60," + (0.1 + n * 0.24).toFixed(2) + ")) brightness(" + (1 + n * 0.08).toFixed(3) + ")";
-      });
-      els.glow.forEach((e) => (e.style.filter = "drop-shadow(0 0 " + (14 + 6 * Math.sin(t * 1.3)).toFixed(1) + "px rgba(255,200,140,.28))"));
-
-      els.bob.forEach((e) => {
-        const [a, per, ph] = nums(e.getAttribute("data-bob"));
-        const y = reduce ? 0 : Math.sin((t / per) * Math.PI * 2 + ph) * a;
-        e.style.transform = "translateY(" + y + "px)";
-        const sh = e.nextElementSibling as HTMLElement | null;
-        if (sh?.hasAttribute("data-bobsh")) {
-          sh.style.transform = "skewX(-40deg) scale(" + (1 - y / 40) + ")";
-          sh.style.opacity = String(0.6 + y / 30);
-        }
-      });
-      if (els.ring && !reduce) els.ring.style.strokeDashoffset = String(-(t * 60) % 460);
-
-      /* the moon is a unit circle: the radius turns, its cosine drips to the ground */
-      const M = els.moon;
-      if (M.r) {
-        const th = reduce ? 0.9 : 0.35 + t * 0.2;
-        const cx = 300, cy = 270, R = 250;
-        const px = cx + R * Math.cos(th);
-        const py = cy - R * Math.sin(th);
-        M.r.setAttribute("x2", String(px));
-        M.r.setAttribute("y2", String(py));
-        M.pt.setAttribute("cx", String(px));
-        M.pt.setAttribute("cy", String(py));
-        M.cos.setAttribute("x2", String(px));
-        const top = Math.min(py, 640);
-        const h = String(Math.max(0, 640 - top));
-        M.drip.setAttribute("x", String(px - 1.1));
-        M.drip.setAttribute("y", String(top));
-        M.drip.setAttribute("height", h);
-        M.dripglow.setAttribute("x", String(px - 4));
-        M.dripglow.setAttribute("y", String(top));
-        M.dripglow.setAttribute("height", h);
-        const rp = reduce ? 0.5 : (t * 0.6) % 1;
-        M.ripple.setAttribute("cx", String(px));
-        M.ripple.setAttribute("rx", String(4 + rp * 26));
-        M.ripple.setAttribute("ry", String(1 + rp * 5));
-        M.ripple.setAttribute("stroke-opacity", String(1 - rp));
-        const a = th % (Math.PI * 2);
-        const ax = cx + 52 * Math.cos(a);
-        const ay = cy - 52 * Math.sin(a);
-        M.arc.setAttribute("d", "M" + (cx + 52) + " " + cy + " A52 52 0 " + (a > Math.PI ? 1 : 0) + " 0 " + ax + " " + ay);
       }
       /* the door widens as it comes into view */
-      if (els.door) {
+      if (els.door && live(els.door)) {
         const r = els.door.getBoundingClientRect();
         const p = mob || reduce ? 1 : ease((vh - r.top) / (vh * 0.9));
         els.door.style.maxWidth = (66 + 34 * p).toFixed(2) + "%";
       }
 
       /* How it works: scroll through the plate - words, lantern, wave, plane */
-      if (els.strip) {
+      if (els.strip && live(els.strip)) {
         const r = els.strip.getBoundingClientRect();
         const p = reduce ? 1 : cl((vh * 0.9 - r.top) / (vh * 0.95));
         els.word.forEach((e) => {
@@ -227,7 +237,7 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       }
 
       /* the archive drops in on its strings, then sways with the pointer */
-      if (els.arch) {
+      if (els.arch && live(els.arch)) {
         const ar = els.arch.getBoundingClientRect();
         const k = reduce ? 1 : cl((vh - ar.top) / (vh * 0.7));
         const c1 = 1.2, c3 = c1 + 1;
@@ -252,7 +262,7 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         }
       }
 
-      els.dot.forEach((e) => {
+      if (live(quiet)) els.dot.forEach((e) => {
         if (reduce) return;
         const i = +(e.getAttribute("data-dot") || 0);
         const c = t % 5.8;
@@ -269,7 +279,7 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         e.style.transform = "translateY(" + y.toFixed(1) + "px)";
         e.style.opacity = op.toFixed(2);
       });
-      els.bubble.forEach((e) => {
+      if (live(wl)) els.bubble.forEach((e) => {
         if (reduce) return;
         const i = +(e.getAttribute("data-bubble") || 0);
         const f = (t / (3 + i * 0.6) + i * 0.27) % 1;
@@ -277,14 +287,19 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         e.style.opacity = String(f > 0.85 ? (1 - f) / 0.15 : 0.9);
       });
       /* the sun bobs in the glass, and rises out of the water once you join */
-      if (els.glass) {
+      if (els.glass && live(wl)) {
         const j = joinedRef.current;
         rise += ((j ? 1 : 0) - rise) * (reduce ? 1 : 0.03);
         const y = (-396 * rise + (reduce || j ? 0 : Math.sin((t / 6) * 6.28) * 8)).toFixed(1);
         els.glass.querySelectorAll("[data-sunmove]").forEach((g) => g.setAttribute("transform", "translate(0 " + y + ")"));
       }
-      if (frame % 90 === 1) ql = layoutLight(els.qlight);
-      if (ql) driftMotes(ql, reduce ? 0 : t);
+      if (live(quiet)) {
+        if (frame - qlAt >= 90) {
+          qlAt = frame;
+          ql = layoutLight(els.qlight);
+        }
+        if (ql) driftMotes(ql, reduce ? 0 : t);
+      }
       if (els.grain && !reduce && frame % 5 === 0) els.grain.style.transform = "translate(" + ((Math.random() * 40) | 0) + "px," + ((Math.random() * 40) | 0) + "px)";
 
       if (els.cur) {
@@ -305,6 +320,7 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
 
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
       window.removeEventListener("mousemove", onMove);
     };
   }, [rootRef]);
