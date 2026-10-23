@@ -29,17 +29,31 @@ export function useNightFx(rootRef: RefObject<HTMLElement | null>, sky: string, 
     };
     addEventListener("mousemove", onMove);
 
-    let els = { par: q("[data-par]"), bob: q("[data-bob]"), grain: root.querySelector<HTMLElement>("[data-grain]") };
+    /* parallax and bobbing pieces more than 200px off screen are left alone until they come back */
+    const vis = new Set<Element>();
+    const seen = new WeakSet<Element>();
+    const near = new IntersectionObserver((en) => en.forEach((x) => (x.isIntersecting ? vis.add(x.target) : vis.delete(x.target))), { rootMargin: "200px 0px" });
+    const grab = () => {
+      const g = { par: q("[data-par]"), bob: q("[data-bob]"), grain: root.querySelector<HTMLElement>("[data-grain]") };
+      [...g.par, ...g.bob].forEach((e) => {
+        if (seen.has(e)) return;
+        seen.add(e);
+        near.observe(e);
+      });
+      return g;
+    };
+    let els = grab();
     let frame = 0;
     let raf = 0;
     const t0 = performance.now();
     const tick = () => {
-      if (frame++ % 60 === 0) els = { par: q("[data-par]"), bob: q("[data-bob]"), grain: root.querySelector<HTMLElement>("[data-grain]") };
+      if (frame++ % 60 === 0) els = grab();
       const t = (performance.now() - t0) / 1000;
       const sy = scrollY;
       const nx = m.x / innerWidth - 0.5;
       const ny = m.y / innerHeight - 0.5;
       els.par.forEach((e) => {
+        if (!vis.has(e)) return;
         const d = +(e.getAttribute("data-par") || 0);
         e.style.transform = reduce
           ? "none"
@@ -47,6 +61,7 @@ export function useNightFx(rootRef: RefObject<HTMLElement | null>, sky: string, 
       });
       if (!reduce)
         els.bob.forEach((e) => {
+          if (!vis.has(e)) return;
           const [a, per, ph = 0, rot = 0] = (e.getAttribute("data-bob") || "").split(",").map(Number);
           const w = (t / per) * 6.283 + ph;
           e.style.transform = "translateY(" + (Math.sin(w) * a).toFixed(2) + "px)" + (rot ? " rotate(" + (Math.sin(w + 1) * rot).toFixed(2) + "deg)" : "");
@@ -98,6 +113,7 @@ export function useNightFx(rootRef: RefObject<HTMLElement | null>, sky: string, 
 
     return () => {
       cancelAnimationFrame(raf);
+      near.disconnect();
       removeEventListener("mousemove", onMove);
       io?.disconnect();
       clearTimeout(veilTimer);
