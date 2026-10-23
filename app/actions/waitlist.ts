@@ -1,6 +1,7 @@
 "use server";
 
 import { randomBytes } from "node:crypto";
+import { after } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { sendMail } from "@/app/lib/mailer";
 import { renderWaitlistEmail } from "@/app/lib/waitlist-email";
@@ -25,6 +26,7 @@ function isUniqueViolation(error: unknown) {
   );
 }
 
+// runs after the response is sent, so the form answers without waiting on SMTP
 async function sendWelcome(id: string, email: string, token: string) {
   try {
     await sendMail({ to: email, ...renderWaitlistEmail(token) });
@@ -74,7 +76,7 @@ export async function joinWaitlist(
           welcomeEmailSentAt: null,
         },
       });
-      await sendWelcome(signup.id, email, token);
+      after(() => sendWelcome(signup.id, email, token));
       return { status: "joined", email, alreadyOn: false };
     }
 
@@ -82,7 +84,7 @@ export async function joinWaitlist(
     const signup = await prisma.waitlistSignup.create({
       data: { email, source, unsubscribeToken: token },
     });
-    await sendWelcome(signup.id, email, token);
+    after(() => sendWelcome(signup.id, email, token));
     return { status: "joined", email, alreadyOn: false };
   } catch (error) {
     if (isUniqueViolation(error)) {
