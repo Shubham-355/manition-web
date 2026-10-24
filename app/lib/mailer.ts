@@ -20,10 +20,9 @@ function createTransport(): Transporter {
 
 const globalForMailer = globalThis as unknown as { mailer?: Transporter };
 
+// one transport per server instance; also survives dev hot reloads
 function getTransport(): Transporter {
-  const transport = globalForMailer.mailer ?? createTransport();
-  if (process.env.NODE_ENV !== "production") globalForMailer.mailer = transport;
-  return transport;
+  return (globalForMailer.mailer ??= createTransport());
 }
 
 function mailFrom(): string {
