@@ -35,7 +35,7 @@ async function sendWelcome(id: string, email: string, token: string) {
       data: { welcomeEmailSentAt: new Date() },
     });
   } catch (error) {
-    console.error("[waitlist] welcome email failed for", email, error);
+    console.error("[waitlist] welcome email failed for signup", id, error);
   }
 }
 
@@ -90,7 +90,7 @@ export async function joinWaitlist(
     if (isUniqueViolation(error)) {
       return { status: "joined", email, alreadyOn: true };
     }
-    console.error("[waitlist] signup failed for", email, error);
+    console.error("[waitlist] signup failed from", source, error);
     return {
       status: "error",
       message: "We could not save that just now. Please try again in a moment.",
