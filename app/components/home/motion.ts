@@ -49,7 +49,6 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
       fglow: o<SVGElement>("[data-fglow]"),
       flame: o<SVGElement>("[data-flame]"),
       glide: o<SVGElement>("[data-fglide]"),
-      grain: o("[data-grain]"),
       cur: o("[data-cursor]"),
       curL: o("[data-cursor-label]"),
       ring: o<SVGElement>("[data-ring]"),
@@ -300,7 +299,6 @@ export function useNightMotion(rootRef: RefObject<HTMLElement | null>, joined: b
         }
         if (ql) driftMotes(ql, reduce ? 0 : t);
       }
-      if (els.grain && !reduce && frame % 5 === 0) els.grain.style.transform = "translate(" + ((Math.random() * 40) | 0) + "px," + ((Math.random() * 40) | 0) + "px)";
 
       if (els.cur) {
         m.cx += (m.x - m.cx) * 0.16;

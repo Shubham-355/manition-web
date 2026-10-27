@@ -65,7 +65,10 @@ html:has(.h3), html:has(.h3) body { background:#0A0A0B; }
 .h3 .hm-wl-form { position:relative; }
 
 /* page grain and the cursor dot */
-.h3-grain { position:fixed; inset:-50px; z-index:60; pointer-events:none; background-image:url(/film/grain.png); opacity:.045; mix-blend-mode:screen; }
+.h3-grain { position:fixed; inset:-50px; z-index:60; pointer-events:none; background-image:url(/film/grain.png); opacity:.045; mix-blend-mode:screen; will-change:transform; animation:h3Grain .67s steps(1,end) infinite; }
+/* the grain hops between fixed offsets about 12 times a second; its own layer, so a hop only moves pixels, never repaints */
+@keyframes h3Grain { 0% { transform:translate(0,0); } 12.5% { transform:translate(23px,8px); } 25% { transform:translate(7px,31px); } 37.5% { transform:translate(36px,17px); } 50% { transform:translate(14px,2px); } 62.5% { transform:translate(29px,38px); } 75% { transform:translate(3px,20px); } 87.5% { transform:translate(18px,27px); } 100% { transform:translate(0,0); } }
+@media (prefers-reduced-motion: reduce) { .h3-grain { animation:none; } }
 .h3-cursor { position:fixed; left:0; top:0; z-index:90; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%; background:#FF5B1F; border:1.5px solid #FF5B1F; box-sizing:border-box; pointer-events:none; display:flex; align-items:center; justify-content:center; font-family:var(--font-geist-mono),monospace; font-size:11px; letter-spacing:.1em; color:#EDEAE3; transition:width .35s cubic-bezier(.2,.7,.1,1), height .35s cubic-bezier(.2,.7,.1,1), margin .35s cubic-bezier(.2,.7,.1,1), background .35s; opacity:0; }
 .h3-cursor span { opacity:0; transition:opacity .2s; }
 

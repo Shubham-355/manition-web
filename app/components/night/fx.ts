@@ -4,8 +4,8 @@ import { useEffect, useRef, type RefObject } from "react";
 
 /*
  * Shared atmosphere for the inner night pages (design: site-v3/fx.js): mouse and
- * scroll parallax on [data-par], bobbing on [data-bob], fade-up on [data-reveal],
- * jittering grain, and a quick crossfade from the last page's sky colour.
+ * scroll parallax on [data-par], bobbing on [data-bob], fade-up on [data-reveal]
+ * and a quick crossfade from the last page's sky colour.
  * A page can hook extra per-frame work in with onTick.
  */
 
@@ -34,7 +34,7 @@ export function useNightFx(rootRef: RefObject<HTMLElement | null>, sky: string, 
     const seen = new WeakSet<Element>();
     const near = new IntersectionObserver((en) => en.forEach((x) => (x.isIntersecting ? vis.add(x.target) : vis.delete(x.target))), { rootMargin: "200px 0px" });
     const grab = () => {
-      const g = { par: q("[data-par]"), bob: q("[data-bob]"), grain: root.querySelector<HTMLElement>("[data-grain]") };
+      const g = { par: q("[data-par]"), bob: q("[data-bob]") };
       [...g.par, ...g.bob].forEach((e) => {
         if (seen.has(e)) return;
         seen.add(e);
@@ -66,7 +66,6 @@ export function useNightFx(rootRef: RefObject<HTMLElement | null>, sky: string, 
           const w = (t / per) * 6.283 + ph;
           e.style.transform = "translateY(" + (Math.sin(w) * a).toFixed(2) + "px)" + (rot ? " rotate(" + (Math.sin(w + 1) * rot).toFixed(2) + "deg)" : "");
         });
-      if (els.grain && !reduce && frame % 5 === 0) els.grain.style.transform = "translate(" + ((Math.random() * 40) | 0) + "px," + ((Math.random() * 40) | 0) + "px)";
       try {
         hook.current?.(t, reduce);
       } catch {}
