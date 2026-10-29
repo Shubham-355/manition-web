@@ -3,10 +3,12 @@ import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { SITE_URL } from "./lib/meta";
 
+// only the home demo film uses it; unpreloaded, the browser fetches it on the one page that draws with it
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  preload: false,
 });
 
 const ibmPlexSans = IBM_Plex_Sans({
