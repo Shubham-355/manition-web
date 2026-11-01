@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { parseStyle } from "../lib/css";
 import { joinWaitlist, type WaitlistState } from "../actions/waitlist";
 
@@ -74,16 +74,24 @@ export function WaitlistForm({
   const [btnHover, setBtnHover] = useState(false);
   const joined = state.status === "joined";
 
+  // the form swaps for the confirmation; focusing it makes screen readers read it out
+  const doneRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (joined) onJoined?.();
   }, [joined, onJoined]);
+  useEffect(() => {
+    if (joined) doneRef.current?.focus({ preventScroll: true });
+  }, [joined]);
 
   if (state.status === "joined") {
     return (
       <div
+        ref={doneRef}
+        role="status"
+        tabIndex={-1}
         className="hm-wl-joined"
         style={parseStyle(
-          `display:inline-flex; align-items:center; gap:11px; max-width:100%; padding:14px 22px; font-size:15px; line-height:1.5; text-align:left; ${t.chip}`,
+          `display:inline-flex; align-items:center; gap:11px; max-width:100%; padding:14px 22px; font-size:15px; line-height:1.5; text-align:left; outline:none; ${t.chip}`,
         )}
       >
         <span
