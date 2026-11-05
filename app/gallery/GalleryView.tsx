@@ -100,17 +100,37 @@ export default function GalleryView({ fontClass }: { fontClass: string }) {
     return () => removeEventListener("scroll", onScroll);
   }, []);
 
+  /* the player takes focus while open, keeps Tab inside itself, and hands focus back to the card on close */
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const isOpen = !!lb;
   useEffect(() => {
-    if (!lb) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setLb(null);
+    if (!isOpen) return;
+    const opener = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") return setLb(null);
+      if (e.key !== "Tab" || !dialogRef.current) return;
+      const f = Array.from(dialogRef.current.querySelectorAll<HTMLElement>('a[href], button, [tabindex]:not([tabindex="-1"])')).filter((el) => el.offsetParent !== null);
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && (document.activeElement === first || !dialogRef.current.contains(document.activeElement))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
     addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
+      opener?.focus({ preventScroll: true });
     };
-  }, [lb]);
+  }, [isOpen]);
 
   const openCard = useCallback((c: Card) => setLb(c), []);
   const go = (i: number) => {
@@ -284,7 +304,7 @@ export default function GalleryView({ fontClass }: { fontClass: string }) {
 
       {/* ============ LIGHTBOX ============ */}
       {lb && (
-        <div role="dialog" aria-modal="true" aria-label={lb[1]} onClick={() => setLb(null)} style={css("position:fixed; inset:0; z-index:120; background:rgba(10,10,11,.94); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:4vw;")}>
+        <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={lb[1]} onClick={() => setLb(null)} style={css("position:fixed; inset:0; z-index:120; background:rgba(10,10,11,.94); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:4vw;")}>
           <div onClick={(e) => e.stopPropagation()} style={css("position:relative; width:min(1100px, 100%, (100vh - 200px) * 16 / 9); padding:8px; background:#E7E2D7; border-radius:6px; box-sizing:border-box;")}>
             <div className="gl-frame" style={css("position:relative; aspect-ratio:16/9; background:#0a0a0d;")}>
               <GalleryVideo key={lb[4]} scene={lb[4]} label={lb[0]} autoplay />
@@ -299,7 +319,7 @@ export default function GalleryView({ fontClass }: { fontClass: string }) {
               Make one like this →
             </Link>
           </div>
-          <button type="button" onClick={() => setLb(null)} className="h3-pill" style={css("position:absolute; top:22px; right:22px; border:0; padding:10px 18px; font-family:inherit; font-size:14px; cursor:pointer;")}>
+          <button ref={closeRef} type="button" onClick={() => setLb(null)} className="h3-pill" style={css("position:absolute; top:22px; right:22px; border:0; padding:10px 18px; font-family:inherit; font-size:14px; cursor:pointer;")}>
             Close
           </button>
         </div>
