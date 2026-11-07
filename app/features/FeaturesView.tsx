@@ -305,6 +305,10 @@ export default function FeaturesView({ fontClass }: { fontClass: string }) {
                   onMouseEnter={() => setHov(n)}
                   onMouseLeave={() => setHov(null)}
                   onClick={() => setHov(h ? null : n)}
+                  /* keyboard users reach each row with Tab and get the same preview as hovering */
+                  tabIndex={0}
+                  onFocus={() => setHov(n)}
+                  onBlur={() => setHov(null)}
                   className="ft-cap"
                   style={css(`position:relative; display:grid; grid-template-columns:40px 36px minmax(0,1fr) minmax(0,1fr); gap:6px 18px; align-items:center; padding:20px 12px; border-bottom:${n < 5 ? "1px solid rgba(237,234,227,.07)" : "0"}; border-radius:14px; cursor:default; transition:transform .25s, background .25s; transform:${h ? "translateY(-2px)" : "none"}; background:${h ? "rgba(237,234,227,.035)" : "transparent"};`)}
                 >
