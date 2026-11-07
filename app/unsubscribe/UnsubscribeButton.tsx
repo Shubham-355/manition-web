@@ -16,7 +16,7 @@ export default function UnsubscribeButton({ token }: { token: string }) {
           "margin:0; font-size:15px; line-height:1.6; color:#EDEAE3; font-weight:500;",
         )}
       >
-        Done. You have been removed from the waitlist and will not hear from us again.
+        Done. We removed you from the waitlist and will not email you again.
       </p>
     );
   }

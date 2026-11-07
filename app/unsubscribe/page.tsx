@@ -75,7 +75,7 @@ export default async function Unsubscribe({
 
           {(result.kind === "missing" || result.kind === "unknown") && (
             <>
-              <h1 style={h1}>This link has expired.</h1>
+              <h1 style={h1}>We could not find this link.</h1>
               <p style={p}>
                 We could not match it to anyone on the waitlist. Reply to the email you received and we will remove you by hand. <Link href="/">Back to the site</Link>.
               </p>
