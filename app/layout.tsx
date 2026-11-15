@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { SITE_URL } from "./lib/meta";
@@ -30,6 +30,9 @@ export const metadata: Metadata = {
   openGraph: { siteName: "Manition", type: "website", locale: "en_US" },
   twitter: { card: "summary_large_image" },
 };
+
+// mobile browsers tint their bar to the page black instead of white
+export const viewport: Viewport = { themeColor: "#0A0A0B" };
 
 export default function RootLayout({
   children,
