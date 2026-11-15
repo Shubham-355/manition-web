@@ -16,8 +16,9 @@ html, body {
   margin: 0;
   background: #0A0A0B;
 }
+/* every page sets its own face inside .h3; a web font here only gets downloaded by Next's hidden wrappers */
 body {
-  font-family: var(--font-ibm-plex-sans), ui-sans-serif, system-ui;
+  font-family: ui-sans-serif, system-ui, sans-serif;
   color: #EDEAE3;
 }
 
