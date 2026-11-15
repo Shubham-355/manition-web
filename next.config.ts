@@ -12,7 +12,14 @@ const SECURITY_HEADERS = [
 const nextConfig: NextConfig = {
   serverExternalPackages: ["nodemailer"],
   async headers() {
-    return [{ source: "/:path*", headers: SECURITY_HEADERS }];
+    // the scene clips, posters and art keep their names when replaced, so a week fresh plus a day of background refresh, not forever
+    const media = [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }];
+    return [
+      { source: "/:path*", headers: SECURITY_HEADERS },
+      { source: "/scenes/:path*", headers: media },
+      { source: "/v3/:path*", headers: media },
+      { source: "/film/:path*", headers: media },
+    ];
   },
 };
 
