@@ -123,5 +123,3 @@ html:has(.h3), html:has(.h3) body { background:#0A0A0B; }
 @media (prefers-reduced-motion: reduce){ .h3-cursor { display:none !important; } }
 
 /* the gallery player's accents follow the night palette */
-.h3 .gv-fill { background:#FF5B1F; }
-.h3 .gv-wrap:focus-visible { box-shadow:inset 0 0 0 2px rgba(255,91,31,.7); }
